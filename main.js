@@ -1,5 +1,5 @@
 const path = require("node:path");
-const { app, BrowserWindow, nativeTheme, ipcMain } = require("electron");
+const { app, BrowserWindow, nativeTheme, ipcMain, Menu } = require("electron");
 const { criarCliente, listarClientes } = require("./src/models/cliente");
 
 // Janela onde o dashboard vai ficar
@@ -33,29 +33,35 @@ const clienteWindow = () => {
     }
 };
 
+// Janela aonde vai estar o CRUD do traje
+// Placeholder for the CRUD functionality of "traje" (to be implemented later)
+const trajeWindow = () => {};
+
+// Janela aonde vai estar o CRUD do aluguel
+const aluguelWindow = () => {};
+
 app.whenReady().then(() => {
     createWindow();
 
-    // Comunicação para criar um cliente
-    ipcMain.on("criar-cliente", (event, clienteData) => {
-        const clienteCriado = criarCliente(
-            clienteData.nome,
-            clienteData.telefone,
-            clienteData.email
-        );
-        // Resposta para o renderer process com o cliente criado
-        event.reply("cliente-criado", clienteCriado);
-    });
+    // IPC >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // Aqui é onde o IPC vai escutar as mensagens do processo de renderização
 
-    // Comunicação para listar clientes
-    ipcMain.on("listar-clientes", (event) => {
-        const clientes = listarClientes();
-        event.reply("clientes-listados", clientes);
-    });
+    // Esse IPC vai ser usado para trocar / abrir janelas
+    ipcMain.on("open-window", (event, param) => {
+        const windowMap = {
+            // Aqui é onde fica o mapeamento de janelas
+            // O nome da função é o mesmo que o parâmetro que vai ser passado + Window
+            cliente: clienteWindow,
+            traje: trajeWindow,
+            aluguel: aluguelWindow,
+        };
 
-    // Comunicação para abrir a janela de cliente
-    ipcMain.on("open-window", () => {
-        clienteWindow();
+        const openWindow = windowMap[param];
+        if (openWindow) {
+            openWindow();
+        } else {
+            console.error(`Unknown window type: ${param}`);
+        }
     });
 
     // Comunicação genérica de mensagens do renderer process
@@ -77,7 +83,9 @@ app.on("window-all-closed", () => {
     }
 });
 
-// Template de menu customizado
+// Template do menu
+// Para caso seja necessário criar um menu customizado
+// const menu = Menu.buildFromTemplate(template)
 const template = [
     {
         label: "Arquivo",
