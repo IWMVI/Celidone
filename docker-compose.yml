@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: TCC
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tcc
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: Electron
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      NODE_ENV: development
+      DISPLAY: :99
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    networks:
+      - tcc
+    command: npm start
+
+volumes:
+  postgres_data:
+
+networks:
+  tcc:
+    driver: bridge
+    
