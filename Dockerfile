@@ -1,5 +1,5 @@
 # Base com Node
-FROM node:22:rapidfort/haproxy-latest-ib
+FROM rapidfort/node:22-haproxy-latest-ib
 
 RUN apt-get update && apt-get install -y \
     xvfb \
