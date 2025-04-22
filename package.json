@@ -1,24 +1,28 @@
 {
-  "name": "tcc",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/IWMVI/TCC.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/IWMVI/TCC/issues"
-  },
-  "homepage": "https://github.com/IWMVI/TCC#readme",
-  "dependencies": {
-    "electron": "^35.2.0"
-  }
+    "name": "tcc",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest",
+        "start": "electron .",
+        "lint:fix": "prettier --write .",
+        "lint:check": "prettier --check .",
+        "test:watch": "jest --watch"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/IWMVI/TCC.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/IWMVI/TCC/issues"
+    },
+    "homepage": "https://github.com/IWMVI/TCC#readme",
+    "dependencies": {
+        "electron": "^35.2.0",
+        "react-dom": "^19.1.0"
+    }
 }
