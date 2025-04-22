@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta tag para evitar ataques Cross Site Scripting (aka: Injeção de dados) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' " >
+    <title>Electron</title>
+    <link rel="stylesheet" href="../public/css/mainPage.css">
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+          <h1>Painel Administrativo - Celidone</h1>
+        </header>
+  
+        <main class="main-content">
+          <section class="welcome">
+            <h2>Bem-vindo(a)!</h2>
+            <p>Gerencie os trajes, cadastros de clientes e aluguéis de forma prática.</p>
+          </section>
+  
+          <section class="grid-menu">
+            <div class="card">
+              <h3>Clientes</h3>
+              <p>Visualizar e cadastrar clientes</p>
+              <button id="btn-clientes" onclick="janelaCliente()">Acessar</button>
+            </div>
+  
+            <div class="card">
+              <h3>Trajes</h3>
+              <p>Controle o estoque de trajes</p>
+              <button>Acessar</button>
+            </div>
+  
+            <div class="card">
+              <h3>Aluguéis</h3>
+              <p>Gerencie os contratos e devoluções</p>
+              <button>Acessar</button>
+            </div>
+          </section>
+        </main>
+  
+        <footer class="footer">
+          <p>&copy; 2025 Elegância Rigorosa - Celidone</p>
+        </footer>
+      </div>
+
+      <!-- Processo de renderização -->
+       <script src="renderer.js"></script>
+</body>
+</html>
