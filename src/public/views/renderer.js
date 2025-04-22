@@ -10,9 +10,11 @@ console.log(`Versão do Electron: ${api.verElectron()}`);
  * e lá tem os processos de abrir janelas, etc..
  */
 
-function janelaCliente() {
+function janelaOpen(param) {
     //console.log('Janela de cliente aberta!')
-    api.open();
+
+    // TODO: Passar um argumento para escolher a janela que vai abrir
+    api.open(param);
 }
 
 api.send("Message testing");

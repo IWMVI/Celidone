@@ -34,14 +34,39 @@ const clienteWindow = () => {
     }
 }
 
+// Janela aonde vai estar o CRUD do traje
+const trajeWindow = () => {
+
+}
+
+// Janela aonde vai estar o CRUD do aluguel
+const aluguelWindow = () => {
+
+}
+
 app.whenReady().then(() => {
     createWindow()
 
     // IPC >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // Aqui é onde o IPC vai escutar as mensagens do processo de renderização
-    ipcMain.on('open-window', () => {
-        clienteWindow();
-    })
+
+    // Esse IPC vai ser usado para trocar / abrir janelas
+    ipcMain.on('open-window', (event, param) => {
+        const windowMap = {
+            // Aqui é onde fica o mapeamento de janelas
+            // O nome da função é o mesmo que o parâmetro que vai ser passado + Window
+            cliente: clienteWindow,
+            traje: trajeWindow,
+            aluguel: aluguelWindow
+        };
+
+        const openWindow = windowMap[param];
+        if (openWindow) {
+            openWindow();
+        } else {
+            console.error(`Unknown window type: ${param}`);
+        }
+    });
 
     ipcMain.on('renderer-message', (event, message) => {
         console.log(`Main recebeu uma mensagem: ${message}`)
@@ -63,7 +88,6 @@ app.on('window-all-closed', () => {
 // Template do menu
 // Para caso seja necessário criar um menu customizado
 // const menu = Menu.buildFromTemplate(template)
-
 const template = [
     {
         label: 'Arquivo',
