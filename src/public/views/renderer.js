@@ -2,7 +2,7 @@
  * Processo de renderização do Electron
  */
 
-console.log('Processo de renderização iniciado!')
+console.log("Processo de renderização iniciado!");
 console.log(`Versão do Electron: ${api.verElectron()}`);
 
 /**
@@ -10,14 +10,14 @@ console.log(`Versão do Electron: ${api.verElectron()}`);
  * e lá tem os processos de abrir janelas, etc..
  */
 
-function janelaOpen(param) {
-    //console.log('Janela de cliente aberta!')
-
-    // TODO: Passar um argumento para escolher a janela que vai abrir
+function openWindow(param) {
+    // Opens a window based on the provided parameter
+    // Example: 'client', 'settings', etc.
     api.open(param);
 }
 
 api.send("Message testing");
+
 api.on((message) => {
     console.log(`Processo de renderização recebeu uma mensagem: ${message}`)
 })
