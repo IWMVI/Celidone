@@ -17,6 +17,7 @@ function openWindow(param) {
 }
 
 api.send("Message testing");
-api.on((event, message) => {
-    console.log(`Processo de renderização recebeu uma mensagem: ${message}`);
-});
+
+api.on((message) => {
+    console.log(`Processo de renderização recebeu uma mensagem: ${message}`)
+})

@@ -27,6 +27,7 @@ const clienteWindow = () => {
             height: 600,
             icon: "./src/public/img/bowTie2.png",
             autoHideMenuBar: true,
+
             parent: father,
         });
         cliente.loadFile("./src/public/views/cliente.html");
@@ -34,8 +35,22 @@ const clienteWindow = () => {
 };
 
 // Janela aonde vai estar o CRUD do traje
-// Placeholder for the CRUD functionality of "traje" (to be implemented later)
-const trajeWindow = () => {};
+
+const produtoWindow = () => {
+    const father = BrowserWindow.getFocusedWindow()
+    if (father) {
+        const produto = new BrowserWindow({
+            width: 800,
+            height: 600,
+            icon: './src/public/img/bowTie2.png',
+            //Mude isso para ocultar as ferramentas do menu (e também do desenvolvedor)
+            autoHideMenuBar: true,
+            parent: father
+        })
+        produto.loadFile('./src/public/views/produto.html')
+    }
+}
+
 
 // Janela aonde vai estar o CRUD do aluguel
 const aluguelWindow = () => {};
@@ -52,8 +67,10 @@ app.whenReady().then(() => {
             // Aqui é onde fica o mapeamento de janelas
             // O nome da função é o mesmo que o parâmetro que vai ser passado + Window
             cliente: clienteWindow,
-            traje: trajeWindow,
-            aluguel: aluguelWindow,
+
+            produto: produtoWindow,
+            aluguel: aluguelWindow
+
         };
 
         const openWindow = windowMap[param];
@@ -94,9 +111,6 @@ const template = [
         label: "Exibir",
     },
     {
-        label: "Ajuda",
-    },
-];
-
-const menu = Menu.buildFromTemplate(template);
-Menu.setApplicationMenu(menu);
+        label: 'Ajuda',
+    }
+]
