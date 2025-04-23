@@ -130,8 +130,8 @@ btnBuscarCep.addEventListener("click", async function () {
 
         const data = await window.api.buscarCep(cep);
 
-        // Verifica se o retorno da API é inválido (exemplo: não encontrou dados para o CEP)
-        if (data.erro) {
+        // Verifica se a resposta contém dados válidos
+        if (!data || !data.logradouro) {
             showError(
                 "CEP não encontrado. Por favor, verifique o CEP informado."
             );
@@ -147,6 +147,9 @@ btnBuscarCep.addEventListener("click", async function () {
                 data.complemento || "";
         }
     } catch (error) {
+        // Exibe o erro completo no console
+        console.error("Erro ao buscar o CEP:", error);
+
         // Verifica se o erro é devido a um problema de conexão
         if (error.name === "AbortError" || error.message.includes("fetch")) {
             showError(
@@ -159,4 +162,66 @@ btnBuscarCep.addEventListener("click", async function () {
         btnBuscarCep.disabled = false;
         btnBuscarCep.textContent = "Buscar CEP";
     }
+});
+
+const tipoPessoaSelect = document.getElementById("natureza");
+const campoCpf = document.getElementById("campo-cpf");
+const campoCnpj = document.getElementById("campo-cnpj");
+
+tipoPessoaSelect.addEventListener("change", function () {
+    const tipoPessoa = tipoPessoaSelect.value;
+
+    // Exibe ou oculta os campos com base na seleção
+    if (tipoPessoa === "pessoa_fisica") {
+        campoCpf.style.display = "block"; // Exibe o campo CPF
+        campoCnpj.style.display = "none"; // Oculta o campo CNPJ
+    } else if (tipoPessoa === "pessoa_juridica") {
+        campoCnpj.style.display = "block"; // Exibe o campo CNPJ
+        campoCpf.style.display = "none"; // Oculta o campo CPF
+    } else {
+        campoCnpj.style.display = "none"; // Oculta o campo CNPJ
+        campoCpf.style.display = "none"; // Oculta o campo CPF
+    }
+});
+
+// Chama a função ao carregar a página para garantir que o comportamento esteja correto
+window.onload = function () {
+    tipoPessoaSelect.dispatchEvent(new Event("change"));
+};
+
+// Função para aplicar a máscara de CPF
+function aplicarMascaraCpf(cpf) {
+    return cpf
+        .replace(/\D/g, "") // Remove qualquer caractere não numérico
+        .replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4"); // Aplica a máscara
+}
+
+// Função para aplicar a máscara de CNPJ
+function aplicarMascaraCnpj(cnpj) {
+    return cnpj
+        .replace(/\D/g, "") // Remove qualquer caractere não numérico
+        .replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5"); // Aplica a máscara
+}
+
+// Função para aplicar a máscara de CEP
+function aplicarMascaraCep(cep) {
+    return cep
+        .replace(/\D/g, "") // Remove qualquer caractere não numérico
+        .replace(/^(\d{5})(\d{3})$/, "$1-$2"); // Aplica a máscara
+}
+
+// Função para formatar CPF, CNPJ e CEP conforme a entrada
+document.getElementById("cpf").addEventListener("input", function (event) {
+    const cpf = event.target.value;
+    event.target.value = aplicarMascaraCpf(cpf);
+});
+
+document.getElementById("cnpj").addEventListener("input", function (event) {
+    const cnpj = event.target.value;
+    event.target.value = aplicarMascaraCnpj(cnpj);
+});
+
+document.getElementById("cep").addEventListener("input", function (event) {
+    const cep = event.target.value;
+    event.target.value = aplicarMascaraCep(cep);
 });

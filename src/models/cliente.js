@@ -9,15 +9,11 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            tipo: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
             nome: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            nascimento: {
+            data_nascimento: {
                 type: DataTypes.DATEONLY,
                 allowNull: false,
             },
@@ -83,10 +79,6 @@ module.exports = (sequelize, DataTypes) => {
                 validate: {
                     len: [2, 2],
                 },
-            },
-            data_nascimento: {
-                type: DataTypes.DATEONLY,
-                allowNull: false,
             },
         },
         {

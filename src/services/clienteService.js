@@ -6,7 +6,7 @@ async function criarCliente(clienteData) {
     const camposObrigatorios = [
         "tipo",
         "nome",
-        "nascimento",
+        "data_nascimento",
         "cep",
         "endereco",
         "numero",
