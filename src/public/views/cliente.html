@@ -11,14 +11,35 @@
         <form id="form-cliente">
             <input type="text" id="nome" placeholder="Nome" required /><br />
             <input type="email" id="email" placeholder="Email" required /><br />
-            <input type="text" id="telefone" placeholder="Telefone" /><br />
-            <input type="text" id="natureza" placeholder="Natureza" /><br />
+            <input
+                type="text"
+                id="telefone"
+                placeholder="Telefone"
+                required
+            /><br />
+            <label for="natureza">Natureza:</label>
+            <select id="natureza">
+                <option value="">Selecione</option>
+                <option value="pessoa_fisica">Pessoa Física</option>
+                <option value="pessoa_juridica">Pessoa Jurídica</option></select
+            ><br />
+
+            <!-- Campos para CPF e CNPJ -->
+            <div id="campo-cpf" style="display: none">
+                <input type="text" id="cpf" placeholder="Informe o CPF" />
+            </div>
+            <div id="campo-cnpj" style="display: none">
+                <input type="text" id="cnpj" placeholder="Informe o CNPJ" />
+            </div>
+
             <input
                 type="date"
-                id="dataNascimento"
+                id="data_nascimento"
                 placeholder="Data de Nascimento"
+                required
             /><br />
-            <!-- Div para exibir mensagens de erro, Vitor... Sua missão é fazer o CSS disso aqui-->
+
+            <!-- Div para exibir mensagens de erro -->
             <div
                 id="error-message"
                 style="
@@ -32,19 +53,45 @@
             >
                 <p id="error-text"></p>
             </div>
-            <input type="text" id="cep" placeholder="CEP" />
+
+            <input type="text" id="cep" placeholder="CEP" required />
             <button type="button" id="buscar-cep-btn">Buscar CEP</button><br />
-            <input type="text" id="endereco" placeholder="Endereço" /><br />
-            <input type="text" id="numero" placeholder="Número" /><br />
-            <input type="text" id="cidade" placeholder="Cidade" /><br />
-            <input type="text" id="bairro" placeholder="Bairro" /><br />
+            <input
+                type="text"
+                id="endereco"
+                placeholder="Endereço"
+                required
+            /><br />
+            <input
+                type="text"
+                id="numero"
+                placeholder="Número"
+                required
+            /><br />
+            <input
+                type="text"
+                id="cidade"
+                placeholder="Cidade"
+                required
+            /><br />
+            <input
+                type="text"
+                id="bairro"
+                placeholder="Bairro"
+                required
+            /><br />
             <input
                 type="text"
                 id="complemento"
                 placeholder="Complemento"
             /><br />
-            <input type="text" id="uf" placeholder="UF" /><br />
-            <input type="text" id="celular" placeholder="Celular" /><br />
+            <input type="text" id="uf" placeholder="UF" required /><br />
+            <input
+                type="text"
+                id="celular"
+                placeholder="Celular"
+                required
+            /><br />
             <input
                 type="text"
                 id="telefoneFixo"
