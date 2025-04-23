@@ -6,5 +6,5 @@ contextBridge.exposeInMainWorld("api", {
     send: (channel, data) => ipcRenderer.send(channel, data),
     on: (channel, callback) =>
         ipcRenderer.on(channel, (event, ...args) => callback(...args)),
-    buscarCep: (cep) => ipcRenderer.invoke("buscar-cep", cep), // NOVO! usando ipcRenderer.invoke
+    buscarCep: (cep) => ipcRenderer.invoke("buscar-cep", cep),
 });

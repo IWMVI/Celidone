@@ -1,7 +1,10 @@
+"use strict";
+
 const axios = require("axios");
 const path = require("node:path");
-const Cliente = require("./src/models/Cliente");
 const { sequelize } = require("./config/database");
+const db = require("./src/models");
+const { Cliente } = db;
 const { app, BrowserWindow, nativeTheme, ipcMain } = require("electron");
 
 // Janela onde o dashboard vai ficar
@@ -42,7 +45,7 @@ const clienteWindow = () => {
             },
         });
         cliente.loadFile("./src/public/views/cliente.html");
-        cliente.webContents.openDevTools(); // Abre o DevTools para depuração
+        // cliente.webContents.openDevTools(); // Abre o DevTools para depuração
     }
 };
 
@@ -73,7 +76,7 @@ ipcMain.on("criar-cliente", async (event, clienteData) => {
 
 // Sincroniza o banco de dados ao iniciar o app
 sequelize
-    .sync({ force: false }) // Use `force: true` apenas para recriar tabelas durante o desenvolvimento
+    .sync({ alter: true }) // Utilizando `alter: true` para ajustes automáticos sem perda de dados
     .then(() => {
         console.log("Banco de dados sincronizado.");
     })
