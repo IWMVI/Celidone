@@ -1,22 +1,10 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require("electron");
 
-// Processos criados
-contextBridge.exposeInMainWorld('api', {
-    
-    // Mostra a versão do Electron
+contextBridge.exposeInMainWorld("api", {
     verElectron: () => process.versions.electron,
-    // Abre uma janela nova com um parâmetro
-    open: (param) => ipcRenderer.send('open-window', param),
-
-    // Troca de mensagens
-    send: (message) => ipcRenderer.send('renderer-message', message),
-    on: (message) => ipcRenderer.on('main-message', message)
-
-
-})
-
-
- 
-//window.addEventListener('DOMContentLoaded', () => {
-//    const janelaCliente = document.getElementById('btn-clientes').innerHTML = clienteWindow()
-//})
+    open: (param) => ipcRenderer.send("open-window", param),
+    send: (channel, data) => ipcRenderer.send(channel, data),
+    on: (channel, callback) =>
+        ipcRenderer.on(channel, (event, ...args) => callback(...args)),
+    buscarCep: (cep) => ipcRenderer.invoke("buscar-cep", cep), // NOVO! usando ipcRenderer.invoke
+});
