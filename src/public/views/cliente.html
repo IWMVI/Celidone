@@ -1,112 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'">
-    <title>Gerenciamento de clientes</title>
-    <link rel="stylesheet" href="../css/mainPage.css">
-</head>
-<body>
-    <div class="dashboard">
-        <header class="header">
-          <h1>Cadastro de Clientes</h1>
-        </header>
-    
-        <main class="main-content">
-          <section class="welcome">
-            <h2>Adicionar Novo Cliente</h2>
-            <form id="form-cliente">
-              <input type="text" id="nome" placeholder="Nome completo" required>
-              <input type="email" id="email" placeholder="Email" required>
-              <input type="tel" id="telefone" placeholder="Telefone" required>
-              <button type="submit">Salvar</button>
-            </form>
-            <!-- Botão para listar clientes -->
-            <button id="listar-clientes-btn">Listar Clientes</button>
-          </section>
-    
-          <section class="grid-menu">
-            <table class="client-table">
-              <thead>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Cadastro de Clientes</title>
+        <link rel="stylesheet" href="../css/mainPage.css" />
+    </head>
+    <body>
+        <h1>Cadastro de Clientes</h1>
+
+        <form id="form-cliente">
+            <input type="text" id="nome" placeholder="Nome" required /><br />
+            <input type="email" id="email" placeholder="Email" required /><br />
+            <input type="text" id="telefone" placeholder="Telefone" /><br />
+            <input type="text" id="natureza" placeholder="Natureza" /><br />
+            <input
+                type="date"
+                id="dataNascimento"
+                placeholder="Data de Nascimento"
+            /><br />
+            <!-- Div para exibir mensagens de erro, Vitor... Sua missão é fazer o CSS disso aqui-->
+            <div
+                id="error-message"
+                style="
+                    display: none;
+                    color: red;
+                    padding: 10px;
+                    background-color: #f8d7da;
+                    border: 1px solid #f5c6cb;
+                    margin-top: 10px;
+                "
+            >
+                <p id="error-text"></p>
+            </div>
+            <input type="text" id="cep" placeholder="CEP" />
+            <button type="button" id="buscar-cep-btn">Buscar CEP</button><br />
+            <input type="text" id="endereco" placeholder="Endereço" /><br />
+            <input type="text" id="numero" placeholder="Número" /><br />
+            <input type="text" id="cidade" placeholder="Cidade" /><br />
+            <input type="text" id="bairro" placeholder="Bairro" /><br />
+            <input
+                type="text"
+                id="complemento"
+                placeholder="Complemento"
+            /><br />
+            <input type="text" id="uf" placeholder="UF" /><br />
+            <input type="text" id="celular" placeholder="Celular" /><br />
+            <input
+                type="text"
+                id="telefoneFixo"
+                placeholder="Telefone Fixo"
+            /><br />
+            <button type="submit">Cadastrar Cliente</button>
+        </form>
+
+        <button id="listar-clientes-btn">Listar Clientes</button>
+
+        <h2>Lista de Clientes</h2>
+        <table border="1">
+            <thead>
                 <tr>
-                  <th>Código</th>
-                  <th>Natureza</th>
-                  <th>Nome</th>
-                  <th>Data de nascimento</th>
-                  <th>CEP</th>
-                  <th>Endereço</th>
-                  <th>Num.</th>
-                  <th>Cidade</th>
-                  <th>Bairro</th>
-                  <th>Compl.</th>
-                  <th>U.F</th>
-                  <th>Email</th>
-                  <th>Celular</th>
-                  <th>Fixo</th>
+                    <th>ID</th>
+                    <th>Natureza</th>
+                    <th>Nome</th>
+                    <th>Data Nasc.</th>
+                    <th>CEP</th>
+                    <th>Endereço</th>
+                    <th>Número</th>
+                    <th>Cidade</th>
+                    <th>Bairro</th>
+                    <th>Complemento</th>
+                    <th>UF</th>
+                    <th>Email</th>
+                    <th>Celular</th>
+                    <th>Telefone Fixo</th>
                 </tr>
-              </thead>
-              <tbody id="cliente-lista">
-                <!-- Lista de clientes será preenchida aqui via IPC -->
-              </tbody>
-            </table> 
-          </section>
-        </main>
-    
-        <footer class="footer">
-          <p>&copy; 2025 Celidone - Sistema Interno</p>
-        </footer>
-    
-    <script>
-        const { ipcRenderer } = require('electron');
+            </thead>
+            <tbody id="cliente-lista"></tbody>
+        </table>
 
-        // Função para enviar os dados do formulário
-        document.getElementById('form-cliente').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const nome = document.getElementById('nome').value;
-            const email = document.getElementById('email').value;
-            const telefone = document.getElementById('telefone').value;
-
-            ipcRenderer.send('criar-cliente', { nome, email, telefone });
-        });
-
-        // Função para exibir os clientes na tabela
-        function exibirClientes(clientes) {
-            const tabela = document.getElementById('cliente-lista');
-            tabela.innerHTML = ''; // Limpa a tabela
-
-            clientes.forEach(cliente => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${cliente.id}</td>
-                    <td>${cliente.natureza}</td>
-                    <td>${cliente.nome}</td>
-                    <td>${cliente.dataNascimento}</td>
-                    <td>${cliente.cep}</td>
-                    <td>${cliente.endereco}</td>
-                    <td>${cliente.numero}</td>
-                    <td>${cliente.cidade}</td>
-                    <td>${cliente.bairro}</td>
-                    <td>${cliente.complemento}</td>
-                    <td>${cliente.uf}</td>
-                    <td>${cliente.email}</td>
-                    <td>${cliente.celular}</td>
-                    <td>${cliente.telefoneFixo || ''}</td>
-                `;
-                tabela.appendChild(row);
-            });
-        }
-
-        // Função para listar os clientes ao clicar no botão
-        document.getElementById('listar-clientes-btn').addEventListener('click', function() {
-            ipcRenderer.send('listar-clientes');
-        });
-
-        // Recebe a lista de clientes do processo principal
-        ipcRenderer.on('clientes', (event, clientes) => {
-            exibirClientes(clientes);
-        });
-    </script>
-</body>
+        <script src="../../scripts/cliente.js"></script>
+    </body>
 </html>
