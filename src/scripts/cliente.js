@@ -145,12 +145,8 @@ btnBuscarCep.addEventListener("click", async function () {
             document.getElementById("uf").value = data.uf || "";
             document.getElementById("complemento").value =
                 data.complemento || "";
-
-            console.log("Campos preenchidos com sucesso!");
         }
     } catch (error) {
-        console.error("Erro ao buscar o CEP:", error);
-
         // Verifica se o erro é devido a um problema de conexão
         if (error.name === "AbortError" || error.message.includes("fetch")) {
             showError(
@@ -160,7 +156,6 @@ btnBuscarCep.addEventListener("click", async function () {
             showError("Erro desconhecido ao buscar o CEP.");
         }
     } finally {
-        console.log("Inputs serão desbloqueados");
         btnBuscarCep.disabled = false;
         btnBuscarCep.textContent = "Buscar CEP";
     }
