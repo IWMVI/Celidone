@@ -1,6 +1,6 @@
 const path = require("node:path");
-const { app, BrowserWindow, nativeTheme, ipcMain, Menu } = require("electron");
-const { criarCliente, listarClientes } = require("./src/models/cliente");
+const { app, BrowserWindow, nativeTheme, ipcMain } = require("electron");
+const { listarClientes } = require("./src/models/cliente");
 
 // Janela onde o dashboard vai ficar
 const createWindow = () => {
@@ -27,50 +27,29 @@ const clienteWindow = () => {
             height: 600,
             icon: "./src/public/img/bowTie2.png",
             autoHideMenuBar: true,
-
             parent: father,
         });
         cliente.loadFile("./src/public/views/cliente.html");
     }
 };
 
-// Janela aonde vai estar o CRUD do traje
-
-const produtoWindow = () => {
-    const father = BrowserWindow.getFocusedWindow()
-    if (father) {
-        const produto = new BrowserWindow({
-            width: 800,
-            height: 600,
-            icon: './src/public/img/bowTie2.png',
-            //Mude isso para ocultar as ferramentas do menu (e também do desenvolvedor)
-            autoHideMenuBar: true,
-            parent: father
-        })
-        produto.loadFile('./src/public/views/produto.html')
+// IPC para listar clientes
+ipcMain.on("listar-clientes", async (event) => {
+    try {
+        const clientes = await listarClientes();
+        event.reply("clientes", clientes); // Envia os clientes para o renderer
+    } catch (err) {
+        console.error("Erro ao listar clientes:", err);
     }
-}
-
-
-// Janela aonde vai estar o CRUD do aluguel
-const aluguelWindow = () => {};
+});
 
 app.whenReady().then(() => {
     createWindow();
 
-    // IPC >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // Aqui é onde o IPC vai escutar as mensagens do processo de renderização
-
-    // Esse IPC vai ser usado para trocar / abrir janelas
+    // Comunicação de janelas
     ipcMain.on("open-window", (event, param) => {
         const windowMap = {
-            // Aqui é onde fica o mapeamento de janelas
-            // O nome da função é o mesmo que o parâmetro que vai ser passado + Window
             cliente: clienteWindow,
-
-            produto: produtoWindow,
-            aluguel: aluguelWindow
-
         };
 
         const openWindow = windowMap[param];
@@ -79,12 +58,6 @@ app.whenReady().then(() => {
         } else {
             console.error(`Unknown window type: ${param}`);
         }
-    });
-
-    // Comunicação genérica de mensagens do renderer process
-    ipcMain.on("renderer-message", (event, message) => {
-        console.log(`Main recebeu uma mensagem: ${message}`);
-        event.reply("main-message", "Mensagem recebida com sucesso!");
     });
 
     app.on("activate", () => {
@@ -99,18 +72,3 @@ app.on("window-all-closed", () => {
         app.quit();
     }
 });
-
-// Template do menu
-// Para caso seja necessário criar um menu customizado
-// const menu = Menu.buildFromTemplate(template)
-const template = [
-    {
-        label: "Arquivo",
-    },
-    {
-        label: "Exibir",
-    },
-    {
-        label: 'Ajuda',
-    }
-]

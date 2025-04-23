@@ -1,4 +1,4 @@
-const { sequelize } = require("../models");
+const { sequelize } = require("../../config/database");
 const clienteService = require("../services/clienteService");
 
 beforeAll(async () => {
