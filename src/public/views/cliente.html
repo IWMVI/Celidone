@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Meta tag para evitar ataques Cross Site Scripting (aka: Injeção de dados) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' " >
-    <title>Tela Cliente</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'">
+    <title>Gerenciamento de clientes</title>
     <link rel="stylesheet" href="../css/mainPage.css">
 </head>
 <body>
@@ -23,6 +22,8 @@
               <input type="tel" id="telefone" placeholder="Telefone" required>
               <button type="submit">Salvar</button>
             </form>
+            <!-- Botão para listar clientes -->
+            <button id="listar-clientes-btn">Listar Clientes</button>
           </section>
     
           <section class="grid-menu">
@@ -45,23 +46,8 @@
                   <th>Fixo</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
+              <tbody id="cliente-lista">
+                <!-- Lista de clientes será preenchida aqui via IPC -->
               </tbody>
             </table> 
           </section>
@@ -70,5 +56,57 @@
         <footer class="footer">
           <p>&copy; 2025 Celidone - Sistema Interno</p>
         </footer>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // Função para enviar os dados do formulário
+        document.getElementById('form-cliente').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const telefone = document.getElementById('telefone').value;
+
+            ipcRenderer.send('criar-cliente', { nome, email, telefone });
+        });
+
+        // Função para exibir os clientes na tabela
+        function exibirClientes(clientes) {
+            const tabela = document.getElementById('cliente-lista');
+            tabela.innerHTML = ''; // Limpa a tabela
+
+            clientes.forEach(cliente => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${cliente.id}</td>
+                    <td>${cliente.natureza}</td>
+                    <td>${cliente.nome}</td>
+                    <td>${cliente.dataNascimento}</td>
+                    <td>${cliente.cep}</td>
+                    <td>${cliente.endereco}</td>
+                    <td>${cliente.numero}</td>
+                    <td>${cliente.cidade}</td>
+                    <td>${cliente.bairro}</td>
+                    <td>${cliente.complemento}</td>
+                    <td>${cliente.uf}</td>
+                    <td>${cliente.email}</td>
+                    <td>${cliente.celular}</td>
+                    <td>${cliente.telefoneFixo || ''}</td>
+                `;
+                tabela.appendChild(row);
+            });
+        }
+
+        // Função para listar os clientes ao clicar no botão
+        document.getElementById('listar-clientes-btn').addEventListener('click', function() {
+            ipcRenderer.send('listar-clientes');
+        });
+
+        // Recebe a lista de clientes do processo principal
+        ipcRenderer.on('clientes', (event, clientes) => {
+            exibirClientes(clientes);
+        });
+    </script>
 </body>
 </html>
