@@ -3,7 +3,7 @@
         "username": "Wallace",
         "password": "P4ssw0rd",
         "database": "database_development",
-        "host": "db",
+        "host": "localhost",
         "dialect": "postgres",
         "port": 5432
     },
@@ -20,7 +20,7 @@
         "username": "Wallace",
         "password": "P4ssw0rd",
         "database": "database_production",
-        "host": "db",
+        "host": "localhost",
         "dialect": "postgres",
         "port": 5432
     }
