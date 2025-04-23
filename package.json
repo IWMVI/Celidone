@@ -4,7 +4,7 @@
     "description": "",
     "main": "main.js",
     "scripts": {
-        "test": "set NODE_ENV=test && jest",
+        "test": "jest --detectOpenHandles",
         "start": "electron .",
         "test:watch": "jest --watch",
         "lint:fix": "prettier --write .",
