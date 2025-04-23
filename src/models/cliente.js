@@ -1,66 +1,113 @@
-class Cliente {
-    constructor(nome, telefone, email) {
-        this.nome = nome;
-        this.telefone = telefone;
-        this.email = email;
-        this.id = Math.floor(Math.random() * 1000); // Simular a criação de um ID único
-    }
-}
+"use strict";
 
-let clientes = [];
+module.exports = (sequelize, DataTypes) => {
+    const Cliente = sequelize.define(
+        "Cliente",
+        {
+            id: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            tipo: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            nome: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            nascimento: {
+                type: DataTypes.DATEONLY,
+                allowNull: false,
+            },
+            cep: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            endereco: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            numero: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            cidade: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            bairro: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            complemento: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                defaultValue: null,
+            },
+            estado: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            email: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    isEmail: true,
+                },
+            },
+            telefone: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+            cnpj: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            natureza: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            celular: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            telefone_fixo: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+            uf: {
+                type: DataTypes.STRING(2),
+                allowNull: false,
+                validate: {
+                    len: [2, 2],
+                },
+            },
+            data_nascimento: {
+                type: DataTypes.DATEONLY,
+                allowNull: false,
+            },
+        },
+        {
+            tableName: "clientes",
+            timestamps: false,
+            hooks: {
+                beforeValidate: (cliente) => {
+                    for (const key in cliente.dataValues) {
+                        if (cliente[key] === "") {
+                            cliente[key] = null;
+                        }
+                    }
+                },
+            },
+        }
+    );
 
-function criarCliente(nome, telefone, email) {
-    const novoCliente = new Cliente(nome, telefone, email);
-    clientes.push(novoCliente);
-    return novoCliente;
-}
+    // Se precisar de associações, é aqui
+    Cliente.associate = (models) => {
+        // models.Produto.hasMany(models.Cliente), etc.
+    };
 
-function buscarClientesPorId(id) {
-    return clientes.find((cliente) => cliente.id === id);
-}
-
-function buscarClientesPorNome(nome) {
-    return clientes.filter((cliente) => cliente.nome.includes(nome));
-}
-
-function atualizarCliente(id, dadosAtualizados) {
-    const cliente = clientes.find((cliente) => cliente.id === id);
-    if (cliente) {
-        cliente.nome = dadosAtualizados.nome || cliente.nome;
-        cliente.telefone = dadosAtualizados.telefone || cliente.telefone;
-        cliente.email = dadosAtualizados.email || cliente.email;
-    }
-
-    return cliente;
-}
-
-function removerCliente(id) {
-    const index = clientes.findIndex((cliente) => cliente.id === id);
-
-    if (index !== -1) {
-        clientes.splice(index, 1);
-        return true;
-    }
-
-    return false;
-}
-
-function validarEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-}
-
-function listarClientes() {
-    return clientes;
-}
-
-module.exports = {
-    clientes,
-    criarCliente,
-    buscarClientesPorId,
-    buscarClientesPorNome,
-    atualizarCliente,
-    removerCliente,
-    validarEmail,
-    listarClientes,
+    return Cliente;
 };

@@ -1,130 +1,85 @@
-const {
-    criarCliente,
-    clientes,
-    buscarClientesPorId,
-    buscarClientesPorNome,
-    atualizarCliente,
-    removerCliente,
-    validarEmail,
-    listarClientes,
-} = require("../models/cliente");
+const { sequelize } = require("../models");
+const clienteService = require("../services/clienteService");
 
-describe("Gerenciamento de clientes", () => {
-    it("Deve criar um novo cliente", async () => {
-        const novoCliente = {
-            nome: "Pedro Silva",
-            telefone: "11999999999",
-            email: "email@email.com",
+beforeAll(async () => {
+    await sequelize.sync({ force: true }); // Reseta o banco de dados para cada rodada de testes
+});
+
+afterAll(async () => {
+    await sequelize.close(); // Fecha conexão depois dos testes
+});
+
+describe("Cliente Service", () => {
+    let clienteCriado;
+
+    test("deve criar um cliente", async () => {
+        const clienteData = {
+            tipo: "Pessoa Física",
+            nome: "João da Silva",
+            nascimento: "1990-01-01",
+            cep: "12345678",
+            endereco: "Rua das Flores",
+            numero: "100",
+            cidade: "São Paulo",
+            bairro: "Centro",
+            estado: "SP",
+            email: "joao@example.com",
+            cnpj: "12345678000199",
+            natureza: "Comercial",
+            celular: "11999999999",
+            uf: "SP",
+            data_nascimento: "1990-01-01",
         };
 
-        const clienteCriado = criarCliente(
-            novoCliente.nome,
-            novoCliente.telefone,
-            novoCliente.email
+        clienteCriado = await clienteService.criarCliente(clienteData);
+
+        expect(clienteCriado).toBeDefined();
+        expect(clienteCriado.nome).toBe("João da Silva");
+    });
+
+    test("deve buscar cliente por ID", async () => {
+        const cliente = await clienteService.buscarClientesPorId(
+            clienteCriado.id
         );
 
-        expect(clienteCriado).toHaveProperty("id");
-        expect(clienteCriado.nome).toBe(novoCliente.nome);
-        expect(clienteCriado.telefone).toBe(novoCliente.telefone);
-        expect(clienteCriado.email).toBe(novoCliente.email);
-        expect(clientes).toContain(clienteCriado);
-    });
-});
-
-describe("Leitura de clientes", () => {
-    it("Deve buscar um cliente por ID", () => {
-        const cliente = criarCliente("Ronaldo Silva", "11", "email@email.com");
-        const clientBuscado = buscarClientesPorId(cliente.id);
-
-        expect(clientBuscado).toBe(cliente);
+        expect(cliente).toBeDefined();
+        expect(cliente.nome).toBe("João da Silva");
     });
 
-    it("Deve buscar clientes por nome", () => {
-        criarCliente("João Silva", "11", "email@email.com");
-        const clientesBuscados = buscarClientesPorNome("João");
-
-        expect(clientesBuscados).toHaveLength(1);
-        expect(clientesBuscados[0].nome).toBe("João Silva");
-    });
-
-    it("Não deve encontrar clientes quando buscar por nome e não houver correspondências", () => {
-        criarCliente("Fulano de Tal", "11", "email@email.com");
-
-        const clienteBuscado = buscarClientesPorNome("Maria");
-
-        expect(clienteBuscado).toHaveLength(0);
-    });
-
-    it("Deve buscar clientes por nome parcialmente", () => {
-        const clientesBuscados = buscarClientesPorNome("Fulano");
-
-        expect(clientesBuscados).toHaveLength(1);
-        expect(clientesBuscados[0].nome).toBe("Fulano de Tal");
-    });
-});
-
-describe("Atualização de clientes", () => {
-    it("Deve atualizar um cliente", () => {
-        const cliente = criarCliente("João Silva", "11", "email@email.com");
-        const dadosAtualizados = {
-            nome: "João Junior",
-            telefone: "119",
-        };
-
-        const clienteAtualizado = atualizarCliente(
-            cliente.id,
+    test("deve atualizar cliente", async () => {
+        const dadosAtualizados = { cidade: "Rio de Janeiro" };
+        const clienteAtualizado = await clienteService.atualizarCliente(
+            clienteCriado.id,
             dadosAtualizados
         );
 
-        expect(clienteAtualizado.nome).toBe(dadosAtualizados.nome);
-        expect(clienteAtualizado.telefone).toBe(dadosAtualizados.telefone);
-        expect(clienteAtualizado.email).toBe(cliente.email);
-    });
-});
-
-describe("Remoção de clientes", () => {
-    it("Deve remover um cliente", () => {
-        const cliente = criarCliente("João", "11", "email@email.com");
-        const clienteId = cliente.id;
-
-        const removido = removerCliente(clienteId);
-
-        expect(removido).toBe(true);
-        expect(clientes).not.toContain(cliente);
+        expect(clienteAtualizado.cidade).toBe("Rio de Janeiro");
     });
 
-    it("Não deve remover um cliente com ID inválido", () => {
-        const removido = removerCliente(99990000);
+    test("deve buscar clientes por nome", async () => {
+        const clientes = await clienteService.buscarClientesPorNome("João");
 
-        expect(removido).toBe(false);
+        expect(clientes.length).toBeGreaterThan(0);
+        expect(clientes[0].nome).toContain("João");
     });
-});
 
-describe("Validação de email", () => {
-    it("Não deve validar um email incorreto", () => {
-        const emailInvalido = "email@email";
-        const resultado = validarEmail(emailInvalido);
+    test("deve listar todos os clientes", async () => {
+        const clientes = await clienteService.listarClientes();
 
-        expect(resultado).toBe(false);
+        expect(Array.isArray(clientes)).toBe(true);
+        expect(clientes.length).toBeGreaterThan(0);
     });
-    it("Deve validar um email correto", () => {
-        const emailValido = "email@email.com";
-        const resultado = validarEmail(emailValido);
 
-        expect(resultado).toBe(true);
-    });
-});
+    test("deve remover cliente", async () => {
+        const clienteRemovido = await clienteService.removerCliente(
+            clienteCriado.id
+        );
 
-describe("Listagem de clientes", () => {
-    beforeEach(() => {
-        clientes.length = 0;
-        // Limpar clientes que foram criados nos testes acima.
-    });
-    it("Deve listar todos os clientes", () => {
-        criarCliente("João Silva", "11", "email@email.com");
-        criarCliente("João Pedro", "11", "email@email.com");
-        const clientesListados = listarClientes();
+        expect(clienteRemovido).toBeDefined();
 
-        expect(clientesListados).toHaveLength(2);
+        const clienteDepois = await clienteService.buscarClientesPorId(
+            clienteCriado.id
+        );
+        expect(clienteDepois).toBeNull();
     });
 });
