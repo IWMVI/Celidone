@@ -6,9 +6,10 @@
     "scripts": {
         "test": "jest",
         "start": "electron .",
+        "test:watch": "jest --watch",
         "lint:fix": "prettier --write .",
         "lint:check": "prettier --check .",
-        "test:watch": "jest --watch"
+        "test:coverage": "jest --coverage"
     },
     "repository": {
         "type": "git",
@@ -22,9 +23,12 @@
     },
     "homepage": "https://github.com/IWMVI/TCC#readme",
     "dependencies": {
+        "dotenv": "^16.5.0",
         "electron": "^35.2.0",
         "pg": "^8.15.0",
-        "react-dom": "^19.1.0"
+        "pg-hstore": "^2.3.4",
+        "react-dom": "^19.1.0",
+        "sequelize": "^6.37.7"
     },
     "devDependencies": {
         "jest": "^29.7.0"
