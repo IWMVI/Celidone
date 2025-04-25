@@ -1,9 +1,9 @@
 const { ipcRenderer } = require("electron");
 
-// Função para abrir uma janela
+// Função para abrir uma janela com base no parâmetro fornecido
 function openWindow(param) {
     if (param) {
-        api.open(param);
+        api.open(param); // O parâmetro é passado para a função api.open
     } else {
         console.error("Parametro inválido ao abrir a janela.");
     }

@@ -7,4 +7,7 @@ contextBridge.exposeInMainWorld("api", {
     on: (channel, callback) =>
         ipcRenderer.on(channel, (event, ...args) => callback(...args)),
     buscarCep: (cep) => ipcRenderer.invoke("buscar-cep", cep),
+    cadastrarCliente: (data) => ipcRenderer.invoke("cadastrar-cliente", data),
+    listarClientes: () => ipcRenderer.invoke("listar-clientes"),
 });
+

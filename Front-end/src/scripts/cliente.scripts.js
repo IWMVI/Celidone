@@ -14,47 +14,79 @@ const UI = {
         DOM.show(DOM.get("error-message"));
     },
     hideError: () => DOM.hide(DOM.get("error-message")),
+    alert: (msg) => {
+        const toast = DOM.get("toast");
+        DOM.setText(toast, msg);
+        toast.style.display = "block";
+        toast.style.opacity = "1";
+
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 500);
+        }, 5000); // exibe por 5 segundos
+    },
 };
 
 // ===================== MANEJO DO FORMULÁRIO ===================== //
 
+// Função utilitária para tratar campos vazios como null
+const nullIfEmpty = (val) => (val?.trim() === "" ? null : val);
+
 const formCliente = DOM.get("form-cliente");
 
-formCliente.addEventListener("submit", (e) => {
+formCliente.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const campos = [
-        "nome",
-        "email",
-        "telefone",
-        "natureza",
-        "dataNascimento",
-        "cep",
-        "endereco",
-        "numero",
-        "cidade",
-        "bairro",
-        "complemento",
-        "uf",
-        "celular",
-        "telefoneFixo",
-    ];
+    const natureza = DOM.get("natureza").value;
 
-    const dados = Object.fromEntries(
-        campos.map((id) => [id, DOM.get(id).value.trim()])
-    );
+    // Usa nullIfEmpty para tratar string vazia como null
+    let cpf = nullIfEmpty(DOM.get("cpf").value);
+    let cnpj = nullIfEmpty(DOM.get("cnpj").value);
 
-    window.api.send("criar-cliente", dados);
-});
-
-window.api.on("cliente-criado", ({ sucesso, erro }) => {
-    if (sucesso) {
-        UI.alert("Cliente cadastrado com sucesso!");
-        formCliente.reset();
-        window.api.send("listar-clientes");
-    } else {
-        UI.alert(`Erro ao cadastrar cliente: ${erro}`);
+    // Garante que apenas um dos campos esteja preenchido conforme a natureza
+    if (natureza === "pessoa_fisica") {
+        cnpj = null;
+    } else if (natureza === "pessoa_juridica") {
+        cpf = null;
     }
+
+    const clienteData = {
+        nome: DOM.get("nome").value,
+        email: DOM.get("email").value,
+        natureza:
+            natureza === "pessoa_fisica" ? "PESSOA_FISICA" : "PESSOA_JURIDICA",
+        cpf,
+        cnpj,
+        dataNascimento: DOM.get("data_nascimento").value,
+        cep: DOM.get("cep").value,
+        endereco: DOM.get("endereco").value,
+        numero: DOM.get("numero").value,
+        cidade: DOM.get("cidade").value,
+        bairro: DOM.get("bairro").value,
+        complemento: DOM.get("complemento").value,
+        uf: DOM.get("uf").value,
+        celular: DOM.get("celular").value,
+        telefoneFixo: nullIfEmpty(DOM.get("telefoneFixo").value),
+    };
+
+    try {
+        const resultado = await window.api.cadastrarCliente(clienteData);
+
+        if (resultado.success) {
+            UI.alert("Cliente cadastrado com sucesso!");
+            formCliente.reset();
+            const lista = await window.api.listarClientes();
+            preencherTabela(lista.data);
+        } else {
+            UI.alert(`Erro: ${resultado.error}`);
+        }
+    } catch (error) {
+        UI.alert(`Erro ao cadastrar: ${error.message}`);
+    }
+
+    console.log(JSON.stringify(clienteData, null, 2));
 });
 
 // ===================== LISTAGEM DE CLIENTES ===================== //
