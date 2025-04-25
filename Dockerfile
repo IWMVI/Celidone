@@ -1,7 +1,8 @@
-# Base com Node
-FROM rapidfort/node:22-haproxy-latest-ib
+FROM node:22-bookworm
 
-RUN apt-get update && apt-get install -y \
+# Instala dependências com tratamento robusto de erros
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     xvfb \
     libgtk-3-0 \
     libnss3 \
@@ -9,25 +10,14 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     libatk-bridge2.0-0 \
     libx11-xcb1 \
+    libgbm1 \         
+    libgl1-mesa-glx \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Definir diretório de trabalho
 WORKDIR /app
-
-# Limpar cache do npm antes de rodar o npm install
-RUN npm cache clean --force
-
-# Copiar apenas os arquivos de dependência primeiro
 COPY package*.json ./
-
-# Instalar as dependências
-RUN npm ci
-
-# Copiar o restante do código da aplicação
+RUN npm ci --production
 COPY . .
-
-# Variável para "emular" tela para o Electron
 ENV DISPLAY=:99
-
-# Comando de inicialização
-CMD ["npm", "start"]
+CMD ["sh", "-c", "Xvfb :99 -screen 0 1024x768x16 & exec npm start"]
