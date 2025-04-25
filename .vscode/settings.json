@@ -1,5 +1,4 @@
 {
-    "cSpell.words": [
-        "Celidone"
-    ]
+    "cSpell.words": ["Celidone"],
+    "java.compile.nullAnalysis.mode": "automatic"
 }
