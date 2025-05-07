@@ -4,249 +4,135 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Cadastro de Clientes</title>
-        <link rel="stylesheet" href="../css/mainPage.css" />
+        <link rel="stylesheet" href="../css/cliente.css" />
     </head>
     <body>
-        <main class="container">
-            <header>
-                <h1>Cadastro de Clientes</h1>
-            </header>
-            <div
-                id="toast"
-                style="
-                    display: none;
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    padding: 12px 16px;
-                    border-radius: 8px;
-                    background-color: #333;
-                    color: #fff;
-                    font-size: 14px;
-                    z-index: 1000;
-                "
-            ></div>
+        <form id="form-cliente" class="cliente-form">
 
-            <section class="form-section">
-                <form id="form-cliente" class="client-form">
-                    <!-- Dados Básicos -->
-                    <div class="form-group">
-                        <label for="nome">Nome</label>
-                        <input
-                            type="text"
-                            id="nome"
-                            name="nome"
-                            placeholder="Nome completo"
-                            required
-                        />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            placeholder="seu@email.com"
-                            required
-                        />
-                    </div>
-
-                    <!-- Natureza e CPF/CNPJ -->
-                    <div class="form-group">
-                        <label for="natureza">Natureza</label>
-                        <select id="natureza" name="natureza" required>
-                            <option value="">Selecione</option>
-                            <option value="pessoa_fisica">Pessoa Física</option>
-                            <option value="pessoa_juridica">
-                                Pessoa Jurídica
-                            </option>
-                        </select>
-                    </div>
-
-                    <div id="campo-cpf" class="form-group hidden">
-                        <label for="cpf">CPF</label>
-                        <input
-                            type="text"
-                            id="cpf"
-                            name="cpf"
-                            placeholder="000.000.000-00"
-                        />
-                    </div>
-
-                    <div id="campo-cnpj" class="form-group hidden">
-                        <label for="cnpj">CNPJ</label>
-                        <input
-                            type="text"
-                            id="cnpj"
-                            name="cnpj"
-                            placeholder="00.000.000/0000-00"
-                        />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="data_nascimento">Data de Nascimento</label>
-                        <input
-                            type="date"
-                            id="data_nascimento"
-                            name="dataNascimento"
-                            required
-                        />
-                    </div>
-
-                    <!-- Erros -->
-                    <div id="error-message" class="error-message hidden">
-                        <p id="error-text"></p>
-                    </div>
-
-                    <!-- Endereço -->
-                    <div class="form-group cep-group">
-                        <label for="cep">CEP</label>
-                        <div class="cep-input-group">
-                            <input
-                                type="text"
-                                id="cep"
-                                name="cep"
-                                placeholder="00000-000"
-                                required
-                            />
-                            <button
-                                type="button"
-                                id="buscar-cep-btn"
-                                class="secondary-button"
-                            >
-                                Buscar CEP
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="endereco">Endereço</label>
-                        <input
-                            type="text"
-                            id="endereco"
-                            name="endereco"
-                            placeholder="Rua, Avenida, etc."
-                            required
-                        />
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group small">
-                            <label for="numero">Número</label>
-                            <input
-                                type="text"
-                                id="numero"
-                                name="numero"
-                                placeholder="123"
-                                required
-                            />
-                        </div>
-                        <div class="form-group">
-                            <label for="complemento">Complemento</label>
-                            <input
-                                type="text"
-                                id="complemento"
-                                name="complemento"
-                                placeholder="Apto, Bloco, etc."
-                            />
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="bairro">Bairro</label>
-                            <input
-                                type="text"
-                                id="bairro"
-                                name="bairro"
-                                placeholder="Seu bairro"
-                                required
-                            />
-                        </div>
-                        <div class="form-group">
-                            <label for="cidade">Cidade</label>
-                            <input
-                                type="text"
-                                id="cidade"
-                                name="cidade"
-                                placeholder="Sua cidade"
-                                required
-                            />
-                        </div>
-                        <div class="form-group small">
-                            <label for="uf">UF</label>
-                            <input
-                                type="text"
-                                id="uf"
-                                name="uf"
-                                placeholder="UF"
-                                maxlength="2"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Contato -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="celular">Celular</label>
-                            <input
-                                type="text"
-                                id="celular"
-                                name="celular"
-                                placeholder="(00) 00000-0000"
-                                required
-                            />
-                        </div>
-                        <div class="form-group">
-                            <label for="telefoneFixo">Telefone Fixo</label>
-                            <input
-                                type="text"
-                                id="telefoneFixo"
-                                name="telefoneFixo"
-                                placeholder="(00) 0000-0000"
-                            />
-                        </div>
-                    </div>
-                    <div
-                        id="toast"
-                        style="
-                            display: none;
-                            position: fixed;
-                            bottom: 20px;
-                            right: 20px;
-                            padding: 12px 16px;
-                            border-radius: 8px;
-                            background-color: #333;
-                            color: #fff;
-                            font-size: 14px;
-                            z-index: 1000;
-                            transition: opacity 0.5s ease;
-                        "
-                    ></div>
-
-                    <!-- Ações -->
-                    <div class="form-actions">
-                        <button type="submit" class="primary-button">
-                            Cadastrar Cliente
-                        </button>
-                        <button
-                            type="button"
-                            id="listar-clientes-btn"
-                            class="secondary-button"
-                        >
-                            Listar Clientes
-                        </button>
-                    </div>
-                </form>
-            </section>
+            <!-- Linha 1: Natureza, CPF/CNPJ, Código, Consultar -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="natureza">Natureza</label>
+                <select id="natureza" name="natureza" required>
+                  <option value="">Selecione</option>
+                  <option value="pessoa_fisica">Pessoa Física</option>
+                  <option value="pessoa_juridica">Pessoa Jurídica</option>
+                </select>
+              </div>
+              <div id="campo-cpf" class="form-group">
+                <label for="cpf">CPF</label>
+                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" />
+              </div>
+              <div id="campo-cnpj" class="form-group hidden">
+                <label for="cnpj">CNPJ</label>
+                <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" />
+              </div>
+              <div class="form-group">
+                <label for="codigo">Código</label>
+                <input type="text" id="codigo" name="codigo" placeholder="Código" />
+              </div>
+              <div class="form-group">
+                <label>&nbsp;</label>
+                <button type="button" class="secondary-button">Consultar</button>
+              </div>
+            </div>
+          
+            <!-- Linha 2: Nome + Data de nascimento -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" placeholder="Nome completo" required />
+              </div>
+              <div class="form-group">
+                <label for="data_nascimento">Data de Nascimento</label>
+                <input type="date" id="data_nascimento" name="dataNascimento" required />
+              </div>
+            </div>
+          
+            <!-- Linha 3: CEP + Buscar + Endereço -->
+            <div class="form-row">
+              <div class="form-group cep-group">
+                <label for="cep">CEP</label>
+                <input type="text" id="cep" name="cep" placeholder="00000-000" required />
+              </div>
+              <div class="form-group">
+                <label>&nbsp;</label>
+                <button type="button" id="buscar-cep-btn" class="secondary-button">Buscar CEP</button>
+              </div>
+              <div class="form-group">
+                <label for="endereco">Endereço</label>
+                <input type="text" id="endereco" name="endereco" placeholder="Rua, Avenida, etc." required />
+              </div>
+            </div>
+          
+            <!-- Linha 4: Número, Cidade, Bairro -->
+            <div class="form-row">
+              <div class="form-group small">
+                <label for="numero">Número</label>
+                <input type="text" id="numero" name="numero" placeholder="123" required />
+              </div>
+              <div class="form-group">
+                <label for="cidade">Cidade</label>
+                <input type="text" id="cidade" name="cidade" placeholder="Sua cidade" required />
+              </div>
+              <div class="form-group">
+                <label for="bairro">Bairro</label>
+                <input type="text" id="bairro" name="bairro" placeholder="Seu bairro" required />
+              </div>
+            </div>
+          
+            <!-- Linha 5: Complemento, UF -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="complemento">Complemento</label>
+                <input type="text" id="complemento" name="complemento" placeholder="Apto, Bloco, etc." />
+              </div>
+              <div class="form-group small">
+                <label for="uf">UF</label>
+                <input type="text" id="uf" name="uf" placeholder="UF" maxlength="2" required />
+              </div>
+            </div>
+          
+            <!-- Linha 6: Email -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="seu@email.com" required />
+              </div>
+            </div>
+          
+            <!-- Linha 7: Celular e Fixo -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="celular">Celular</label>
+                <input type="text" id="celular" name="celular" placeholder="(00) 00000-0000" required />
+              </div>
+              <div class="form-group">
+                <label for="telefoneFixo">Telefone Fixo</label>
+                <input type="text" id="telefoneFixo" name="telefoneFixo" placeholder="(00) 0000-0000" />
+              </div>
+            </div>
+          
+            <!-- Mensagem de erro -->
+            <div id="error-message" class="error-message hidden">
+              <p id="error-text"></p>
+            </div>
+          
+            <!-- Linha 8: Botões -->
+            <!-- TODO: Botão de deletar cliente(?) -->
+            <div class="form-actions">
+              <!-- type="submit" já está configurado no cliente.scripts.js, só usar isso no botão!!! -->
+              <button type="submit" class="primary-button">Cadastrar Cliente</button>
+              <button type="button" id="listar-clientes-btn" class="secondary-button">Listar Clientes</button>
+            </div>
+          </form>
+ 
 
             <!-- Lista de Clientes -->
             <section class="list-section">
                 <h2>Lista de Clientes</h2>
                 <div class="table-responsive">
-                    <table class="client-table">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -269,7 +155,6 @@
                     </table>
                 </div>
             </section>
-        </main>
 
         <script src="../../scripts/cliente.scripts.js"></script>
     </body>

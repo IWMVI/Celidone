@@ -1,0 +1,95 @@
+
+/* 
+* form-row será a linha que conterá os form-group, então para criar uma linha nova
+* basta criar uma nova div com a classe form-row e colocar os form-group dentro dela.
+*/
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+  .form-group {
+    display:flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 140px;
+  }
+  
+  .form-group.small {
+    flex: 0.5;
+    min-width: 100px;
+  }
+  
+  .form-group.flex-2 {
+    flex: 2;
+  }
+  
+  input, select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  
+  label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  /* Mesma coisa do form-row, mas feita para elementos interativos */
+  .form-actions {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  /* TODO: Generalizar os botões */
+  .primary-button,
+  .secondary-button {
+    padding: 10px 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    background-color: #222;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .primary-button:hover,
+  .secondary-button:hover {
+    background-color: #444;
+  }
+  
+  .two-columns {
+    display: flex;
+    gap: 30px;
+  }
+  
+  .form-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .triple {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .triple > div {
+    flex: 1;
+  }
+  
+  /* Responsivo */
+  @media (max-width: 900px) {
+    .two-columns {
+      flex-direction: column;
+    }
+  
+    .triple {
+      flex-direction: column;
+    }
+  }

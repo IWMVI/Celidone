@@ -1,0 +1,54 @@
+/* cliente.css */
+/* TODO: tem que importar tipo, aquela coisa da main page tlgd? | CSS global*/
+
+@import url('mainPage.css');
+@import url('forms.css');
+@import url('table.css');
+
+.cliente-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1100px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  
+  .natureza-group {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .historico-box {
+    border: 1px solid #ccc;
+    height: 150px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 6px;
+    overflow-y: auto;
+  }
+  
+  .triple {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .triple > div {
+    flex: 1;
+  }
+  
+  /* Responsivo */
+  @media (max-width: 900px) {
+    .two-columns {
+      flex-direction: column;
+    }
+  
+    .triple {
+      flex-direction: column;
+    }
+  }
+  

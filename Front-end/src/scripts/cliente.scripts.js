@@ -170,9 +170,9 @@ const selectNatureza = DOM.get("natureza");
 selectNatureza.addEventListener("change", () => {
     const tipo = selectNatureza.value;
     DOM.get("campo-cpf").style.display =
-        tipo === "pessoa_fisica" ? "block" : "none";
+        tipo === "pessoa_fisica" ? "flex" : "none";
     DOM.get("campo-cnpj").style.display =
-        tipo === "pessoa_juridica" ? "block" : "none";
+        tipo === "pessoa_juridica" ? "flex" : "none";
 });
 
 window.addEventListener("DOMContentLoaded", () => {

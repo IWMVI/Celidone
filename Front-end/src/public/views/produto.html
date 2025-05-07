@@ -3,9 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <!-- Meta tag para evitar ataques Cross Site Scripting (aka: Injeção de dados) -->
+    <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' "
+    />
+    <link rel="stylesheet" href="../css/produto.css" />
+    <title>Produtos</title>
 </head>
 <body>
-    <h1>Cadastro de Produtos</h1>
+    <!-- .form-group | .form-row -->
+    <form id="form-produto" class="produto-form">
+
+        <!-- Linha 1: Salvar ou Excluir por código do produto -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="codigo">Código</label>
+                <input type="text" id="codigo" name="codigo" placeholder="Código do produto" required />
+            </div>
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <button type="submit" class="secondary-button">Salvar</button>
+            </div>
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <button type="button" id="excluir-produto-btn" class="secondary-button">Excluir</button>
+            </div>
+        </div>
+
+        <!-- Linha 2: Tecido, Cor e Estampa do produto -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="tecido">Tecido</label>
+                <input type="text" id="tecido" name="tecido" placeholder="(ex veludo, cetim, lã...)" required />
+            </div>
+            <div class="form-group">
+                <label for="cor">Cor</label>
+                <input type="text" id="cor" name="cor" placeholder="" required />
+            </div>
+            <div class="form-group">
+                <label for="estampa">Estampa</label>
+                <input type="text" id="estampa" name="estampa" placeholder="(ex liso, risca de giz, floral...)" required />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="tipotraje">Tipo do traje</label>
+                <select id="tipotraje" name="tipotraje" required>
+                    <option value="">Selecione</option>
+                    <option value="terno">Terno</option>
+                    <option value="smoking">Smoking</option>
+                    <option value="fraque">Fraque</option>
+                    <option value="traje_de_gala">Traje de gala</option>
+                    <option value="costume">Costume (Tailleur)</option>
+                    <option value="traje_preto">Traje preto (Black Tie opcional)</option>
+                  </select>
+            </div>
+            <div class="form-group">
+                <label for="textura">Textura</label>
+                <input type="text" id="textura" name="textura" placeholder="(ex liso, canelado, brilhante...)" required />
+            </div>
+        </div>
+
+        <!-- Linha 3: Preço, Tamanho, Status e Sexo do produto -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="preco">Preço</label>
+                <input type="number" id="preco" name="preco" placeholder="00,00" required />
+            </div>
+            <div class="form-group">
+                <label for="tamanho">Tamanho</label>
+                <input type="text" id="tamanho" name="tamanho" placeholder="P" required />
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" required>
+                    <option value="disponivel">Disponível</option>
+                    <option value="indisponivel">Indisponível</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="sexo">Sexo</label>
+                <select id="sexo" name="sexo" required>
+                    <option value="sexo_masculino">Masculino</option>
+                    <option value="sexo_feminino">Feminino</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Histórico de alugel e imagem -->
+        <div class="form-row">
+            <div class="form-group">
+                <section class="list-section">
+                    <h2>Histórico de aluguéis</h2>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID alugel</th>
+                                    <th>Cliente</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody id="produto-historico"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <script src="../../scripts/produto.scripts.js"></script>
+            </div>
+
+            <!-- Essa imagem é um placeholder, terá que ter a opção de dar upload na imagem -->
+            <div class="form-group">
+                <img src="../img/bowTie2.png">
+            </div>
+        </div>
+
+        <div class="form-row"></div>
+    </form>
+    </div>
 </body>
 </html>
