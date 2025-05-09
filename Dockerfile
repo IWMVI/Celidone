@@ -17,7 +17,7 @@ RUN apt-get update && \
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --production
+RUN npm install --production
 COPY . .
 ENV DISPLAY=:99
 CMD ["sh", "-c", "Xvfb :99 -screen 0 1024x768x16 & exec npm start"]
