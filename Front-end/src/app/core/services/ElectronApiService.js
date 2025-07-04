@@ -442,6 +442,226 @@ class ElectronApiService extends IApiService {
             observacoes: produtoData.observacoes?.trim() || null,
         };
     }
+
+    /**
+     * ==================== MÉTODOS DE ALUGUEL ====================
+     */
+
+    /**
+     * Cadastra um novo aluguel
+     * @param {Object} aluguelData - Dados do aluguel
+     * @returns {Promise<Object>} Resultado do cadastro
+     */
+    async cadastrarAluguel(aluguelData) {
+        try {
+            this.validateAluguelData(aluguelData);
+            const formattedData = this.formatAluguelData(aluguelData);
+
+            const response = await this.request(
+                API_CONFIG.ENDPOINTS.ALUGUEL_CADASTRAR,
+                {
+                    method: "POST",
+                    body: formattedData,
+                }
+            );
+
+            return { success: true, data: response };
+        } catch (error) {
+            console.error("Erro ao cadastrar aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Lista todos os aluguéis
+     * @returns {Promise<Object>} Lista de aluguéis
+     */
+    async listarAlugueis() {
+        try {
+            const response = await this.request(API_CONFIG.ENDPOINTS.ALUGUEIS);
+            return { success: true, data: response };
+        } catch (error) {
+            console.error("Erro ao listar aluguéis:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Atualiza um aluguel existente
+     * @param {string} id - ID do aluguel
+     * @param {Object} aluguelData - Dados do aluguel
+     * @returns {Promise<Object>} Resultado da atualização
+     */
+    async atualizarAluguel(id, aluguelData) {
+        try {
+            if (!id) {
+                throw new Error("ID do aluguel é obrigatório");
+            }
+
+            this.validateAluguelData(aluguelData);
+            const formattedData = this.formatAluguelData(aluguelData);
+
+            const response = await this.request(
+                `${API_CONFIG.ENDPOINTS.ALUGUEL_ATUALIZAR}/${id}`,
+                {
+                    method: "PUT",
+                    body: formattedData,
+                }
+            );
+
+            return { success: true, data: response };
+        } catch (error) {
+            console.error("Erro ao atualizar aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Consulta um aluguel específico
+     * @param {string} id - ID do aluguel
+     * @returns {Promise<Object>} Dados do aluguel
+     */
+    async consultarAluguel(id) {
+        try {
+            if (!id) {
+                throw new Error("ID do aluguel é obrigatório");
+            }
+
+            const response = await this.request(
+                `${API_CONFIG.ENDPOINTS.ALUGUEIS}/${id}`
+            );
+            return { success: true, data: response };
+        } catch (error) {
+            console.error("Erro ao consultar aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Devolve um aluguel (marca como devolvido)
+     * @param {string} id - ID do aluguel
+     * @returns {Promise<Object>} Resultado da devolução
+     */
+    async devolverAluguel(id) {
+        try {
+            if (!id) {
+                throw new Error("ID do aluguel é obrigatório");
+            }
+
+            const response = await this.request(
+                `${API_CONFIG.ENDPOINTS.ALUGUEIS}/${id}/devolver`,
+                {
+                    method: "PUT",
+                }
+            );
+
+            return { success: true, data: response };
+        } catch (error) {
+            console.error("Erro ao devolver aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Cancela um aluguel
+     * @param {string} id - ID do aluguel
+     * @returns {Promise<Object>} Resultado do cancelamento
+     */
+    async cancelarAluguel(id) {
+        try {
+            if (!id) {
+                throw new Error("ID do aluguel é obrigatório");
+            }
+
+            const response = await this.request(
+                `${API_CONFIG.ENDPOINTS.ALUGUEIS}/${id}/cancelar`,
+                {
+                    method: "PUT",
+                }
+            );
+
+            return { success: true, data: response };
+        } catch (error) {
+            console.error("Erro ao cancelar aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Valida dados do aluguel
+     * @param {Object} aluguelData - Dados do aluguel
+     */
+    validateAluguelData(aluguelData) {
+        if (!aluguelData) {
+            throw new Error("Dados do aluguel são obrigatórios");
+        }
+
+        const requiredFields = [
+            "clienteId",
+            "produtoId",
+            "dataAluguel",
+            "dataDevPrevista",
+            "valorAluguel",
+            "valorCaucao",
+            "tipoCobranca",
+            "formaPagamento",
+            "periodo",
+        ];
+
+        for (const field of requiredFields) {
+            if (
+                aluguelData[field] === undefined ||
+                aluguelData[field] === null ||
+                aluguelData[field] === ""
+            ) {
+                throw new Error(`Campo ${field} é obrigatório`);
+            }
+        }
+
+        if (aluguelData.valorAluguel <= 0) {
+            throw new Error("Valor do aluguel deve ser maior que zero");
+        }
+
+        if (aluguelData.valorCaucao < 0) {
+            throw new Error("Valor da caução não pode ser negativo");
+        }
+
+        if (aluguelData.periodo <= 0) {
+            throw new Error("Período deve ser maior que zero");
+        }
+
+        // Validar datas
+        const dataAluguel = new Date(aluguelData.dataAluguel);
+        const dataDevPrevista = new Date(aluguelData.dataDevPrevista);
+
+        if (dataDevPrevista <= dataAluguel) {
+            throw new Error("Data de devolução deve ser posterior à data do aluguel");
+        }
+    }
+
+    /**
+     * Formata dados do aluguel para envio
+     * @param {Object} aluguelData - Dados do aluguel
+     * @returns {Object} Dados formatados
+     */
+    formatAluguelData(aluguelData) {
+        return {
+            clienteId: parseInt(aluguelData.clienteId),
+            produtoId: parseInt(aluguelData.produtoId),
+            dataAluguel: aluguelData.dataAluguel,
+            dataDevPrevista: aluguelData.dataDevPrevista,
+            dataDevEfetiva: aluguelData.dataDevEfetiva || null,
+            valorAluguel: parseFloat(aluguelData.valorAluguel),
+            valorCaucao: parseFloat(aluguelData.valorCaucao),
+            valorDesconto: parseFloat(aluguelData.valorDesconto) || 0,
+            valorTotal: parseFloat(aluguelData.valorTotal),
+            tipoCobranca: aluguelData.tipoCobranca,
+            formaPagamento: aluguelData.formaPagamento,
+            periodo: parseInt(aluguelData.periodo),
+            observacoes: aluguelData.observacoes?.trim() || null,
+            status: aluguelData.status || "ATIVO",
+        };
+    }
 }
 
 module.exports = ElectronApiService;

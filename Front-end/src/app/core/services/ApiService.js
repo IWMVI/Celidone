@@ -368,6 +368,94 @@ class ApiService extends IApiService {
     }
 
     /**
+     * ==================== MÉTODOS DE ALUGUEL ====================
+     */
+
+    /**
+     * Cadastra um novo aluguel
+     * @param {Object} aluguelData - Dados do aluguel
+     * @returns {Promise<Object>} Resultado do cadastro
+     */
+    async cadastrarAluguel(aluguelData) {
+        try {
+            return await window.api.cadastrarAluguel(aluguelData);
+        } catch (error) {
+            console.error("Erro ao cadastrar aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Lista todos os aluguéis
+     * @returns {Promise<Object>} Lista de aluguéis
+     */
+    async listarAlugueis() {
+        try {
+            return await window.api.listarAlugueis();
+        } catch (error) {
+            console.error("Erro ao listar aluguéis:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Atualiza um aluguel existente
+     * @param {string} id - ID do aluguel
+     * @param {Object} aluguelData - Dados do aluguel
+     * @returns {Promise<Object>} Resultado da atualização
+     */
+    async atualizarAluguel(id, aluguelData) {
+        try {
+            return await window.api.atualizarAluguel(id, aluguelData);
+        } catch (error) {
+            console.error("Erro ao atualizar aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Consulta um aluguel específico
+     * @param {string} id - ID do aluguel
+     * @returns {Promise<Object>} Dados do aluguel
+     */
+    async consultarAluguel(id) {
+        try {
+            return await window.api.consultarAluguel(id);
+        } catch (error) {
+            console.error("Erro ao consultar aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Devolve um aluguel (marca como devolvido)
+     * @param {string} id - ID do aluguel
+     * @returns {Promise<Object>} Resultado da devolução
+     */
+    async devolverAluguel(id) {
+        try {
+            return await window.api.devolverAluguel(id);
+        } catch (error) {
+            console.error("Erro ao devolver aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Cancela um aluguel
+     * @param {string} id - ID do aluguel
+     * @returns {Promise<Object>} Resultado do cancelamento
+     */
+    async cancelarAluguel(id) {
+        try {
+            return await window.api.cancelarAluguel(id);
+        } catch (error) {
+            console.error("Erro ao cancelar aluguel:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
      * Consulta histórico de aluguel de um produto
      * @param {string} produtoId - ID do produto
      * @returns {Promise<Object>} Histórico de aluguel
