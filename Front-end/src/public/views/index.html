@@ -25,32 +25,50 @@
                     </p>
                 </section>
 
+                <!-- Aqui dá pra aplicar o SOLID mais tarde, porque ficar alterando
+                o código toda vez que add algo é complicado -->
+
                 <section class="grid-menu">
                     <div class="card">
                         <h3>Clientes</h3>
                         <p>Visualizar e cadastrar clientes</p>
-                        <button
-                            id="btn-clientes"
-                            onclick="openWindow('cliente')"
-                        >
-                            Acessar
-                        </button>
+
+                        <div class="button-group">
+                            <button id="btn-clientes" onclick="openWindow('cliente')">
+                                Cadastrar
+                            </button>
+                            <button>
+                                Listar Clientes
+                            </button>
+                        </div>
                     </div>
 
                     <div class="card">
                         <h3>Produto</h3>
                         <p>Controle o estoque de trajes</p>
-                        <button
-                        onclick="openWindow('produto')"
-                        >
-                        Acessar
-                        </button>
+                        
+                            <div class="button-group">
+                                <button onclick="openWindow('produto')">
+                                    Cadastrar
+                                </button>
+                                <button>
+                                    Listar Produtos
+                                </button>
+                            </div>
                     </div>
 
                     <div class="card">
                         <h3>Aluguéis</h3>
                         <p>Gerencie os contratos e devoluções</p>
-                        <button>Acessar</button>
+
+                        <div class="button-group">
+                            <button id="btn-clientes" onclick="openWindow('aluguel')">
+                                Cadastrar
+                            </button>
+                            <button>
+                                Listar Aluguel
+                            </button>
+                        </div>
                     </div>
                 </section>
             </main>

@@ -69,3 +69,9 @@ body {
     text-align: center;
 }
 
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaçamento entre os botões */
+    width: 100%;
+}

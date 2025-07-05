@@ -65,6 +65,16 @@ function createProdutoWindow() {
     });
 }
 
+function createAluguelWindow() {
+    const parent = BrowserWindow.getFocusedWindow();
+    return createWindow({
+        loadFile: "./src/public/views/aluguel.html",
+        parent,
+        autoHideMenuBar: true,
+        devTools: process.env.NODE_ENV === "development",
+    });
+}
+
 // Serviço de API
 class ApiService {
     static async buscarCEP(cep) {
@@ -215,8 +225,9 @@ app.whenReady().then(() => {
 
     ipcMain.on("open-window", (event, windowType) => {
         const windowCreators = {
-            cliente: createClienteWindow,
-            produto: createProdutoWindow, // Janela de produto
+            cliente: createClienteWindow,   //  Janela do cliente
+            produto: createProdutoWindow,   //  Janela do produto
+            aluguel: createAluguelWindow,   //  Janela do aluguel
         };
 
         const creator = windowCreators[windowType];
