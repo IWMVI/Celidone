@@ -2,7 +2,7 @@
  * Configurações da API
  * Centraliza todas as configurações relacionadas à API
  */
-export const API_CONFIG = {
+const API_CONFIG = {
     BASE_URL: process.env.API_BASE_URL || "http://localhost:8080",
     TIMEOUT: parseInt(process.env.API_TIMEOUT) || 10000,
     HEADERS: {
@@ -30,9 +30,14 @@ export const API_CONFIG = {
 /**
  * Configuração para busca de CEP
  */
-export const CEP_CONFIG = {
+const CEP_CONFIG = {
     API_URL: "https://viacep.com.br/ws",
     TIMEOUT: 5000,
     RETRY_ATTEMPTS: 3,
     RETRY_DELAY: 1000,
+};
+
+module.exports = {
+    API_CONFIG,
+    CEP_CONFIG,
 };

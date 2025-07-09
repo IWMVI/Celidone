@@ -49,4 +49,4 @@ class IApiService {
     }
 }
 
-export default IApiService;
+module.exports = IApiService;

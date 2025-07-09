@@ -1,6 +1,6 @@
-import IApiService from "../interfaces/IApiService.js";
-import { API_CONFIG, CEP_CONFIG } from "../constants/apiConfig.js";
-import AsyncUtils from "../utils/AsyncUtils.js";
+const IApiService = require("../interfaces/IApiService.js");
+const { API_CONFIG, CEP_CONFIG } = require("../constants/apiConfig.js");
+const AsyncUtils = require("../utils/AsyncUtils.js");
 
 /**
  * Serviço de API para o processo principal do Electron
@@ -635,7 +635,9 @@ class ElectronApiService extends IApiService {
         const dataDevPrevista = new Date(aluguelData.dataDevPrevista);
 
         if (dataDevPrevista <= dataAluguel) {
-            throw new Error("Data de devolução deve ser posterior à data do aluguel");
+            throw new Error(
+                "Data de devolução deve ser posterior à data do aluguel"
+            );
         }
     }
 
