@@ -1,11 +1,106 @@
 const { BrowserWindow } = require("electron");
 const path = require("path");
-
 /**
- * Fábrica de janelas do Electron
+ * Cria janela modal de cadastro de cliente
+ * @param {BrowserWindow} parent - Janela pai
+ * @returns {BrowserWindow} Janela modal de cadastro
+ */
+/* Fábrica de janelas do Electron
  * Implementa Factory Pattern para criação de janelas
  */
 class WindowFactory {
+    /**
+     * Cria janela modal de cadastro de cliente
+     * @param {BrowserWindow} parent - Janela pai
+     * @returns {BrowserWindow} Janela modal de cadastro
+     */
+    static createClienteCadastroWindow(parent = null) {
+        return WindowFactory.createWindow({
+            width: 1000,
+            height: 700,
+            minWidth: 800,
+            minHeight: 600,
+            parent: parent || BrowserWindow.getFocusedWindow(),
+            modal: true,
+            loadFile: path.join(
+                __dirname,
+                "../../../public/views/cliente-cadastrar.html"
+            ),
+            autoHideMenuBar: true,
+            resizable: true,
+            devTools: process.env.NODE_ENV === "development",
+        });
+    }
+
+    /**
+     * Cria janela modal de consulta de clientes
+     * @param {BrowserWindow} parent - Janela pai
+     * @returns {BrowserWindow} Janela modal de consulta
+     */
+    static createClienteConsultaWindow(parent = null) {
+        return WindowFactory.createWindow({
+            width: 1200,
+            height: 800,
+            minWidth: 1000,
+            minHeight: 600,
+            parent: parent || BrowserWindow.getFocusedWindow(),
+            modal: true,
+            loadFile: path.join(
+                __dirname,
+                "../../../public/views/cliente-consultar.html"
+            ),
+            autoHideMenuBar: true,
+            resizable: true,
+            devTools: process.env.NODE_ENV === "development",
+        });
+    }
+
+    /**
+     * Cria janela modal de cadastro de produto
+     * @param {BrowserWindow} parent - Janela pai
+     * @returns {BrowserWindow} Janela modal de cadastro de produto
+     */
+    static createProdutoCadastroWindow(parent = null) {
+        return WindowFactory.createWindow({
+            width: 1000,
+            height: 700,
+            minWidth: 800,
+            minHeight: 600,
+            parent: parent || BrowserWindow.getFocusedWindow(),
+            modal: true,
+            loadFile: path.join(
+                __dirname,
+                "../../../public/views/produto-cadastrar.html"
+            ),
+            autoHideMenuBar: true,
+            resizable: true,
+            devTools: process.env.NODE_ENV === "development",
+        });
+    }
+
+    /**
+     * Cria janela modal de consulta de produtos
+     * @param {BrowserWindow} parent - Janela pai
+     * @returns {BrowserWindow} Janela modal de consulta de produtos
+     */
+    static createProdutoConsultaWindow(parent = null) {
+        return WindowFactory.createWindow({
+            width: 1200,
+            height: 800,
+            minWidth: 1000,
+            minHeight: 600,
+            parent: parent || BrowserWindow.getFocusedWindow(),
+            modal: true,
+            loadFile: path.join(
+                __dirname,
+                "../../../public/views/produto-consultar.html"
+            ),
+            autoHideMenuBar: true,
+            resizable: true,
+            devTools: process.env.NODE_ENV === "development",
+        });
+    }
+
     /**
      * Cria uma nova janela
      * @param {Object} config - Configuração da janela
@@ -15,9 +110,9 @@ class WindowFactory {
         const defaultConfig = {
             width: 1000,
             height: 700,
-            icon: path.join(__dirname, "../../../public/img/bowTie2.png"),
+            icon: path.join(__dirname, "../../../../public/img/bowTie2.png"),
             webPreferences: {
-                preload: path.join(__dirname, "../../../preload.js"),
+                preload: path.join(__dirname, "../../../../preload.js"),
                 contextIsolation: true,
                 nodeIntegration: false,
                 enableRemoteModule: false,
@@ -39,7 +134,7 @@ class WindowFactory {
         }
 
         // Configura eventos padrão
-        this.setupWindowEvents(window);
+        WindowFactory.setupWindowEvents(window);
 
         return window;
     }
@@ -52,7 +147,7 @@ class WindowFactory {
         const { nativeTheme } = require("electron");
         nativeTheme.themeSource = "dark";
 
-        return this.createWindow({
+        return WindowFactory.createWindow({
             width: 1200,
             height: 800,
             minWidth: 800,
@@ -65,16 +160,16 @@ class WindowFactory {
 
     /**
      * Cria janela de cliente
-     * @param {BrowserWindow} parent - Janela pai
+     * @param {BrowserWindow} parent - Janela pai (opcional)
      * @returns {BrowserWindow} Janela de cliente
      */
     static createClienteWindow(parent = null) {
-        return this.createWindow({
+        return WindowFactory.createWindow({
             width: 1100,
             height: 700,
             minWidth: 900,
             minHeight: 600,
-            parent: parent || BrowserWindow.getFocusedWindow(),
+            parent: parent, // Remove auto-detecção de parent
             loadFile: path.join(
                 __dirname,
                 "../../../public/views/cliente.html"
@@ -86,16 +181,16 @@ class WindowFactory {
 
     /**
      * Cria janela de produto
-     * @param {BrowserWindow} parent - Janela pai
+     * @param {BrowserWindow} parent - Janela pai (opcional)
      * @returns {BrowserWindow} Janela de produto
      */
     static createProdutoWindow(parent = null) {
-        return this.createWindow({
+        return WindowFactory.createWindow({
             width: 1000,
             height: 650,
             minWidth: 800,
             minHeight: 500,
-            parent: parent || BrowserWindow.getFocusedWindow(),
+            parent: parent, // Remove auto-detecção de parent
             loadFile: path.join(
                 __dirname,
                 "../../../public/views/produto.html"
@@ -107,16 +202,16 @@ class WindowFactory {
 
     /**
      * Cria janela de aluguel
-     * @param {BrowserWindow} parent - Janela pai
+     * @param {BrowserWindow} parent - Janela pai (opcional)
      * @returns {BrowserWindow} Janela de aluguel
      */
     static createAluguelWindow(parent = null) {
-        return this.createWindow({
+        return WindowFactory.createWindow({
             width: 1000,
             height: 650,
             minWidth: 800,
             minHeight: 500,
-            parent: parent || BrowserWindow.getFocusedWindow(),
+            parent: parent, // Remove auto-detecção de parent
             loadFile: path.join(
                 __dirname,
                 "../../../public/views/aluguel.html"
@@ -133,7 +228,7 @@ class WindowFactory {
      * @returns {BrowserWindow} Janela modal
      */
     static createModalWindow(parent, config = {}) {
-        return this.createWindow({
+        return WindowFactory.createWindow({
             width: 600,
             height: 400,
             parent: parent || BrowserWindow.getFocusedWindow(),
@@ -153,6 +248,44 @@ class WindowFactory {
         window.once("ready-to-show", () => {
             window.show();
         });
+
+        // Auto-fechamento após 10 minutos de inatividade (apenas para janelas filhas)
+        if (window.getParentWindow()) {
+            const TIMEOUT_MINUTES = 10;
+            const TIMEOUT_MS = TIMEOUT_MINUTES * 60 * 1000;
+
+            let timeoutId = setTimeout(() => {
+                if (!window.isDestroyed()) {
+                    console.log(
+                        `Fechando janela por inatividade após ${TIMEOUT_MINUTES} minutos`
+                    );
+                    window.close();
+                }
+            }, TIMEOUT_MS);
+
+            // Reset do timeout em caso de atividade
+            const resetTimeout = () => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    if (!window.isDestroyed()) {
+                        console.log(
+                            `Fechando janela por inatividade após ${TIMEOUT_MINUTES} minutos`
+                        );
+                        window.close();
+                    }
+                }, TIMEOUT_MS);
+            };
+
+            // Eventos que resetam o timeout
+            window.on("focus", resetTimeout);
+            window.webContents.on("dom-ready", resetTimeout);
+            window.webContents.on("did-navigate", resetTimeout);
+
+            // Limpa timeout quando janela é fechada
+            window.on("closed", () => {
+                clearTimeout(timeoutId);
+            });
+        }
 
         // Log de erros
         window.webContents.on(
@@ -194,7 +327,7 @@ class WindowFactory {
      * Fecha todas as janelas
      */
     static closeAllWindows() {
-        const windows = this.getAllWindows();
+        const windows = WindowFactory.getAllWindows();
         windows.forEach((window) => {
             if (!window.isDestroyed()) {
                 window.close();
