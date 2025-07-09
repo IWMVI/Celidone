@@ -1,247 +1,278 @@
-const path = require("node:path");
-const { app, BrowserWindow, nativeTheme, ipcMain } = require("electron");
-const axios = require("axios");
+const { app, ipcMain } = require("electron");
+const path = require("path");
+const WindowFactory = require("./src/app/core/services/WindowFactory");
+const ElectronApiService = require("./src/app/core/services/ElectronApiService");
 
-// Configurações da API
-const API_CONFIG = {
-    BASE_URL: "http://localhost:8080",
-    ENDPOINTS: {
-        CLIENTES: "/api/clientes",
-        CADASTRAR: "/api/clientes/cadastrar",
-    },
-    TIMEOUT: 10000,
-};
+/**
+ * Aplicação principal do Electron
+ * Refatorada seguindo os princípios SOLID e Clean Architecture
+ */
+class ElectronApp {
+    constructor() {
+        this.mainWindow = null;
+        this.apiService = new ElectronApiService();
+        this.windowFactories = new Map();
+        this.initializeApp();
+    }
 
-// Criação de janelas
-function createWindow(config) {
-    const win = new BrowserWindow({
-        width: config.width || 1000,
-        height: config.height || 700,
-        icon: path.join(__dirname, "./src/public/img/bowTie2.png"),
-        autoHideMenuBar: config.autoHideMenuBar || false,
-        parent: config.parent || null,
-        webPreferences: {
-            preload: path.join(__dirname, "preload.js"),
-            contextIsolation: true,
-            nodeIntegration: false,
-            enableRemoteModule: false,
-            sandbox: true,
-        },
-    });
+    /**
+     * Inicializa a aplicação
+     */
+    initializeApp() {
+        this.setupWindowFactories();
+        this.setupAppEvents();
+        this.setupIpcHandlers();
+    }
 
-    win.loadFile(path.join(__dirname, config.loadFile));
-    if (config.devTools) win.webContents.openDevTools();
-    return win;
-}
+    /**
+     * Configura as fábricas de janelas
+     */
+    setupWindowFactories() {
+        this.windowFactories.set("main", WindowFactory.createMainWindow);
+        this.windowFactories.set("cliente", WindowFactory.createClienteWindow);
+        this.windowFactories.set("produto", WindowFactory.createProdutoWindow);
+        this.windowFactories.set("aluguel", WindowFactory.createAluguelWindow);
+    }
 
-// Janela principal
-function createMainWindow() {
-    nativeTheme.themeSource = "dark";
-    return createWindow({
-        loadFile: "./src/public/views/index.html",
-        devTools: process.env.NODE_ENV === "development",
-    });
-}
+    /**
+     * Configura eventos da aplicação
+     */
+    setupAppEvents() {
+        app.whenReady().then(() => {
+            this.createMainWindow();
+            this.setupAppActivation();
+        });
 
-// Janela de cliente
-function createClienteWindow() {
-    const parent = BrowserWindow.getFocusedWindow();
-    return createWindow({
-        loadFile: "./src/public/views/cliente.html",
-        parent,
-        autoHideMenuBar: true,
-        devTools: process.env.NODE_ENV === "development",
-    });
-}
+        app.on("window-all-closed", () => {
+            if (process.platform !== "darwin") {
+                app.quit();
+            }
+        });
 
-// Janela de produto (exemplo adicional)
-function createProdutoWindow() {
-    const parent = BrowserWindow.getFocusedWindow();
-    return createWindow({
-        loadFile: "./src/public/views/produto.html",
-        parent,
-        autoHideMenuBar: true,
-        devTools: process.env.NODE_ENV === "development",
-    });
-}
+        app.on("before-quit", () => {
+            this.cleanup();
+        });
+    }
 
-// Serviço de API
-class ApiService {
-    static async buscarCEP(cep) {
+    /**
+     * Configura ativação da aplicação (macOS)
+     */
+    setupAppActivation() {
+        app.on("activate", () => {
+            if (WindowFactory.getAllWindows().length === 0) {
+                this.createMainWindow();
+            }
+        });
+    }
+
+    /**
+     * Cria janela principal
+     */
+    createMainWindow() {
+        this.mainWindow = WindowFactory.createMainWindow();
+
+        this.mainWindow.on("closed", () => {
+            this.mainWindow = null;
+        });
+    }
+
+    /**
+     * Configura manipuladores IPC
+     */
+    setupIpcHandlers() {
+        // Manipulador para abertura de janelas
+        ipcMain.on("open-window", (event, windowType, options = {}) => {
+            console.log(
+                `Recebida solicitação para abrir janela: ${windowType}`
+            );
+            this.openWindow(windowType, options);
+        });
+
+        // Manipuladores de API
+        ipcMain.handle("buscar-cep", async (event, cep) => {
+            return this.handleApiCall(() => this.apiService.buscarCep(cep));
+        });
+
+        ipcMain.handle("cadastrar-cliente", async (event, clienteData) => {
+            return this.handleApiCall(() =>
+                this.apiService.cadastrarCliente(clienteData)
+            );
+        });
+        ipcMain.handle("listar-clientes", async () => {
+            return this.handleApiCall(() => this.apiService.listarClientes());
+        });
+
+        // Manipuladores de produto
+        ipcMain.handle("cadastrar-produto", async (event, produtoData) => {
+            return this.handleApiCall(() =>
+                this.apiService.cadastrarProduto(produtoData)
+            );
+        });
+
+        ipcMain.handle("consultar-produto", async (event, codigo) => {
+            return this.handleApiCall(() =>
+                this.apiService.consultarProduto(codigo)
+            );
+        });
+
+        ipcMain.handle("atualizar-produto", async (event, id, produtoData) => {
+            return this.handleApiCall(() =>
+                this.apiService.atualizarProduto(id, produtoData)
+            );
+        });
+
+        ipcMain.handle("excluir-produto", async (event, id) => {
+            return this.handleApiCall(() => this.apiService.excluirProduto(id));
+        });
+
+        ipcMain.handle("listar-produtos", async () => {
+            return this.handleApiCall(() => this.apiService.listarProdutos());
+        });
+
+        ipcMain.handle(
+            "consultar-historico-aluguel",
+            async (event, produtoId) => {
+                return this.handleApiCall(() =>
+                    this.apiService.consultarHistoricoAluguel(produtoId)
+                );
+            }
+        );
+
+        // Manipuladores de aluguel
+        ipcMain.handle("cadastrar-aluguel", async (event, aluguelData) => {
+            return this.handleApiCall(() =>
+                this.apiService.cadastrarAluguel(aluguelData)
+            );
+        });
+
+        ipcMain.handle("listar-alugueis", async () => {
+            return this.handleApiCall(() => this.apiService.listarAlugueis());
+        });
+
+        ipcMain.handle("atualizar-aluguel", async (event, id, aluguelData) => {
+            return this.handleApiCall(() =>
+                this.apiService.atualizarAluguel(id, aluguelData)
+            );
+        });
+
+        ipcMain.handle("devolver-aluguel", async (event, id) => {
+            return this.handleApiCall(() =>
+                this.apiService.devolverAluguel(id)
+            );
+        });
+
+        ipcMain.handle("cancelar-aluguel", async (event, id) => {
+            return this.handleApiCall(() =>
+                this.apiService.cancelarAluguel(id)
+            );
+        });
+
+        ipcMain.handle("consultar-aluguel", async (event, id) => {
+            return this.handleApiCall(() =>
+                this.apiService.consultarAluguel(id)
+            );
+        });
+
+        // Manipuladores de cliente
+        ipcMain.handle("atualizar-cliente", async (event, id, clienteData) => {
+            return this.handleApiCall(() =>
+                this.apiService.atualizarCliente(id, clienteData)
+            );
+        });
+
+        ipcMain.handle("remover-cliente", async (event, id) => {
+            return this.handleApiCall(() => this.apiService.removerCliente(id));
+        });
+
+        // Manipuladores de sistema
+        ipcMain.handle("get-app-version", () => {
+            return app.getVersion();
+        });
+
+        ipcMain.handle("get-app-path", () => {
+            return app.getAppPath();
+        });
+    }
+
+    /**
+     * Abre janela específica
+     * @param {string} windowType - Tipo da janela
+     * @param {Object} options - Opções da janela
+     */
+    openWindow(windowType, options = {}) {
+        console.log(`Tentando abrir janela do tipo: ${windowType}`);
+        const factory = this.windowFactories.get(windowType);
+
+        if (!factory) {
+            console.error(`Tipo de janela não encontrado: ${windowType}`);
+            return;
+        }
+
+        console.log(`Factory encontrada para ${windowType}, criando janela...`);
         try {
-            const response = await axios.get(
-                `https://viacep.com.br/ws/${cep}/json/`,
-                {
-                    timeout: 5000,
-                }
-            );
-            if (response.data.erro) throw new Error("CEP não encontrado");
-            return response.data;
+            const window = factory(options.parent);
+            console.log(`Janela ${windowType} criada com sucesso`);
+
+            if (options.onCreated) {
+                options.onCreated(window);
+            }
+
+            return window;
         } catch (error) {
-            console.error("Erro ao buscar CEP:", error);
-            throw new Error(
-                error.message.includes("timeout")
-                    ? "Tempo excedido ao buscar CEP"
-                    : "CEP inválido ou erro na conexão"
-            );
+            console.error(`Erro ao criar janela ${windowType}:`, error);
         }
     }
 
-    static async cadastrarCliente(clienteData) {
+    /**
+     * Manipula chamadas de API
+     * @param {Function} apiCall - Função da API a ser chamada
+     * @returns {Promise} Resultado da chamada
+     */
+    async handleApiCall(apiCall) {
         try {
-            // Verifica se é PJ e tem CNPJ válido
-            if (
-                clienteData.natureza === "pessoa_juridica" &&
-                !clienteData.cnpj
-            ) {
-                return {
-                    success: false,
-                    error: "CNPJ é obrigatório para Pessoa Jurídica",
-                };
-            }
-
-            // Verifica se é PF e tem CPF válido
-            if (clienteData.natureza === "pessoa_fisica" && !clienteData.cpf) {
-                return {
-                    success: false,
-                    error: "CPF é obrigatório para Pessoa Física",
-                };
-            }
-
-            const dadosBackend = {
-                nome: clienteData.nome,
-                email: clienteData.email,
-                tipoPessoa:
-                    clienteData.natureza === "PESSOA_FISICA"
-                        ? "PESSOA_FISICA"
-                        : "PESSOA_JURIDICA",
-                dataNascimento: clienteData.dataNascimento,
-                cep: clienteData.cep,
-                endereco: clienteData.endereco,
-                numero: clienteData.numero,
-                cidade: clienteData.cidade,
-                bairro: clienteData.bairro,
-                complemento: clienteData.complemento,
-                uf: clienteData.uf,
-                celular: clienteData.celular,
-                telefoneFixo: clienteData.telefoneFixo,
-                cpf: clienteData.cpf,
-                cnpj: clienteData.cnpj,
-            };
-
-            const response = await axios.post(
-                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CADASTRAR}`,
-                dadosBackend,
-                {
-                    timeout: API_CONFIG.TIMEOUT,
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            return {
-                success: true,
-                data: response.data,
-            };
+            return await apiCall();
         } catch (error) {
-            console.error("Erro ao cadastrar cliente:", error);
-
-            let errorMessage = "Erro ao cadastrar cliente";
-            if (error.response?.data) {
-                if (typeof error.response.data === "string") {
-                    errorMessage = error.response.data;
-                } else if (error.response.data.message) {
-                    errorMessage = error.response.data.message;
-                } else if (error.response.data.errors) {
-                    errorMessage = error.response.data.errors
-                        .map((e) => e.defaultMessage)
-                        .join(", ");
-                }
-            }
-
+            console.error("Erro na chamada da API:", error);
             return {
                 success: false,
-                error: errorMessage,
+                error: error.message || "Erro interno do servidor",
             };
         }
     }
 
-    static async listarClientes() {
-        try {
-            const response = await axios.get(
-                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTES}`,
-                {
-                    timeout: API_CONFIG.TIMEOUT,
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            return {
-                success: true,
-                data: response.data,
-            };
-        } catch (error) {
-            console.error("Erro ao listar clientes:", error);
-            return {
-                success: false,
-                error:
-                    error.response?.data?.message ||
-                    error.message ||
-                    "Erro ao listar clientes",
-            };
-        }
+    /**
+     * Limpeza antes de encerrar a aplicação
+     */
+    cleanup() {
+        console.log("Limpando recursos da aplicação...");
+        // Aqui você pode adicionar limpeza de recursos específicos
     }
 }
 
-// Inicialização da aplicação
-app.whenReady().then(() => {
-    const mainWindow = createMainWindow();
-
-    // Manipuladores de IPC
-    ipcMain.handle("buscar-cep", async (event, cep) => {
-        return ApiService.buscarCEP(cep);
-    });
-
-    ipcMain.handle("cadastrar-cliente", async (event, clienteData) => {
-        return ApiService.cadastrarCliente(clienteData);
-    });
-
-    ipcMain.handle("listar-clientes", async () => {
-        return ApiService.listarClientes();
-    });
-
-    ipcMain.on("open-window", (event, windowType) => {
-        const windowCreators = {
-            cliente: createClienteWindow,
-            produto: createProdutoWindow, // Janela de produto
-        };
-
-        const creator = windowCreators[windowType];
-
-        if (creator) {
-            creator(); // Chama a função correspondente ao tipo de janela
-        } else {
-            console.error(`Janela não encontrada para o tipo: ${windowType}`);
-        }
-    });
-
-    app.on("activate", () => {
-        if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
-    });
-});
-
-// Encerramento da aplicação
-app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") app.quit();
-});
+// Inicializa a aplicação
+const electronApp = new ElectronApp();
 
 // Hot Reload para desenvolvimento
 if (process.env.NODE_ENV === "development") {
-    require("electron-reload")(__dirname, {
-        electron: path.join(__dirname, "node_modules", ".bin", "electron"),
-    });
+    try {
+        require("electron-reload")(__dirname, {
+            electron: require("path").join(
+                __dirname,
+                "node_modules",
+                ".bin",
+                process.platform === "win32" ? "electron.cmd" : "electron"
+            ),
+            hardResetMethod: "exit",
+            // Observa também arquivos HTML, CSS e JS fora da pasta raiz
+            forceHardReset: true,
+            awaitWriteFinish: true,
+            // Inclua outros diretórios relevantes se necessário
+            // Exemplo: watch: [__dirname, 'src', 'public']
+        });
+        console.log("Hot reload ativado!");
+    } catch (error) {
+        console.error("Electron reload não disponível:", error);
+    }
 }
 
+module.exports = ElectronApp;
