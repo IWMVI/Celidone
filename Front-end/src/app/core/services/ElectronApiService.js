@@ -1,6 +1,7 @@
-const IApiService = require("../interfaces/IApiService.js");
-const { API_CONFIG, CEP_CONFIG } = require("../constants/apiConfig.js");
-const AsyncUtils = require("../utils/AsyncUtils.js");
+import IApiService from "../interfaces/IApiService.js";
+import { API_CONFIG, CEP_CONFIG } from "../constants/apiConfig.js";
+import AsyncUtils from "../utils/AsyncUtils.js";
+import axios from "axios";
 
 /**
  * Serviço de API para o processo principal do Electron
@@ -9,7 +10,7 @@ const AsyncUtils = require("../utils/AsyncUtils.js");
 class ElectronApiService extends IApiService {
     constructor() {
         super();
-        this.axios = require("axios");
+        this.axios = axios;
         this.baseURL = API_CONFIG.BASE_URL;
         this.timeout = API_CONFIG.TIMEOUT;
         this.headers = API_CONFIG.HEADERS;
@@ -669,4 +670,4 @@ class ElectronApiService extends IApiService {
     }
 }
 
-module.exports = ElectronApiService;
+export default ElectronApiService;

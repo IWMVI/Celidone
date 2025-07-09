@@ -37,7 +37,4 @@ const CEP_CONFIG = {
     RETRY_DELAY: 1000,
 };
 
-module.exports = {
-    API_CONFIG,
-    CEP_CONFIG,
-};
+export { API_CONFIG, CEP_CONFIG };

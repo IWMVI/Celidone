@@ -1,5 +1,9 @@
-const { BrowserWindow } = require("electron");
-const path = require("path");
+import { BrowserWindow, nativeTheme } from "electron";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 /**
  * Cria janela modal de cadastro de cliente
  * @param {BrowserWindow} parent - Janela pai
@@ -144,7 +148,6 @@ class WindowFactory {
      * @returns {BrowserWindow} Janela principal
      */
     static createMainWindow() {
-        const { nativeTheme } = require("electron");
         nativeTheme.themeSource = "dark";
 
         return WindowFactory.createWindow({
@@ -344,4 +347,4 @@ class WindowFactory {
     }
 }
 
-module.exports = WindowFactory;
+export default WindowFactory;

@@ -110,4 +110,5 @@ class MaskUtils {
     }
 }
 
+export { MaskUtils };
 export default MaskUtils;

@@ -3,8 +3,8 @@
  * Monitora mudanças nos arquivos e recarrega automaticamente
  */
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 class HotReload {
     constructor(mainWindow) {
@@ -107,4 +107,4 @@ class HotReload {
     }
 }
 
-module.exports = HotReload;
+export default HotReload;

@@ -6,7 +6,7 @@ import {
     EmailValidator,
     NameValidator,
 } from "../../core/services/ValidationService.js";
-import MaskUtils from "../../core/utils/MaskUtils.js";
+import { MaskUtils } from "../../core/utils/MaskUtils.js";
 
 /**
  * Controlador para o módulo de cliente
@@ -184,11 +184,11 @@ class ClienteController {
      */
     setupMasks() {
         const maskFields = [
-            { id: "cpf", handler: MaskUtils.applyCpfMask },
-            { id: "cnpj", handler: MaskUtils.applyCnpjMask },
-            { id: "cep", handler: MaskUtils.applyCepMask },
-            { id: "celular", handler: MaskUtils.applyCelularMask },
-            { id: "telefoneFixo", handler: MaskUtils.applyFixoMask },
+            { id: "cpf", handler: (value) => MaskUtils.applyCpfMask(value) },
+            { id: "cnpj", handler: (value) => MaskUtils.applyCnpjMask(value) },
+            { id: "cep", handler: (value) => MaskUtils.applyCepMask(value) },
+            { id: "celular", handler: (value) => MaskUtils.applyCelularMask(value) },
+            { id: "telefoneFixo", handler: (value) => MaskUtils.applyFixoMask(value) },
         ];
 
         maskFields.forEach(({ id, handler }) => {
