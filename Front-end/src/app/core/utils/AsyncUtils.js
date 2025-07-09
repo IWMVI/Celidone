@@ -147,4 +147,4 @@ class AsyncUtils {
     }
 }
 
-module.exports = AsyncUtils;
+export default AsyncUtils;
