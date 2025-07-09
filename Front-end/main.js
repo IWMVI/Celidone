@@ -2,6 +2,10 @@ const { app, ipcMain } = require("electron");
 const path = require("path");
 const WindowFactory = require("./src/app/core/services/WindowFactory");
 const ElectronApiService = require("./src/app/core/services/ElectronApiService");
+const HotReload = require("./src/app/core/services/HotReload");
+
+console.log("App object:", app);
+console.log("App whenReady:", app.whenReady);
 
 /**
  * Aplicação principal do Electron
@@ -12,6 +16,7 @@ class ElectronApp {
         this.mainWindow = null;
         this.apiService = new ElectronApiService();
         this.windowFactories = new Map();
+        this.hotReload = null;
         this.initializeApp();
     }
 
@@ -73,7 +78,19 @@ class ElectronApp {
 
         this.mainWindow.on("closed", () => {
             this.mainWindow = null;
+            if (this.hotReload) {
+                this.hotReload.destroy();
+                this.hotReload = null;
+            }
         });
+
+        // Inicializa hot reload em modo desenvolvimento
+        if (
+            process.env.NODE_ENV === "development" ||
+            process.argv.includes("--dev")
+        ) {
+            this.hotReload = new HotReload(this.mainWindow);
+        }
     }
 
     /**
