@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Consultar Aluguéis - Celidone</title>
+        <link rel="stylesheet" href="../css/table.css" />
+        <link rel="stylesheet" href="../css/aluguel.css" />
+        <link rel="stylesheet" href="../css/shared.css" />
+    </head>
+    <body class="modern-theme">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <img
+                            src="../img/bowTie2.png"
+                            alt="Celidone"
+                            class="logo-small"
+                        />
+                        <h1 class="page-title">Consultar Aluguéis</h1>
+                    </div>
+                    <div class="header-actions">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="abrirCadastro()"
+                        >
+                            <span class="icon">➕</span> Novo Aluguel
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="window.close()"
+                        >
+                            <span class="icon">✕</span> Fechar
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <section class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="search-input">Pesquisar</label>
+                            <input
+                                type="text"
+                                id="search-input"
+                                class="form-control"
+                                placeholder="Cliente, produto..."
+                                onkeyup="filtrarAlugueis()"
+                            />
+                        </div>
+                        <div class="filter-group">
+                            <label for="status-filter">Status</label>
+                            <select
+                                id="status-filter"
+                                class="form-control"
+                                onchange="filtrarAlugueis()"
+                            >
+                                <option value="">Todos</option>
+                                <option value="ativo">Ativo</option>
+                                <option value="finalizado">Finalizado</option>
+                                <option value="cancelado">Cancelado</option>
+                                <option value="atrasado">Atrasado</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="data-inicio-filter">Data Início</label>
+                            <input
+                                type="date"
+                                id="data-inicio-filter"
+                                class="form-control"
+                                onchange="filtrarAlugueis()"
+                            />
+                        </div>
+                        <div class="filter-group">
+                            <label for="data-fim-filter">Data Fim</label>
+                            <input
+                                type="date"
+                                id="data-fim-filter"
+                                class="form-control"
+                                onchange="filtrarAlugueis()"
+                            />
+                        </div>
+                        <div class="filter-group">
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="limparFiltros()"
+                            >
+                                <span class="icon">🗑️</span> Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Table -->
+            <section class="table-section">
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <span id="total-alugueis"
+                                >0 aluguéis encontrados</span
+                            >
+                        </div>
+                        <div class="table-actions">
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="exportarAlugueis()"
+                            >
+                                <span class="icon">📊</span> Exportar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="carregarAlugueis()"
+                            >
+                                <span class="icon">🔄</span> Atualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table id="alugueis-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Produto</th>
+                                    <th>Data Início</th>
+                                    <th>Data Fim</th>
+                                    <th>Status</th>
+                                    <th>Valor Total</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alugueis-tbody">
+                                <!-- Dados carregados dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-pagination">
+                        <div class="pagination-info">
+                            Mostrando <span id="showing-from">0</span> a
+                            <span id="showing-to">0</span> de
+                            <span id="total-records">0</span> registros
+                        </div>
+                        <div class="pagination-controls">
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                onclick="paginaAnterior()"
+                            >
+                                ‹ Anterior
+                            </button>
+                            <span id="current-page">1</span>
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                onclick="proximaPagina()"
+                            >
+                                Próxima ›
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loading -->
+            <div id="loading" class="loading-overlay" style="display: none">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Carregando aluguéis...</p>
+                </div>
+            </div>
+
+            <!-- Rental Details Modal -->
+            <div id="rental-modal" class="modal" style="display: none">
+                <div class="modal-content modal-lg">
+                    <div class="modal-header">
+                        <h3>Detalhes do Aluguel</h3>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            onclick="fecharModal()"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="rental-details">
+                            <div class="details-section">
+                                <h4>Informações Gerais</h4>
+                                <div class="details-row">
+                                    <div class="detail-group">
+                                        <span class="detail-label">ID:</span>
+                                        <span
+                                            id="modal-id"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                    <div class="detail-group">
+                                        <span class="detail-label"
+                                            >Status:</span
+                                        >
+                                        <span
+                                            id="modal-status"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h4>Cliente</h4>
+                                <div class="details-row">
+                                    <div class="detail-group">
+                                        <span class="detail-label">Nome:</span>
+                                        <span
+                                            id="modal-cliente-nome"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                    <div class="detail-group">
+                                        <span class="detail-label">CPF:</span>
+                                        <span
+                                            id="modal-cliente-cpf"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h4>Produto</h4>
+                                <div class="details-row">
+                                    <div class="detail-group">
+                                        <span class="detail-label"
+                                            >Código:</span
+                                        >
+                                        <span
+                                            id="modal-produto-codigo"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                    <div class="detail-group">
+                                        <span class="detail-label"
+                                            >Categoria:</span
+                                        >
+                                        <span
+                                            id="modal-produto-categoria"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h4>Período</h4>
+                                <div class="details-row">
+                                    <div class="detail-group">
+                                        <span class="detail-label"
+                                            >Data Início:</span
+                                        >
+                                        <span
+                                            id="modal-data-inicio"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                    <div class="detail-group">
+                                        <span class="detail-label"
+                                            >Data Fim:</span
+                                        >
+                                        <span
+                                            id="modal-data-fim"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h4>Valores</h4>
+                                <div class="details-row">
+                                    <div class="detail-group">
+                                        <span class="detail-label"
+                                            >Valor Total:</span
+                                        >
+                                        <span
+                                            id="modal-valor-total"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                    <div class="detail-group">
+                                        <span class="detail-label"
+                                            >Desconto:</span
+                                        >
+                                        <span
+                                            id="modal-desconto"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h4>Observações</h4>
+                                <div class="details-row">
+                                    <div class="detail-group full-width">
+                                        <span
+                                            id="modal-observacoes"
+                                            class="detail-value"
+                                        ></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="editarAluguel()"
+                        >
+                            <span class="icon">✏️</span> Editar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-success"
+                            onclick="finalizarAluguel()"
+                        >
+                            <span class="icon">✅</span> Finalizar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            onclick="cancelarAluguel()"
+                        >
+                            <span class="icon">❌</span> Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirm Action Modal -->
+            <div id="confirm-action-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="confirm-title">Confirmar Ação</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirm-message">
+                            Tem certeza que deseja realizar esta ação?
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            id="confirm-action-btn"
+                            class="btn btn-primary"
+                            onclick="confirmarAcao()"
+                        >
+                            Confirmar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="success-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Sucesso!</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p id="success-message">
+                            Operação realizada com sucesso!
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="fecharModal()"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Modal -->
+            <div id="error-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Erro</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p id="error-message">Erro ao processar operação.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="../../scripts/aluguel-consultar.scripts.js"></script>
+    </body>
+</html>

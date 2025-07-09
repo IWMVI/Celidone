@@ -1,66 +1,225 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <!-- Meta tag para evitar ataques Cross Site Scripting (aka: Injeção de dados) -->
+        <!-- CSP updated: using nonce for inline scripts and styles -->
         <meta
             http-equiv="Content-Security-Policy"
-            content="default-src 'self'; script-src 'self' 'unsafe-inline' "
+            content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
         />
-        <title>Electron</title>
-        <link rel="stylesheet" href="../css/mainPage.css" />
+        <title>Celidone - Painel Administrativo</title>
+        <link rel="stylesheet" href="../../app/shared/styles/utilities.css" />
+        <link rel="stylesheet" href="../../app/shared/styles/components.css" />
     </head>
     <body>
         <div class="dashboard">
-            <header class="header">
-                <h1>Painel Administrativo - Celidone</h1>
-            </header>
-            <main class="main-content">
-                <section class="welcome">
-                    <h2>Bem-vindo(a)!</h2>
-                    <p>
-                        Gerencie os trajes, cadastros de clientes e aluguéis de
-                        forma prática.
+            <header class="dashboard-header">
+                <div class="container">
+                    <h1 class="text-2xl font-bold m-0">
+                        Painel Administrativo - Celidone
+                    </h1>
+                    <p class="text-base text-inverse mt-1 mb-0">
+                        Elegância Rigorosa
                     </p>
-                </section>
+                </div>
+            </header>
 
-                <section class="grid-menu">
-                    <div class="card">
-                        <h3>Clientes</h3>
-                        <p>Visualizar e cadastrar clientes</p>
-                        <button
-                            id="btn-clientes"
-                            onclick="openWindow('cliente')"
-                        >
-                            Acessar
-                        </button>
-                    </div>
+            <main class="dashboard-main">
+                <div class="container">
+                    <section class="text-center mb-2">
+                        <h2 class="text-3xl font-semibold text-primary mb-1">
+                            Bem-vindo(a)!
+                        </h2>
+                        <p class="text-lg text-secondary">
+                            Gerencie trajes, cadastros de clientes e aluguéis de
+                            forma prática e eficiente.
+                        </p>
+                    </section>
 
-                    <div class="card">
-                        <h3>Produto</h3>
-                        <p>Controle o estoque de trajes</p>
-                        <button
-                        onclick="openWindow('produto')"
-                        >
-                        Acessar
-                        </button>
-                    </div>
+                    <section class="card-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">👥 Clientes</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    Visualize, cadastre e gerencie informações
+                                    dos seus clientes.
+                                </p>
+                            </div>
+                            <div class="card-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-primary btn-block"
+                                    data-module="cliente"
+                                >
+                                    Acessar Clientes
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="card">
-                        <h3>Aluguéis</h3>
-                        <p>Gerencie os contratos e devoluções</p>
-                        <button>Acessar</button>
-                    </div>
-                </section>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">👔 Produtos</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    Controle o estoque de trajes e acessórios
+                                    disponíveis.
+                                </p>
+                            </div>
+                            <div class="card-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-primary btn-block"
+                                    data-module="produto"
+                                >
+                                    Acessar Produtos
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">📋 Aluguéis</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    Gerencie contratos de aluguel e controle de
+                                    devoluções.
+                                </p>
+                            </div>
+                            <div class="card-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-primary btn-block"
+                                    data-module="aluguel"
+                                >
+                                    Acessar Aluguéis
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">📊 Relatórios</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    Visualize relatórios de vendas, clientes e
+                                    estoque.
+                                </p>
+                            </div>
+                            <div class="card-footer">
+                                <button
+                                    class="btn btn-secondary btn-block"
+                                    disabled
+                                >
+                                    Em Desenvolvimento
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="text-center mt-2">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    ℹ️ Informações do Sistema
+                                </h3>
+                                <div
+                                    class="flex justify-center items-center gap-1 mt-1"
+                                >
+                                    <div class="text-sm text-muted">
+                                        <span id="app-version"
+                                            >Versão: Carregando...</span
+                                        >
+                                    </div>
+                                    <div class="text-sm text-muted">
+                                        <span id="electron-version"
+                                            >Electron: Carregando...</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
             </main>
 
-            <footer class="footer">
-                <p>&copy; 2025 Elegância Rigorosa - Celidone</p>
+            <footer class="dashboard-footer">
+                <div class="container">
+                    <p class="m-0">
+                        &copy; 2025 Elegância Rigorosa - Celidone. Todos os
+                        direitos reservados.
+                    </p>
+                </div>
             </footer>
         </div>
 
-        <!-- Processo de renderização -->
-        <script src="../../scripts/renderer.js"></script>
+        <script nonce="{{nonce}}">
+            /**
+             * Função para abrir janelas
+             * @param {string} windowType - Tipo da janela
+             */
+            function openWindow(windowType) {
+                if (!windowType || typeof windowType !== "string") {
+                    console.error("Tipo de janela inválido");
+                    return;
+                }
+
+                try {
+                    window.api.openWindow(windowType);
+                } catch (error) {
+                    console.error("Erro ao abrir janela:", error);
+                }
+            }
+
+            /**
+             * Carrega informações do sistema
+             */
+            async function loadSystemInfo() {
+                try {
+                    const appVersion = await window.api.getAppVersion();
+                    const electronVersion = window.api.getElectronVersion();
+
+                    document.getElementById(
+                        "app-version"
+                    ).textContent = `Versão: ${appVersion}`;
+                    document.getElementById(
+                        "electron-version"
+                    ).textContent = `Electron: ${electronVersion}`;
+                } catch (error) {
+                    console.error(
+                        "Erro ao carregar informações do sistema:",
+                        error
+                    );
+                }
+            }
+
+            /**
+             * Inicializa a aplicação
+             */
+            function initializeApp() {
+                // Carrega informações do sistema
+                loadSystemInfo();
+
+                // Adiciona listeners para os botões
+                document.querySelectorAll("[data-module]").forEach((button) => {
+                    button.addEventListener("click", (e) => {
+                        const module = e.target.getAttribute("data-module");
+                        if (module) {
+                            openWindow(module);
+                        }
+                    });
+                });
+
+                console.log("Aplicação inicializada com sucesso");
+            }
+
+            // Inicializa quando o DOM estiver pronto
+            document.addEventListener("DOMContentLoaded", initializeApp);
+        </script>
     </body>
 </html>
