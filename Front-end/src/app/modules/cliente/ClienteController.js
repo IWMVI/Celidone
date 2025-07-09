@@ -7,7 +7,6 @@ import {
     NameValidator,
 } from "../../core/services/ValidationService.js";
 import MaskUtils from "../../core/utils/MaskUtils.js";
-import AsyncUtils from "../../core/utils/AsyncUtils.js";
 
 /**
  * Controlador para o módulo de cliente
@@ -33,11 +32,11 @@ class ClienteController {
             this.setupEventListeners();
             this.setupMasks();
             this.isInitialized = true;
-
-            console.log("Cliente Controller inicializado com sucesso");
         } catch (error) {
-            console.error("Erro ao inicializar Cliente Controller:", error);
-            this.notificationService.showError("Erro ao inicializar a página");
+            this.notificationService.showError(
+                "Erro ao inicializar a página",
+                error
+            );
         }
     }
 
@@ -116,22 +115,35 @@ class ClienteController {
      * @param {string} natureza - Natureza selecionada
      */
     handleNaturezaChange(natureza) {
+        console.log("Natureza selecionada:", natureza);
+        
         const cpfField = document.getElementById("campo-cpf");
         const cnpjField = document.getElementById("campo-cnpj");
 
         if (cpfField && cnpjField) {
             if (natureza === "pessoa_fisica") {
                 cpfField.style.display = "flex";
+                cpfField.classList.remove("hidden");
                 cnpjField.style.display = "none";
+                cnpjField.classList.add("hidden");
                 document.getElementById("cnpj").value = "";
+                console.log("Campos alterados para Pessoa Física");
             } else if (natureza === "pessoa_juridica") {
                 cpfField.style.display = "none";
+                cpfField.classList.add("hidden");
                 cnpjField.style.display = "flex";
+                cnpjField.classList.remove("hidden");
                 document.getElementById("cpf").value = "";
+                console.log("Campos alterados para Pessoa Jurídica");
             } else {
                 cpfField.style.display = "none";
+                cpfField.classList.add("hidden");
                 cnpjField.style.display = "none";
+                cnpjField.classList.add("hidden");
+                console.log("Campos CPF/CNPJ ocultos");
             }
+        } else {
+            console.warn("Campos CPF/CNPJ não encontrados");
         }
     }
 
@@ -139,14 +151,19 @@ class ClienteController {
      * Configura listener para busca de CEP
      */
     setupCepListener() {
+        console.log("Configurando listener para busca de CEP");
         const cepButton = document.getElementById("buscar-cep-btn");
-        if (cepButton) {
-            const debouncedBuscarCep = AsyncUtils.debounce(
-                this.buscarCep.bind(this),
-                500
-            );
 
-            cepButton.addEventListener("click", debouncedBuscarCep);
+        if (cepButton) {
+            // Função simples sem debounce primeiro para testar
+            cepButton.addEventListener("click", (e) => {
+                e.preventDefault();
+                console.log("Botão buscar CEP clicado");
+                this.buscarCep();
+            });
+            console.log("Listener do botão buscar CEP configurado com sucesso");
+        } else {
+            console.warn("Botão buscar-cep-btn não encontrado no DOM");
         }
     }
 
@@ -188,12 +205,18 @@ class ClienteController {
      * Busca dados do CEP
      */
     async buscarCep() {
+        console.log("Iniciando busca de CEP");
+        
         const cepField = document.getElementById("cep");
         const cepButton = document.getElementById("buscar-cep-btn");
 
-        if (!cepField || !cepButton) return;
+        if (!cepField || !cepButton) {
+            console.error("Campo CEP ou botão não encontrado");
+            return;
+        }
 
         const cep = cepField.value.replace(/\D/g, "");
+        console.log("CEP digitado:", cep);
 
         if (cep.length !== 8) {
             this.notificationService.showError("CEP deve ter 8 dígitos");
@@ -204,15 +227,26 @@ class ClienteController {
             cepButton.disabled = true;
             cepButton.textContent = "Buscando...";
 
-            const data = await window.api.buscarCep(cep);
+            console.log("Fazendo requisição para buscar CEP:", cep);
+            
+            // Verificar se window.api está disponível
+            if (!window.api) {
+                console.error("window.api não está disponível");
+                this.notificationService.showError("API não está disponível");
+                return;
+            }
 
-            if (data.erro) {
+            const response = await window.api.buscarCep(cep);
+            console.log("Resposta da API:", response);
+
+            if (!response.success || response.data?.erro) {
                 this.notificationService.showError("CEP não encontrado");
                 return;
             }
 
-            this.preencherEndereco(data);
-            this.notificationService.showSuccess("CEP encontrado!");
+            // Preenche os campos com os dados encontrados
+            this.preencherEndereco(response.data);
+            console.log("Campos preenchidos com sucesso");
         } catch (error) {
             console.error("Erro ao buscar CEP:", error);
             this.notificationService.showError("Erro ao buscar CEP");
@@ -227,6 +261,8 @@ class ClienteController {
      * @param {Object} data - Dados do CEP
      */
     preencherEndereco(data) {
+        console.log("Preenchendo endereço com dados:", data);
+        
         const fieldMap = {
             endereco: "logradouro",
             bairro: "bairro",
@@ -237,8 +273,15 @@ class ClienteController {
 
         Object.entries(fieldMap).forEach(([fieldId, dataKey]) => {
             const field = document.getElementById(fieldId);
-            if (field && data[dataKey]) {
-                field.value = data[dataKey];
+            if (field) {
+                if (data[dataKey]) {
+                    field.value = data[dataKey];
+                    console.log(`Campo ${fieldId} preenchido com: ${data[dataKey]}`);
+                } else {
+                    console.log(`Dado ${dataKey} não encontrado na resposta`);
+                }
+            } else {
+                console.error(`Campo ${fieldId} não encontrado no DOM`);
             }
         });
     }
@@ -265,7 +308,6 @@ class ClienteController {
                 );
             }
         } catch (error) {
-            console.error("Erro ao cadastrar cliente:", error);
             this.notificationService.showError(
                 "Erro inesperado ao cadastrar cliente"
             );
@@ -326,9 +368,9 @@ class ClienteController {
                 );
             }
         } catch (error) {
-            console.error("Erro ao listar clientes:", error);
             this.notificationService.showError(
-                "Erro ao carregar lista de clientes"
+                "Erro ao carregar lista de clientes",
+                error
             );
         }
     }
