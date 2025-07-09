@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Consultar Clientes - Celidone</title>
+        <link rel="stylesheet" href="../css/table.css" />
+        <link rel="stylesheet" href="../css/cliente.css" />
+        <link rel="stylesheet" href="../css/shared.css" />
+    </head>
+    <body class="modern-theme">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <img
+                            src="../img/bowTie2.png"
+                            alt="Celidone"
+                            class="logo-small"
+                        />
+                        <h1 class="page-title">Consultar Clientes</h1>
+                    </div>
+                    <div class="header-actions">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="abrirCadastro()"
+                        >
+                            <span class="icon">➕</span> Novo Cliente
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="window.close()"
+                        >
+                            <span class="icon">✕</span> Fechar
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <section class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="search-input">Pesquisar</label>
+                            <input
+                                type="text"
+                                id="search-input"
+                                class="form-control"
+                                placeholder="Nome, CPF, E-mail..."
+                                onkeyup="filtrarClientes()"
+                            />
+                        </div>
+                        <div class="filter-group">
+                            <label for="status-filter">Status</label>
+                            <select
+                                id="status-filter"
+                                class="form-control"
+                                onchange="filtrarClientes()"
+                            >
+                                <option value="">Todos</option>
+                                <option value="ativo">Ativo</option>
+                                <option value="inativo">Inativo</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="limparFiltros()"
+                            >
+                                <span class="icon">🗑️</span> Limpar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="atualizarLista()"
+                            >
+                                <span class="icon">🔄</span> Atualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Lista de Clientes</h3>
+                        <div class="table-info">
+                            <span id="total-clientes"
+                                >0 clientes encontrados</span
+                            >
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="modern-table" id="clientes-table">
+                            <thead>
+                                <tr>
+                                    <th
+                                        onclick="ordenarPor('nome')"
+                                        class="sortable"
+                                    >
+                                        Nome <span class="sort-icon">⇅</span>
+                                    </th>
+                                    <th
+                                        onclick="ordenarPor('cpf')"
+                                        class="sortable"
+                                    >
+                                        CPF <span class="sort-icon">⇅</span>
+                                    </th>
+                                    <th
+                                        onclick="ordenarPor('email')"
+                                        class="sortable"
+                                    >
+                                        E-mail <span class="sort-icon">⇅</span>
+                                    </th>
+                                    <th
+                                        onclick="ordenarPor('telefone')"
+                                        class="sortable"
+                                    >
+                                        Telefone
+                                        <span class="sort-icon">⇅</span>
+                                    </th>
+                                    <th
+                                        onclick="ordenarPor('cidade')"
+                                        class="sortable"
+                                    >
+                                        Cidade <span class="sort-icon">⇅</span>
+                                    </th>
+                                    <th
+                                        onclick="ordenarPor('status')"
+                                        class="sortable"
+                                    >
+                                        Status <span class="sort-icon">⇅</span>
+                                    </th>
+                                    <th class="actions-column">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientes-tbody">
+                                <!-- Dados serão carregados dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div
+                        id="empty-state"
+                        class="empty-state"
+                        style="display: none"
+                    >
+                        <div class="empty-icon">👥</div>
+                        <h3>Nenhum cliente encontrado</h3>
+                        <p>
+                            Não há clientes cadastrados ou que correspondam aos
+                            filtros aplicados.
+                        </p>
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="abrirCadastro()"
+                        >
+                            <span class="icon">➕</span> Cadastrar Primeiro
+                            Cliente
+                        </button>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loading-state" class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Carregando clientes...</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Modal de Detalhes -->
+            <div id="detalhes-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Detalhes do Cliente</h3>
+                        <button class="modal-close" onclick="fecharModal()">
+                            &times;
+                        </button>
+                    </div>
+                    <div class="modal-body" id="detalhes-conteudo">
+                        <!-- Conteúdo será preenchido dinamicamente -->
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="editarCliente()"
+                        >
+                            <span class="icon">✏️</span> Editar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Area -->
+            <div id="notification-area" class="notification-area"></div>
+        </div>
+
+        <script>
+            let clientes = [];
+            let clientesFiltrados = [];
+            let ordenacao = { campo: "nome", direcao: "asc" };
+            let clienteSelecionado = null;
+
+            document.addEventListener("DOMContentLoaded", function () {
+                console.log("Página de consulta de clientes carregada");
+                carregarClientes();
+            });
+
+            async function carregarClientes() {
+                try {
+                    mostrarLoading(true);
+
+                    const response = await window.api.listarClientes();
+
+                    if (response.success) {
+                        clientes = response.data || [];
+                        clientesFiltrados = [...clientes];
+                        renderizarTabela();
+                        atualizarContador();
+                    } else {
+                        showNotification(
+                            "Erro ao carregar clientes: " + response.error,
+                            "error"
+                        );
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar clientes:", error);
+                    showNotification(
+                        "Erro interno ao carregar clientes",
+                        "error"
+                    );
+                } finally {
+                    mostrarLoading(false);
+                }
+            }
+
+            function renderizarTabela() {
+                const tbody = document.getElementById("clientes-tbody");
+                const emptyState = document.getElementById("empty-state");
+
+                if (clientesFiltrados.length === 0) {
+                    tbody.innerHTML = "";
+                    emptyState.style.display = "block";
+                    return;
+                }
+
+                emptyState.style.display = "none";
+
+                tbody.innerHTML = clientesFiltrados
+                    .map(
+                        (cliente) => `
+                <tr onclick="visualizarCliente(${
+                    cliente.id
+                })" class="clickable-row">
+                    <td>
+                        <div class="client-name">
+                            <strong>${cliente.nome}</strong>
+                            ${
+                                cliente.observacoes
+                                    ? `<small>${cliente.observacoes}</small>`
+                                    : ""
+                            }
+                        </div>
+                    </td>
+                    <td>${formatarCPF(cliente.cpf)}</td>
+                    <td>
+                        <a href="mailto:${
+                            cliente.email
+                        }" onclick="event.stopPropagation()">
+                            ${cliente.email}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="tel:${
+                            cliente.telefone
+                        }" onclick="event.stopPropagation()">
+                            ${formatarTelefone(cliente.telefone)}
+                        </a>
+                    </td>
+                    <td>${cliente.cidade}/${cliente.estado}</td>
+                    <td>
+                        <span class="status-badge ${cliente.status}">
+                            ${cliente.status === "ativo" ? "Ativo" : "Inativo"}
+                        </span>
+                    </td>
+                    <td class="actions-cell">
+                        <div class="action-buttons">
+                            <button type="button" class="btn-icon" title="Visualizar" 
+                                    onclick="event.stopPropagation(); visualizarCliente(${
+                                        cliente.id
+                                    })">
+                                👁️
+                            </button>
+                            <button type="button" class="btn-icon" title="Editar" 
+                                    onclick="event.stopPropagation(); editarCliente(${
+                                        cliente.id
+                                    })">
+                                ✏️
+                            </button>
+                            <button type="button" class="btn-icon danger" title="Excluir" 
+                                    onclick="event.stopPropagation(); confirmarExclusao(${
+                                        cliente.id
+                                    })">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `
+                    )
+                    .join("");
+            }
+
+            function filtrarClientes() {
+                const searchTerm = document
+                    .getElementById("search-input")
+                    .value.toLowerCase();
+                const statusFilter =
+                    document.getElementById("status-filter").value;
+
+                clientesFiltrados = clientes.filter((cliente) => {
+                    const matchesSearch =
+                        !searchTerm ||
+                        cliente.nome.toLowerCase().includes(searchTerm) ||
+                        cliente.cpf.includes(searchTerm) ||
+                        cliente.email.toLowerCase().includes(searchTerm);
+
+                    const matchesStatus =
+                        !statusFilter || cliente.status === statusFilter;
+
+                    return matchesSearch && matchesStatus;
+                });
+
+                aplicarOrdenacao();
+                renderizarTabela();
+                atualizarContador();
+            }
+
+            function ordenarPor(campo) {
+                if (ordenacao.campo === campo) {
+                    ordenacao.direcao =
+                        ordenacao.direcao === "asc" ? "desc" : "asc";
+                } else {
+                    ordenacao.campo = campo;
+                    ordenacao.direcao = "asc";
+                }
+
+                aplicarOrdenacao();
+                renderizarTabela();
+                atualizarIconesOrdenacao();
+            }
+
+            function aplicarOrdenacao() {
+                clientesFiltrados.sort((a, b) => {
+                    let valueA = a[ordenacao.campo] || "";
+                    let valueB = b[ordenacao.campo] || "";
+
+                    if (typeof valueA === "string") {
+                        valueA = valueA.toLowerCase();
+                        valueB = valueB.toLowerCase();
+                    }
+
+                    if (ordenacao.direcao === "asc") {
+                        return valueA > valueB ? 1 : -1;
+                    } else {
+                        return valueA < valueB ? 1 : -1;
+                    }
+                });
+            }
+
+            function atualizarIconesOrdenacao() {
+                document.querySelectorAll(".sort-icon").forEach((icon) => {
+                    icon.textContent = "⇅";
+                });
+
+                const activeHeader = document.querySelector(
+                    `th[onclick*="${ordenacao.campo}"] .sort-icon`
+                );
+                if (activeHeader) {
+                    activeHeader.textContent =
+                        ordenacao.direcao === "asc" ? "↑" : "↓";
+                }
+            }
+
+            function atualizarContador() {
+                const total = clientesFiltrados.length;
+                const totalGeral = clientes.length;
+                const elemento = document.getElementById("total-clientes");
+
+                if (total === totalGeral) {
+                    elemento.textContent = `${total} cliente${
+                        total !== 1 ? "s" : ""
+                    } encontrado${total !== 1 ? "s" : ""}`;
+                } else {
+                    elemento.textContent = `${total} de ${totalGeral} cliente${
+                        totalGeral !== 1 ? "s" : ""
+                    }`;
+                }
+            }
+
+            function visualizarCliente(id) {
+                const cliente = clientes.find((c) => c.id === id);
+                if (!cliente) return;
+
+                clienteSelecionado = cliente;
+
+                document.getElementById("detalhes-conteudo").innerHTML = `
+                <div class="details-grid">
+                    <div class="detail-section">
+                        <h4>Dados Pessoais</h4>
+                        <p><strong>Nome:</strong> ${cliente.nome}</p>
+                        <p><strong>CPF:</strong> ${formatarCPF(cliente.cpf)}</p>
+                        <p><strong>E-mail:</strong> ${cliente.email}</p>
+                        <p><strong>Telefone:</strong> ${formatarTelefone(
+                            cliente.telefone
+                        )}</p>
+                        ${
+                            cliente.dataNascimento
+                                ? `<p><strong>Data de Nascimento:</strong> ${formatarData(
+                                      cliente.dataNascimento
+                                  )}</p>`
+                                : ""
+                        }
+                        ${
+                            cliente.rg
+                                ? `<p><strong>RG:</strong> ${cliente.rg}</p>`
+                                : ""
+                        }
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h4>Endereço</h4>
+                        <p><strong>CEP:</strong> ${formatarCEP(cliente.cep)}</p>
+                        <p><strong>Logradouro:</strong> ${
+                            cliente.logradouro
+                        }, ${cliente.numero}</p>
+                        ${
+                            cliente.complemento
+                                ? `<p><strong>Complemento:</strong> ${cliente.complemento}</p>`
+                                : ""
+                        }
+                        <p><strong>Bairro:</strong> ${cliente.bairro}</p>
+                        <p><strong>Cidade:</strong> ${cliente.cidade}/${
+                    cliente.estado
+                }</p>
+                    </div>
+                    
+                    ${
+                        cliente.observacoes
+                            ? `
+                    <div class="detail-section">
+                        <h4>Observações</h4>
+                        <p>${cliente.observacoes}</p>
+                    </div>
+                    `
+                            : ""
+                    }
+                    
+                    <div class="detail-section">
+                        <h4>Informações do Sistema</h4>
+                        <p><strong>Status:</strong> <span class="status-badge ${
+                            cliente.status
+                        }">${
+                    cliente.status === "ativo" ? "Ativo" : "Inativo"
+                }</span></p>
+                        ${
+                            cliente.dataCadastro
+                                ? `<p><strong>Cadastrado em:</strong> ${formatarDataHora(
+                                      cliente.dataCadastro
+                                  )}</p>`
+                                : ""
+                        }
+                        ${
+                            cliente.dataUltimaAtualizacao
+                                ? `<p><strong>Última atualização:</strong> ${formatarDataHora(
+                                      cliente.dataUltimaAtualizacao
+                                  )}</p>`
+                                : ""
+                        }
+                    </div>
+                </div>
+            `;
+
+                document.getElementById("detalhes-modal").style.display =
+                    "flex";
+            }
+
+            function editarCliente(id = null) {
+                const clienteId =
+                    id || (clienteSelecionado ? clienteSelecionado.id : null);
+                if (!clienteId) return;
+
+                // Aqui você pode abrir uma nova janela para edição ou implementar edição inline
+                window.api.openWindow("cliente-editar", { clienteId });
+                fecharModal();
+            }
+
+            function confirmarExclusao(id) {
+                const cliente = clientes.find((c) => c.id === id);
+                if (!cliente) return;
+
+                if (
+                    confirm(
+                        `Tem certeza que deseja excluir o cliente "${cliente.nome}"?\n\nEsta ação não pode ser desfeita.`
+                    )
+                ) {
+                    excluirCliente(id);
+                }
+            }
+
+            async function excluirCliente(id) {
+                try {
+                    const response = await window.api.removerCliente(id);
+
+                    if (response.success) {
+                        showNotification(
+                            "Cliente excluído com sucesso!",
+                            "success"
+                        );
+                        await carregarClientes(); // Recarrega a lista
+                    } else {
+                        showNotification(
+                            "Erro ao excluir cliente: " + response.error,
+                            "error"
+                        );
+                    }
+                } catch (error) {
+                    console.error("Erro ao excluir cliente:", error);
+                    showNotification(
+                        "Erro interno ao excluir cliente",
+                        "error"
+                    );
+                }
+            }
+
+            function abrirCadastro() {
+                window.api.openWindow("cliente-cadastrar");
+            }
+
+            function atualizarLista() {
+                carregarClientes();
+            }
+
+            function limparFiltros() {
+                document.getElementById("search-input").value = "";
+                document.getElementById("status-filter").value = "";
+                filtrarClientes();
+            }
+
+            function fecharModal() {
+                document.getElementById("detalhes-modal").style.display =
+                    "none";
+                clienteSelecionado = null;
+            }
+
+            function mostrarLoading(show) {
+                document.getElementById("loading-state").style.display = show
+                    ? "block"
+                    : "none";
+            }
+
+            function showNotification(message, type = "info") {
+                const notification = document.createElement("div");
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                <span class="notification-icon">${
+                    type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"
+                }</span>
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+                document
+                    .getElementById("notification-area")
+                    .appendChild(notification);
+
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 5000);
+            }
+
+            // Utility functions
+            function formatarCPF(cpf) {
+                return cpf.replace(
+                    /(\d{3})(\d{3})(\d{3})(\d{2})/,
+                    "$1.$2.$3-$4"
+                );
+            }
+
+            function formatarTelefone(telefone) {
+                return telefone.replace(
+                    /(\d{2})(\d{4,5})(\d{4})/,
+                    "($1) $2-$3"
+                );
+            }
+
+            function formatarCEP(cep) {
+                return cep.replace(/(\d{5})(\d{3})/, "$1-$2");
+            }
+
+            function formatarData(data) {
+                return new Date(data).toLocaleDateString("pt-BR");
+            }
+
+            function formatarDataHora(data) {
+                return new Date(data).toLocaleString("pt-BR");
+            }
+
+            // Fechar modal com ESC
+            document.addEventListener("keydown", function (e) {
+                if (e.key === "Escape") {
+                    fecharModal();
+                }
+            });
+
+            // Fechar modal clicando fora
+            document
+                .getElementById("detalhes-modal")
+                .addEventListener("click", function (e) {
+                    if (e.target === this) {
+                        fecharModal();
+                    }
+                });
+        </script>
+    </body>
+</html>

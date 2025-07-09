@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        />
+        <title>Celidone - Gestão de Aluguéis</title>
+        <link rel="stylesheet" href="../../app/shared/styles/utilities.css" />
+        <link rel="stylesheet" href="../../app/shared/styles/components.css" />
+        <link rel="stylesheet" href="../css/aluguel.css" />
+    </head>
+    <body class="bg-secondary">
+        <div class="container py-1">
+            <header class="text-center mb-2">
+                <h1 class="text-3xl font-bold text-primary mb-1">
+                    Gestão de Aluguéis
+                </h1>
+                <p class="text-base text-secondary">
+                    Gerencie os aluguéis de trajes e acessórios
+                </p>
+            </header>
+
+            <main>
+                <!-- Formulário de Aluguel -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Dados do Aluguel</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-aluguel" class="form">
+                            <!-- Linha 1: Cliente e Produto -->
+                            <div class="form-row">
+                                <div class="form-group large">
+                                    <label class="form-label" for="cliente-id">
+                                        Cliente *
+                                    </label>
+                                    <select
+                                        id="cliente-id"
+                                        name="cliente-id"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione um cliente
+                                        </option>
+                                    </select>
+                                    <div class="form-help">
+                                        Escolha o cliente que está alugando
+                                    </div>
+                                    <div
+                                        id="cliente-id-error"
+                                        class="form-error"
+                                        style="display: none"
+                                    ></div>
+                                </div>
+
+                                <div class="form-group large">
+                                    <label class="form-label" for="produto-id">
+                                        Produto *
+                                    </label>
+                                    <select
+                                        id="produto-id"
+                                        name="produto-id"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione um produto
+                                        </option>
+                                    </select>
+                                    <div class="form-help">
+                                        Escolha o produto a ser alugado
+                                    </div>
+                                    <div
+                                        id="produto-id-error"
+                                        class="form-error"
+                                        style="display: none"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <!-- Linha 2: Informações do Cliente e Produto -->
+                            <div class="form-row">
+                                <div class="form-group large">
+                                    <div class="info-section">
+                                        <h4 class="info-title">
+                                            Informações do Cliente
+                                        </h4>
+                                        <div
+                                            id="cliente-info"
+                                            class="info-content"
+                                        >
+                                            <!-- Preenchido dinamicamente -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group large">
+                                    <div class="info-section">
+                                        <h4 class="info-title">
+                                            Informações do Produto
+                                        </h4>
+                                        <div
+                                            id="produto-info"
+                                            class="info-content"
+                                        >
+                                            <!-- Preenchido dinamicamente -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Linha 3: Datas -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label
+                                        class="form-label"
+                                        for="data-aluguel"
+                                    >
+                                        Data do Aluguel *
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="data-aluguel"
+                                        name="data-aluguel"
+                                        class="form-input"
+                                        required
+                                    />
+                                    <div class="form-help">
+                                        Data em que o produto foi alugado
+                                    </div>
+                                    <div
+                                        id="data-aluguel-error"
+                                        class="form-error"
+                                        style="display: none"
+                                    ></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label
+                                        class="form-label"
+                                        for="data-dev-prevista"
+                                    >
+                                        Data Prevista para Devolução *
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="data-dev-prevista"
+                                        name="data-dev-prevista"
+                                        class="form-input"
+                                        required
+                                    />
+                                    <div class="form-help">
+                                        Data prevista para devolução
+                                    </div>
+                                    <div
+                                        id="data-dev-prevista-error"
+                                        class="form-error"
+                                        style="display: none"
+                                    ></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label
+                                        class="form-label"
+                                        for="data-dev-efetiva"
+                                    >
+                                        Data Efetiva de Devolução
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="data-dev-efetiva"
+                                        name="data-dev-efetiva"
+                                        class="form-input"
+                                        readonly
+                                    />
+                                    <div class="form-help">
+                                        Data real de devolução (automática)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Linha 4: Tipo de Cobrança e Período -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label
+                                        class="form-label"
+                                        for="tipo-cobranca"
+                                    >
+                                        Tipo de Cobrança *
+                                    </label>
+                                    <select
+                                        id="tipo-cobranca"
+                                        name="tipo-cobranca"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione o tipo
+                                        </option>
+                                        <option value="diaria">Diária</option>
+                                        <option value="semanal">Semanal</option>
+                                        <option value="mensal">Mensal</option>
+                                        <option value="evento">Evento</option>
+                                    </select>
+                                    <div class="form-help">
+                                        Tipo de cobrança do aluguel
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="periodo">
+                                        Período *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="periodo"
+                                        name="periodo"
+                                        class="form-input"
+                                        min="1"
+                                        step="1"
+                                        placeholder="Ex: 7"
+                                        required
+                                    />
+                                    <div class="form-help">
+                                        Número de períodos do aluguel
+                                    </div>
+                                    <div
+                                        id="periodo-error"
+                                        class="form-error"
+                                        style="display: none"
+                                    ></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label
+                                        class="form-label"
+                                        for="forma-pagamento"
+                                    >
+                                        Forma de Pagamento *
+                                    </label>
+                                    <select
+                                        id="forma-pagamento"
+                                        name="forma-pagamento"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione a forma
+                                        </option>
+                                        <option value="dinheiro">
+                                            Dinheiro
+                                        </option>
+                                        <option value="cartao_debito">
+                                            Cartão de Débito
+                                        </option>
+                                        <option value="cartao_credito">
+                                            Cartão de Crédito
+                                        </option>
+                                        <option value="pix">PIX</option>
+                                        <option value="transferencia">
+                                            Transferência
+                                        </option>
+                                    </select>
+                                    <div class="form-help">
+                                        Como o pagamento será feito
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Linha 5: Valores -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label
+                                        class="form-label"
+                                        for="valor-aluguel"
+                                    >
+                                        Valor do Aluguel *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="valor-aluguel"
+                                        name="valor-aluguel"
+                                        class="form-input"
+                                        placeholder="R$ 0,00"
+                                        required
+                                    />
+                                    <div class="form-help">
+                                        Valor unitário do aluguel
+                                    </div>
+                                    <div
+                                        id="valor-aluguel-error"
+                                        class="form-error"
+                                        style="display: none"
+                                    ></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label
+                                        class="form-label"
+                                        for="valor-caucao"
+                                    >
+                                        Valor da Caução *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="valor-caucao"
+                                        name="valor-caucao"
+                                        class="form-input"
+                                        placeholder="R$ 0,00"
+                                        required
+                                    />
+                                    <div class="form-help">
+                                        Valor da caução/garantia
+                                    </div>
+                                    <div
+                                        id="valor-caucao-error"
+                                        class="form-error"
+                                        style="display: none"
+                                    ></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label
+                                        class="form-label"
+                                        for="valor-desconto"
+                                    >
+                                        Valor do Desconto
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="valor-desconto"
+                                        name="valor-desconto"
+                                        class="form-input"
+                                        placeholder="R$ 0,00"
+                                    />
+                                    <div class="form-help">
+                                        Desconto aplicado (opcional)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Linha 6: Valor Total e Observações -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="valor-total">
+                                        Valor Total
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="valor-total"
+                                        name="valor-total"
+                                        class="form-input"
+                                        placeholder="R$ 0,00"
+                                        readonly
+                                    />
+                                    <div class="form-help">
+                                        Valor total calculado automaticamente
+                                    </div>
+                                </div>
+
+                                <div class="form-group large">
+                                    <label class="form-label" for="observacoes">
+                                        Observações
+                                    </label>
+                                    <textarea
+                                        id="observacoes"
+                                        name="observacoes"
+                                        class="form-textarea"
+                                        rows="3"
+                                        placeholder="Informações adicionais sobre o aluguel"
+                                    ></textarea>
+                                    <div class="form-help">
+                                        Observações gerais sobre o aluguel
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botões de Ação -->
+                            <div class="form-actions">
+                                <button
+                                    type="submit"
+                                    id="cadastrar-aluguel-btn"
+                                    class="btn btn-primary"
+                                >
+                                    Cadastrar Aluguel
+                                </button>
+                                <button
+                                    type="button"
+                                    id="listar-alugueis-btn"
+                                    class="btn btn-secondary"
+                                >
+                                    Listar Aluguéis
+                                </button>
+                                <button
+                                    type="button"
+                                    id="devolver-aluguel-btn"
+                                    class="btn btn-success"
+                                >
+                                    Devolver Produto
+                                </button>
+                                <button
+                                    type="button"
+                                    id="cancelar-aluguel-btn"
+                                    class="btn btn-warning"
+                                >
+                                    Cancelar Aluguel
+                                </button>
+                                <button
+                                    type="button"
+                                    id="limpar-form-btn"
+                                    class="btn btn-light"
+                                >
+                                    Limpar Formulário
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Seção de Listagem de Aluguéis -->
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <h2 class="card-title">Lista de Aluguéis</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Produto</th>
+                                        <th>Data Aluguel</th>
+                                        <th>Data Prevista</th>
+                                        <th>Status</th>
+                                        <th>Valor Total</th>
+                                        <th>Forma Pagamento</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="aluguel-lista">
+                                    <!-- Linhas preenchidas dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Notificações -->
+            <div id="notification-container" class="notification-container">
+                <!-- Notificações serão inseridas aqui -->
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script
+            type="module"
+            src="../../app/modules/aluguel/AluguelController.js"
+        ></script>
+    </body>
+</html>

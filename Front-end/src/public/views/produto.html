@@ -1,125 +1,440 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Meta tag para evitar ataques Cross Site Scripting (aka: Injeção de dados) -->
-    <meta
-    http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline' "
-    />
-    <link rel="stylesheet" href="../css/produto.css" />
-    <title>Produtos</title>
-</head>
-<body>
-    <!-- .form-group | .form-row -->
-    <form id="form-produto" class="produto-form">
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        />
+        <title>Celidone - Cadastro de Produtos</title>
+        <link rel="stylesheet" href="../../app/shared/styles/utilities.css" />
+        <link rel="stylesheet" href="../../app/shared/styles/components.css" />
+    </head>
+    <body class="bg-secondary">
+        <div class="container py-1">
+            <header class="text-center mb-2">
+                <h1 class="text-3xl font-bold text-primary mb-1">
+                    Cadastro de Produtos
+                </h1>
+                <p class="text-base text-secondary">
+                    Gerencie trajes e acessórios disponíveis
+                </p>
+            </header>
 
-        <!-- Linha 1: Salvar ou Excluir por código do produto -->
-        <div class="form-row">
-            <div class="form-group">
-                <label for="codigo">Código</label>
-                <input type="text" id="codigo" name="codigo" placeholder="Código do produto" required />
-            </div>
-            <div class="form-group">
-                <label>&nbsp;</label>
-                <button type="submit" class="secondary-button">Salvar</button>
-            </div>
-            <div class="form-group">
-                <label>&nbsp;</label>
-                <button type="button" id="excluir-produto-btn" class="secondary-button">Excluir</button>
-            </div>
-        </div>
-
-        <!-- Linha 2: Tecido, Cor e Estampa do produto -->
-        <div class="form-row">
-            <div class="form-group">
-                <label for="tecido">Tecido</label>
-                <input type="text" id="tecido" name="tecido" placeholder="(ex veludo, cetim, lã...)" required />
-            </div>
-            <div class="form-group">
-                <label for="cor">Cor</label>
-                <input type="text" id="cor" name="cor" placeholder="" required />
-            </div>
-            <div class="form-group">
-                <label for="estampa">Estampa</label>
-                <input type="text" id="estampa" name="estampa" placeholder="(ex liso, risca de giz, floral...)" required />
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label for="tipotraje">Tipo do traje</label>
-                <select id="tipotraje" name="tipotraje" required>
-                    <option value="">Selecione</option>
-                    <option value="terno">Terno</option>
-                    <option value="smoking">Smoking</option>
-                    <option value="fraque">Fraque</option>
-                    <option value="traje_de_gala">Traje de gala</option>
-                    <option value="costume">Costume (Tailleur)</option>
-                    <option value="traje_preto">Traje preto (Black Tie opcional)</option>
-                  </select>
-            </div>
-            <div class="form-group">
-                <label for="textura">Textura</label>
-                <input type="text" id="textura" name="textura" placeholder="(ex liso, canelado, brilhante...)" required />
-            </div>
-        </div>
-
-        <!-- Linha 3: Preço, Tamanho, Status e Sexo do produto -->
-        <div class="form-row">
-            <div class="form-group">
-                <label for="preco">Preço</label>
-                <input type="number" id="preco" name="preco" placeholder="00,00" required />
-            </div>
-            <div class="form-group">
-                <label for="tamanho">Tamanho</label>
-                <input type="text" id="tamanho" name="tamanho" placeholder="P" required />
-            </div>
-            <div class="form-group">
-                <label for="status">Status</label>
-                <select id="status" name="status" required>
-                    <option value="disponivel">Disponível</option>
-                    <option value="indisponivel">Indisponível</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="sexo">Sexo</label>
-                <select id="sexo" name="sexo" required>
-                    <option value="sexo_masculino">Masculino</option>
-                    <option value="sexo_feminino">Feminino</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Histórico de alugel e imagem -->
-        <div class="form-row">
-            <div class="form-group">
-                <section class="list-section">
-                    <h2>Histórico de aluguéis</h2>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>ID alugel</th>
-                                    <th>Cliente</th>
-                                    <th>Data</th>
-                                </tr>
-                            </thead>
-                            <tbody id="produto-historico"></tbody>
-                        </table>
+            <main>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Dados do Produto</h2>
                     </div>
-                </section>
-                <script src="../../scripts/produto.scripts.js"></script>
-            </div>
+                    <div class="card-body">
+                        <form id="form-produto" class="form">
+                            <!-- Linha 1: Código e Ações -->
+                            <div class="form-row">
+                                <div class="form-group large">
+                                    <label class="form-label" for="codigo"
+                                        >Código do Produto *</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="codigo"
+                                        name="codigo"
+                                        class="form-input"
+                                        placeholder="PRD-0000"
+                                        required
+                                    />
+                                    <div class="form-help">
+                                        Formato: PRD-0000
+                                    </div>
+                                    <div
+                                        id="codigo-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                                <div class="form-group">
+                                    <div style="height: 24px"></div>
+                                    <button
+                                        type="button"
+                                        id="consultar-produto-btn"
+                                        class="btn btn-secondary"
+                                    >
+                                        Consultar Produto
+                                    </button>
+                                </div>
+                                <div class="form-group">
+                                    <div style="height: 24px"></div>
+                                    <button
+                                        type="button"
+                                        id="excluir-produto-btn"
+                                        class="btn btn-danger"
+                                    >
+                                        Excluir Produto
+                                    </button>
+                                </div>
+                            </div>
 
-            <!-- Essa imagem é um placeholder, terá que ter a opção de dar upload na imagem -->
-            <div class="form-group">
-                <img src="../img/bowTie2.png">
-            </div>
+                            <!-- Linha 2: Características do Tecido -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="tecido"
+                                        >Tecido *</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="tecido"
+                                        name="tecido"
+                                        class="form-input"
+                                        placeholder="Ex: veludo, cetim, lã..."
+                                        required
+                                    />
+                                    <div
+                                        id="tecido-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="cor"
+                                        >Cor *</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="cor"
+                                        name="cor"
+                                        class="form-input"
+                                        placeholder="Ex: azul marinho, preto..."
+                                        required
+                                    />
+                                    <div
+                                        id="cor-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="estampa"
+                                        >Estampa *</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="estampa"
+                                        name="estampa"
+                                        class="form-input"
+                                        placeholder="Ex: liso, risca de giz, floral..."
+                                        required
+                                    />
+                                    <div
+                                        id="estampa-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <!-- Linha 3: Tipo e Textura -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="tipotraje"
+                                        >Tipo do Traje *</label
+                                    >
+                                    <select
+                                        id="tipotraje"
+                                        name="tipotraje"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="">Selecione</option>
+                                        <option value="terno">Terno</option>
+                                        <option value="smoking">Smoking</option>
+                                        <option value="fraque">Fraque</option>
+                                        <option value="traje_de_gala">
+                                            Traje de Gala
+                                        </option>
+                                        <option value="costume">
+                                            Costume (Tailleur)
+                                        </option>
+                                        <option value="traje_preto">
+                                            Traje Preto (Black Tie)
+                                        </option>
+                                    </select>
+                                    <div
+                                        id="tipotraje-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="textura"
+                                        >Textura *</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="textura"
+                                        name="textura"
+                                        class="form-input"
+                                        placeholder="Ex: liso, canelado, brilhante..."
+                                        required
+                                    />
+                                    <div
+                                        id="textura-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <!-- Linha 4: Preço, Tamanho, Status e Sexo -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="preco"
+                                        >Preço *</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="preco"
+                                        name="preco"
+                                        class="form-input"
+                                        placeholder="0,00"
+                                        required
+                                    />
+                                    <div class="form-help">Formato: 000,00</div>
+                                    <div
+                                        id="preco-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="tamanho"
+                                        >Tamanho *</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="tamanho"
+                                        name="tamanho"
+                                        class="form-input"
+                                        placeholder="P, M, G, 42, 44..."
+                                        required
+                                    />
+                                    <div
+                                        id="tamanho-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="status"
+                                        >Status *</label
+                                    >
+                                    <select
+                                        id="status"
+                                        name="status"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="">Selecione</option>
+                                        <option value="disponivel">
+                                            Disponível
+                                        </option>
+                                        <option value="indisponivel">
+                                            Indisponível
+                                        </option>
+                                        <option value="manutencao">
+                                            Em Manutenção
+                                        </option>
+                                        <option value="alugado">Alugado</option>
+                                    </select>
+                                    <div
+                                        id="status-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="sexo"
+                                        >Sexo *</label
+                                    >
+                                    <select
+                                        id="sexo"
+                                        name="sexo"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="">Selecione</option>
+                                        <option value="masculino">
+                                            Masculino
+                                        </option>
+                                        <option value="feminino">
+                                            Feminino
+                                        </option>
+                                        <option value="unissex">Unissex</option>
+                                    </select>
+                                    <div
+                                        id="sexo-error"
+                                        class="form-error hidden"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <!-- Linha 5: Observações -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="observacoes"
+                                        >Observações</label
+                                    >
+                                    <textarea
+                                        id="observacoes"
+                                        name="observacoes"
+                                        class="form-textarea"
+                                        rows="3"
+                                        placeholder="Informações adicionais sobre o produto..."
+                                    ></textarea>
+                                    <div class="form-help">Opcional</div>
+                                </div>
+                            </div>
+
+                            <!-- Mensagem de erro -->
+                            <div
+                                id="error-message"
+                                class="error-message hidden"
+                            >
+                                <p id="error-text"></p>
+                            </div>
+
+                            <!-- Botões de ação -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    Salvar Produto
+                                </button>
+                                <button
+                                    type="button"
+                                    id="listar-produtos-btn"
+                                    class="btn btn-secondary"
+                                >
+                                    Listar Produtos
+                                </button>
+                                <button
+                                    type="button"
+                                    id="limpar-form-btn"
+                                    class="btn btn-ghost"
+                                >
+                                    Limpar Formulário
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Seção de Histórico e Imagem -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-1 mt-2">
+                    <!-- Histórico de Aluguéis -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Histórico de Aluguéis</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID Aluguel</th>
+                                            <th>Cliente</th>
+                                            <th>Data</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="produto-historico">
+                                        <tr>
+                                            <td
+                                                colspan="3"
+                                                class="text-center py-1 text-muted"
+                                            >
+                                                Nenhum aluguel encontrado
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Imagem do Produto -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Imagem do Produto</h2>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="image-upload-container">
+                                <img
+                                    id="produto-imagem"
+                                    src="../img/bowTie2.png"
+                                    alt="Visualização do produto"
+                                    class="w-full max-w-md mx-auto rounded-lg shadow-md"
+                                />
+                                <div class="mt-1">
+                                    <button
+                                        type="button"
+                                        id="upload-imagem-btn"
+                                        class="btn btn-secondary btn-sm"
+                                    >
+                                        Alterar Imagem
+                                    </button>
+                                    <input
+                                        type="file"
+                                        id="imagem-input"
+                                        accept="image/*"
+                                        class="hidden"
+                                    />
+                                </div>
+                                <div class="form-help mt-0.5">
+                                    Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Lista de Produtos -->
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <h2 class="card-title">Lista de Produtos</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Tecido</th>
+                                        <th>Cor</th>
+                                        <th>Tipo</th>
+                                        <th>Tamanho</th>
+                                        <th>Status</th>
+                                        <th>Preço</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="produto-lista">
+                                    <tr>
+                                        <td
+                                            colspan="8"
+                                            class="text-center py-1 text-muted"
+                                        >
+                                            Nenhum produto carregado. Clique em
+                                            "Listar Produtos" para carregar.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
 
-        <div class="form-row"></div>
-    </form>
-    </div>
-</body>
+        <!-- Loading overlay -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Notification container -->
+        <div id="notification-container" class="notification-container"></div>
+
+        <!-- Importa o módulo de produto -->
+        <script
+            type="module"
+            src="../../app/modules/produto/ProdutoController.js"
+        ></script>
+    </body>
 </html>

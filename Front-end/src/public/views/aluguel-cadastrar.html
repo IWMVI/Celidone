@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Cadastrar Aluguel - Celidone</title>
+        <link rel="stylesheet" href="../css/forms.css" />
+        <link rel="stylesheet" href="../css/aluguel.css" />
+        <link rel="stylesheet" href="../css/shared.css" />
+    </head>
+    <body class="modern-theme">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <img
+                            src="../img/bowTie2.png"
+                            alt="Celidone"
+                            class="logo-small"
+                        />
+                        <h1 class="page-title">Cadastrar Aluguel</h1>
+                    </div>
+                    <div class="header-actions">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="window.close()"
+                        >
+                            <span class="icon">✕</span> Fechar
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="form-container">
+                    <form id="aluguel-form" class="modern-form">
+                        <!-- Dados do Aluguel -->
+                        <fieldset class="form-section">
+                            <legend>Dados do Aluguel</legend>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="cliente-id" class="required"
+                                        >Cliente</label
+                                    >
+                                    <select
+                                        id="cliente-id"
+                                        name="cliente-id"
+                                        class="form-control"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione um cliente
+                                        </option>
+                                    </select>
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="produto-id" class="required"
+                                        >Produto</label
+                                    >
+                                    <select
+                                        id="produto-id"
+                                        name="produto-id"
+                                        class="form-control"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione um produto
+                                        </option>
+                                    </select>
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="data-inicio" class="required"
+                                        >Data de Início</label
+                                    >
+                                    <input
+                                        type="date"
+                                        id="data-inicio"
+                                        name="data-inicio"
+                                        class="form-control"
+                                        required
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="data-fim" class="required"
+                                        >Data de Fim</label
+                                    >
+                                    <input
+                                        type="date"
+                                        id="data-fim"
+                                        name="data-fim"
+                                        class="form-control"
+                                        required
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Informações do Cliente -->
+                        <fieldset class="form-section">
+                            <legend>Informações do Cliente</legend>
+
+                            <div id="cliente-info" class="info-display">
+                                <div class="info-row">
+                                    <div class="info-group">
+                                        <span class="info-label">Nome:</span>
+                                        <span
+                                            id="cliente-nome"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                    <div class="info-group">
+                                        <span class="info-label">CPF:</span>
+                                        <span
+                                            id="cliente-cpf"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-group">
+                                        <span class="info-label"
+                                            >Telefone:</span
+                                        >
+                                        <span
+                                            id="cliente-telefone"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                    <div class="info-group">
+                                        <span class="info-label">E-mail:</span>
+                                        <span
+                                            id="cliente-email"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Informações do Produto -->
+                        <fieldset class="form-section">
+                            <legend>Informações do Produto</legend>
+
+                            <div id="produto-info" class="info-display">
+                                <div class="info-row">
+                                    <div class="info-group">
+                                        <span class="info-label">Código:</span>
+                                        <span
+                                            id="produto-codigo"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                    <div class="info-group">
+                                        <span class="info-label"
+                                            >Categoria:</span
+                                        >
+                                        <span
+                                            id="produto-categoria"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-group">
+                                        <span class="info-label">Tecido:</span>
+                                        <span
+                                            id="produto-tecido"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                    <div class="info-group">
+                                        <span class="info-label">Cor:</span>
+                                        <span
+                                            id="produto-cor"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-group">
+                                        <span class="info-label">Tamanho:</span>
+                                        <span
+                                            id="produto-tamanho"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                    <div class="info-group">
+                                        <span class="info-label">Status:</span>
+                                        <span
+                                            id="produto-status"
+                                            class="info-value"
+                                            >-</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Valores -->
+                        <fieldset class="form-section">
+                            <legend>Valores</legend>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="valor-unitario"
+                                        >Valor Unitário</label
+                                    >
+                                    <input
+                                        type="number"
+                                        id="valor-unitario"
+                                        name="valor-unitario"
+                                        class="form-control"
+                                        step="0.01"
+                                        min="0"
+                                        readonly
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="dias-aluguel"
+                                        >Dias de Aluguel</label
+                                    >
+                                    <input
+                                        type="number"
+                                        id="dias-aluguel"
+                                        name="dias-aluguel"
+                                        class="form-control"
+                                        readonly
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="valor-total">Valor Total</label>
+                                    <input
+                                        type="number"
+                                        id="valor-total"
+                                        name="valor-total"
+                                        class="form-control"
+                                        step="0.01"
+                                        min="0"
+                                        readonly
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="desconto">Desconto (%)</label>
+                                    <input
+                                        type="number"
+                                        id="desconto"
+                                        name="desconto"
+                                        class="form-control"
+                                        step="0.01"
+                                        min="0"
+                                        max="100"
+                                        value="0"
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="valor-final">Valor Final</label>
+                                    <input
+                                        type="number"
+                                        id="valor-final"
+                                        name="valor-final"
+                                        class="form-control"
+                                        step="0.01"
+                                        min="0"
+                                        readonly
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Observações -->
+                        <fieldset class="form-section">
+                            <legend>Observações</legend>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label for="observacoes">Observações</label>
+                                    <textarea
+                                        id="observacoes"
+                                        name="observacoes"
+                                        class="form-control"
+                                        rows="3"
+                                        placeholder="Observações sobre o aluguel..."
+                                    ></textarea>
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Botões -->
+                        <div class="form-actions">
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="limparFormulario()"
+                            >
+                                <span class="icon">🗑️</span> Limpar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="icon">💾</span> Salvar Aluguel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+
+            <!-- Loading -->
+            <div id="loading" class="loading-overlay" style="display: none">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Salvando aluguel...</p>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="success-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Sucesso!</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>Aluguel cadastrado com sucesso!</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="fecharModal()"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Modal -->
+            <div id="error-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Erro</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p id="error-message">Erro ao cadastrar aluguel.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="../../scripts/aluguel-cadastrar.scripts.js"></script>
+    </body>
+</html>

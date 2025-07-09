@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Consultar Produtos - Celidone</title>
+        <link rel="stylesheet" href="../css/table.css" />
+        <link rel="stylesheet" href="../css/produto.css" />
+        <link rel="stylesheet" href="../css/shared.css" />
+    </head>
+    <body class="modern-theme">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <img
+                            src="../img/bowTie2.png"
+                            alt="Celidone"
+                            class="logo-small"
+                        />
+                        <h1 class="page-title">Consultar Produtos</h1>
+                    </div>
+                    <div class="header-actions">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="abrirCadastro()"
+                        >
+                            <span class="icon">➕</span> Novo Produto
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="window.close()"
+                        >
+                            <span class="icon">✕</span> Fechar
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <section class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="search-input">Pesquisar</label>
+                            <input
+                                type="text"
+                                id="search-input"
+                                class="form-control"
+                                placeholder="Código, categoria, cor..."
+                                onkeyup="filtrarProdutos()"
+                            />
+                        </div>
+                        <div class="filter-group">
+                            <label for="categoria-filter">Categoria</label>
+                            <select
+                                id="categoria-filter"
+                                class="form-control"
+                                onchange="filtrarProdutos()"
+                            >
+                                <option value="">Todas</option>
+                                <option value="terno">Terno</option>
+                                <option value="smoking">Smoking</option>
+                                <option value="fraque">Fraque</option>
+                                <option value="casaca">Casaca</option>
+                                <option value="acessorio">Acessório</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="status-filter">Status</label>
+                            <select
+                                id="status-filter"
+                                class="form-control"
+                                onchange="filtrarProdutos()"
+                            >
+                                <option value="">Todos</option>
+                                <option value="disponivel">Disponível</option>
+                                <option value="alugado">Alugado</option>
+                                <option value="manutencao">
+                                    Em manutenção
+                                </option>
+                                <option value="fora_linha">
+                                    Fora de linha
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="limparFiltros()"
+                            >
+                                <span class="icon">🗑️</span> Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Table -->
+            <section class="table-section">
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <span id="total-produtos"
+                                >0 produtos encontrados</span
+                            >
+                        </div>
+                        <div class="table-actions">
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="exportarProdutos()"
+                            >
+                                <span class="icon">📊</span> Exportar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="carregarProdutos()"
+                            >
+                                <span class="icon">🔄</span> Atualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table id="produtos-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Categoria</th>
+                                    <th>Tecido</th>
+                                    <th>Cor</th>
+                                    <th>Tamanho</th>
+                                    <th>Status</th>
+                                    <th>Valor Aluguel</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="produtos-tbody">
+                                <!-- Dados carregados dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-pagination">
+                        <div class="pagination-info">
+                            Mostrando <span id="showing-from">0</span> a
+                            <span id="showing-to">0</span> de
+                            <span id="total-records">0</span> registros
+                        </div>
+                        <div class="pagination-controls">
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                onclick="paginaAnterior()"
+                            >
+                                ‹ Anterior
+                            </button>
+                            <span id="current-page">1</span>
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                onclick="proximaPagina()"
+                            >
+                                Próxima ›
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loading -->
+            <div id="loading" class="loading-overlay" style="display: none">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Carregando produtos...</p>
+                </div>
+            </div>
+
+            <!-- Product Details Modal -->
+            <div id="product-modal" class="modal" style="display: none">
+                <div class="modal-content modal-lg">
+                    <div class="modal-header">
+                        <h3>Detalhes do Produto</h3>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            onclick="fecharModal()"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="product-details">
+                            <div class="details-row">
+                                <div class="detail-group">
+                                    <label>Código:</label>
+                                    <span id="modal-codigo"></span>
+                                </div>
+                                <div class="detail-group">
+                                    <label>Categoria:</label>
+                                    <span id="modal-categoria"></span>
+                                </div>
+                            </div>
+                            <div class="details-row">
+                                <div class="detail-group">
+                                    <label>Tecido:</label>
+                                    <span id="modal-tecido"></span>
+                                </div>
+                                <div class="detail-group">
+                                    <label>Cor:</label>
+                                    <span id="modal-cor"></span>
+                                </div>
+                            </div>
+                            <div class="details-row">
+                                <div class="detail-group">
+                                    <label>Tamanho:</label>
+                                    <span id="modal-tamanho"></span>
+                                </div>
+                                <div class="detail-group">
+                                    <label>Estado:</label>
+                                    <span id="modal-estado"></span>
+                                </div>
+                            </div>
+                            <div class="details-row">
+                                <div class="detail-group">
+                                    <label>Status:</label>
+                                    <span id="modal-status"></span>
+                                </div>
+                                <div class="detail-group">
+                                    <label>Valor Aluguel:</label>
+                                    <span id="modal-valor-aluguel"></span>
+                                </div>
+                            </div>
+                            <div class="details-row">
+                                <div class="detail-group full-width">
+                                    <label>Descrição:</label>
+                                    <span id="modal-descricao"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="editarProduto()"
+                        >
+                            <span class="icon">✏️</span> Editar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            onclick="confirmarExclusao()"
+                        >
+                            <span class="icon">🗑️</span> Excluir
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirm Delete Modal -->
+            <div id="confirm-delete-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Confirmar Exclusão</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>Tem certeza que deseja excluir este produto?</p>
+                        <p><strong>Esta ação não pode ser desfeita.</strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            onclick="excluirProduto()"
+                        >
+                            <span class="icon">🗑️</span> Excluir
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="success-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Sucesso!</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p id="success-message">
+                            Operação realizada com sucesso!
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="fecharModal()"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Modal -->
+            <div id="error-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Erro</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p id="error-message">Erro ao processar operação.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="../../scripts/produto-consultar.scripts.js"></script>
+    </body>
+</html>

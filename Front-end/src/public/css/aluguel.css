@@ -1,0 +1,342 @@
+/* =================================
+   ESTILOS ESPECÍFICOS DO MÓDULO DE ALUGUEL
+   ================================= */
+
+/* Seção de informações do cliente e produto */
+.info-section {
+    background-color: var(--color-background-light);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-base);
+    margin-bottom: var(--spacing-base);
+}
+
+.info-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.info-content {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+}
+
+.info-content .text-sm {
+    font-size: var(--font-size-xs);
+}
+
+.info-content .text-secondary {
+    color: var(--color-text-muted);
+}
+
+.info-content .font-medium {
+    font-weight: var(--font-weight-medium);
+}
+
+/* Tabela de aluguéis */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-base);
+}
+
+.table th,
+.table td {
+    padding: var(--spacing-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table th {
+    background-color: var(--color-background-light);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.025em;
+}
+
+.table tbody tr:hover {
+    background-color: var(--color-background-hover);
+    cursor: pointer;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: var(--color-background-light);
+}
+
+.table tbody tr:nth-child(even):hover {
+    background-color: var(--color-background-hover);
+}
+
+/* Badges de status */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.status-badge.ativo {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.status-badge.devolvido {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+}
+
+.status-badge.cancelado {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.status-badge.atrasado {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+/* Botões de ação */
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.action-buttons .btn {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    min-width: auto;
+    font-size: var(--font-size-xs);
+}
+
+.action-buttons .btn-sm {
+    padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
+    font-size: var(--font-size-xs);
+}
+
+/* Campos de valor calculado */
+.calculated-field {
+    background-color: var(--color-background-light);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    cursor: not-allowed;
+}
+
+.calculated-field:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Seção de resumo de valores */
+.values-summary {
+    background-color: var(--color-background-light);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-base);
+    margin-top: var(--spacing-base);
+}
+
+.values-summary h4 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text-primary);
+}
+
+.values-summary .value-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.values-summary .value-row:last-child {
+    border-bottom: none;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-lg);
+}
+
+.values-summary .value-label {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.values-summary .value-amount {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Alertas específicos do módulo */
+.alert-rental {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-left: 4px solid var(--color-primary);
+    padding: var(--spacing-base);
+    margin-bottom: var(--spacing-base);
+    border-radius: var(--border-radius);
+}
+
+.alert-rental .alert-title {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.alert-rental .alert-content {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+/* Formulário de aluguel responsivo */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-group {
+        width: 100%;
+    }
+
+    .info-section {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: var(--spacing-xs);
+    }
+}
+
+/* Estados de loading */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Validação visual */
+.form-group.has-error .form-input,
+.form-group.has-error .form-select {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+.form-group.has-success .form-input,
+.form-group.has-success .form-select {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1);
+}
+
+/* Tooltips para informações adicionais */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--color-text-primary);
+    color: var(--color-text-inverse);
+    text-align: center;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xs);
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: var(--font-size-xs);
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Customizações para campos específicos */
+.currency-field {
+    text-align: right;
+}
+
+.date-field {
+    width: 100%;
+}
+
+.textarea-field {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Melhorias de acessibilidade */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus indicators melhorados */
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.btn:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Impressão */
+@media print {
+    .btn,
+    .form-actions {
+        display: none !important;
+    }
+
+    .card {
+        break-inside: avoid;
+    }
+
+    .table {
+        font-size: 12px;
+    }
+}
