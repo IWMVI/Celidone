@@ -10,7 +10,7 @@ module.exports = [
             eqeqeq: "error",
             "no-console": "off",
             semi: ["error", "always"],
-            quotes: ["error", "single"],
+            quotes: ["error", "double"],
         },
     },
 ];
