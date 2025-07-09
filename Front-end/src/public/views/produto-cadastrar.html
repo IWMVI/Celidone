@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Cadastrar Produto - Celidone</title>
+        <link rel="stylesheet" href="../css/forms.css" />
+        <link rel="stylesheet" href="../css/produto.css" />
+        <link rel="stylesheet" href="../css/shared.css" />
+    </head>
+    <body class="modern-theme">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <img
+                            src="../img/bowTie2.png"
+                            alt="Celidone"
+                            class="logo-small"
+                        />
+                        <h1 class="page-title">Cadastrar Produto</h1>
+                    </div>
+                    <div class="header-actions">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="window.close()"
+                        >
+                            <span class="icon">✕</span> Fechar
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="form-container">
+                    <form id="produto-form" class="modern-form">
+                        <!-- Identificação -->
+                        <fieldset class="form-section">
+                            <legend>Identificação do Produto</legend>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="codigo" class="required"
+                                        >Código</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="codigo"
+                                        name="codigo"
+                                        class="form-control"
+                                        required
+                                        placeholder="PRD-0000"
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="categoria" class="required"
+                                        >Categoria</label
+                                    >
+                                    <select
+                                        id="categoria"
+                                        name="categoria"
+                                        class="form-control"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione a categoria
+                                        </option>
+                                        <option value="terno">Terno</option>
+                                        <option value="smoking">Smoking</option>
+                                        <option value="fraque">Fraque</option>
+                                        <option value="casaca">Casaca</option>
+                                        <option value="acessorio">
+                                            Acessório
+                                        </option>
+                                    </select>
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Características -->
+                        <fieldset class="form-section">
+                            <legend>Características do Produto</legend>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="tecido" class="required"
+                                        >Tecido</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="tecido"
+                                        name="tecido"
+                                        class="form-control"
+                                        required
+                                        placeholder="Ex: veludo, cetim, lã"
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="cor" class="required"
+                                        >Cor</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="cor"
+                                        name="cor"
+                                        class="form-control"
+                                        required
+                                        placeholder="Ex: preto, azul marinho"
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="tamanho" class="required"
+                                        >Tamanho</label
+                                    >
+                                    <select
+                                        id="tamanho"
+                                        name="tamanho"
+                                        class="form-control"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione o tamanho
+                                        </option>
+                                        <option value="PP">PP</option>
+                                        <option value="P">P</option>
+                                        <option value="M">M</option>
+                                        <option value="G">G</option>
+                                        <option value="GG">GG</option>
+                                        <option value="XG">XG</option>
+                                    </select>
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="estado" class="required"
+                                        >Estado</label
+                                    >
+                                    <select
+                                        id="estado"
+                                        name="estado"
+                                        class="form-control"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione o estado
+                                        </option>
+                                        <option value="novo">Novo</option>
+                                        <option value="usado_bom">
+                                            Usado - Bom estado
+                                        </option>
+                                        <option value="usado_regular">
+                                            Usado - Regular
+                                        </option>
+                                        <option value="danificado">
+                                            Danificado
+                                        </option>
+                                    </select>
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="status" class="required"
+                                        >Status</label
+                                    >
+                                    <select
+                                        id="status"
+                                        name="status"
+                                        class="form-control"
+                                        required
+                                    >
+                                        <option value="">
+                                            Selecione o status
+                                        </option>
+                                        <option value="disponivel">
+                                            Disponível
+                                        </option>
+                                        <option value="alugado">Alugado</option>
+                                        <option value="manutencao">
+                                            Em manutenção
+                                        </option>
+                                        <option value="fora_linha">
+                                            Fora de linha
+                                        </option>
+                                    </select>
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Valores -->
+                        <fieldset class="form-section">
+                            <legend>Valores</legend>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="valor-aluguel" class="required"
+                                        >Valor do Aluguel</label
+                                    >
+                                    <input
+                                        type="number"
+                                        id="valor-aluguel"
+                                        name="valor-aluguel"
+                                        class="form-control"
+                                        required
+                                        step="0.01"
+                                        min="0"
+                                        placeholder="0,00"
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="valor-venda"
+                                        >Valor de Venda</label
+                                    >
+                                    <input
+                                        type="number"
+                                        id="valor-venda"
+                                        name="valor-venda"
+                                        class="form-control"
+                                        step="0.01"
+                                        min="0"
+                                        placeholder="0,00"
+                                    />
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Observações -->
+                        <fieldset class="form-section">
+                            <legend>Observações</legend>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label for="descricao">Descrição</label>
+                                    <textarea
+                                        id="descricao"
+                                        name="descricao"
+                                        class="form-control"
+                                        rows="3"
+                                        placeholder="Descrição detalhada do produto..."
+                                    ></textarea>
+                                    <div class="field-feedback"></div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Botões -->
+                        <div class="form-actions">
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="limparFormulario()"
+                            >
+                                <span class="icon">🗑️</span> Limpar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="icon">💾</span> Salvar Produto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+
+            <!-- Loading -->
+            <div id="loading" class="loading-overlay" style="display: none">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Salvando produto...</p>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="success-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Sucesso!</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>Produto cadastrado com sucesso!</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="fecharModal()"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Modal -->
+            <div id="error-modal" class="modal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Erro</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p id="error-message">Erro ao cadastrar produto.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="fecharModal()"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="../../scripts/produto-cadastrar.scripts.js"></script>
+    </body>
+</html>
