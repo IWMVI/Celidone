@@ -10,6 +10,41 @@
         <title>Celidone - Cadastro de Clientes</title>
         <link rel="stylesheet" href="../../app/shared/styles/utilities.css" />
         <link rel="stylesheet" href="../../app/shared/styles/components.css" />
+
+        <!-- Hot Reload Script para desenvolvimento -->
+        <script>
+            if (
+                location.hostname === "localhost" ||
+                location.hostname === "127.0.0.1"
+            ) {
+                console.log("Hot reload ativo para desenvolvimento");
+
+                // Verifica mudanças nos arquivos CSS
+                setInterval(() => {
+                    const links = document.querySelectorAll(
+                        'link[rel="stylesheet"]'
+                    );
+                    links.forEach((link) => {
+                        const href = link.href;
+                        const newHref = href.includes("?")
+                            ? href.split("?")[0] + "?t=" + Date.now()
+                            : href + "?t=" + Date.now();
+                        if (link.href !== newHref) {
+                            link.href = newHref;
+                        }
+                    });
+                }, 1000);
+
+                // Listener para recarregar quando arquivos JS mudarem
+                // (Requer implementação no processo principal do Electron)
+                if (window.electronAPI && window.electronAPI.onFileChange) {
+                    window.electronAPI.onFileChange(() => {
+                        console.log("Arquivo modificado, recarregando...");
+                        location.reload();
+                    });
+                }
+            }
+        </script>
     </head>
     <body class="bg-secondary">
         <div class="container py-1">
@@ -148,9 +183,9 @@
                                         >CEP *</label
                                     >
                                     <input
-                                        type="text"
                                         id="cep"
                                         name="cep"
+                                        type="text"
                                         class="form-input"
                                         placeholder="00000-000"
                                         maxlength="9"
@@ -164,9 +199,9 @@
                                 <div class="form-group">
                                     <div style="height: 24px"></div>
                                     <button
-                                        type="button"
                                         id="buscar-cep-btn"
                                         class="btn btn-secondary"
+                                        type="button"
                                     >
                                         Buscar CEP
                                     </button>

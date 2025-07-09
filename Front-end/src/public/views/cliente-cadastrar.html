@@ -138,18 +138,25 @@
 
                             <div class="form-row">
                                 <div class="form-group col-md-3">
-                                    <label for="cep" class="required"
-                                        >CEP</label
-                                    >
-                                    <input
-                                        type="text"
-                                        id="cep"
-                                        name="cep"
-                                        class="form-control"
-                                        required
-                                        placeholder="00000-000"
-                                        maxlength="9"
-                                    />
+                                    <label for="cep" class="required">CEP</label>
+                                    <div style="display: flex; gap: 8px">
+                                        <input
+                                            type="text"
+                                            id="cep"
+                                            name="cep"
+                                            class="form-control"
+                                            required
+                                            placeholder="00000-000"
+                                            maxlength="9"
+                                        />
+                                        <button
+                                            type="button"
+                                            id="buscar-cep-btn"
+                                            class="btn btn-secondary"
+                                        >
+                                            Buscar CEP
+                                        </button>
+                                    </div>
                                     <div class="field-feedback"></div>
                                 </div>
                                 <div class="form-group col-md-6">
@@ -576,6 +583,15 @@
                     }
                 }, 5000);
             }
+
+            document.getElementById("buscar-cep-btn").addEventListener("click", function () {
+                const cep = document.getElementById("cep").value.replace(/\D/g, "");
+                if (cep.length === 8) {
+                    buscarCEP(cep);
+                } else {
+                    showNotification("Digite um CEP válido com 8 dígitos.", "error");
+                }
+            });
         </script>
     </body>
 </html>
