@@ -77,7 +77,7 @@ class ElectronApiService extends IApiService {
      */
     async buscarCep(cep) {
         if (!cep || cep.length < 8) {
-            throw new Error("CEP inválido");
+            return { success: false, error: "CEP inválido" };
         }
 
         const cepLimpo = cep.replace(/\D/g, "");
@@ -91,13 +91,16 @@ class ElectronApiService extends IApiService {
             );
 
             if (resultado.erro) {
-                throw new Error("CEP não encontrado");
+                return { success: false, error: "CEP não encontrado" };
             }
 
-            return resultado;
+            return { success: true, data: resultado };
         } catch (error) {
             console.error("Erro ao buscar CEP:", error);
-            throw new Error("Erro ao buscar CEP: " + error.message);
+            return {
+                success: false,
+                error: "Erro ao buscar CEP: " + error.message,
+            };
         }
     }
 
