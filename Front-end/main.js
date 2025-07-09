@@ -1,8 +1,12 @@
-const { app, ipcMain } = require("electron");
-const path = require("path");
-const WindowFactory = require("./src/app/core/services/WindowFactory");
-const ElectronApiService = require("./src/app/core/services/ElectronApiService");
-const HotReload = require("./src/app/core/services/HotReload");
+import { app, ipcMain } from "electron";
+import path from "path";
+import { fileURLToPath } from "url";
+import WindowFactory from "./src/app/core/services/WindowFactory.js";
+import ElectronApiService from "./src/app/core/services/ElectronApiService.js";
+import HotReload from "./src/app/core/services/HotReload.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 console.log("App object:", app);
 console.log("App whenReady:", app.whenReady);
@@ -272,8 +276,8 @@ const electronApp = new ElectronApp();
 // Hot Reload para desenvolvimento
 if (process.env.NODE_ENV === "development") {
     try {
-        require("electron-reload")(__dirname, {
-            electron: require("path").join(
+        import("electron-reload").then(reload => reload.default(__dirname, {
+            electron: path.join(
                 __dirname,
                 "node_modules",
                 ".bin",
@@ -285,11 +289,11 @@ if (process.env.NODE_ENV === "development") {
             awaitWriteFinish: true,
             // Inclua outros diretórios relevantes se necessário
             // Exemplo: watch: [__dirname, 'src', 'public']
-        });
+        }));
         console.log("Hot reload ativado!");
     } catch (error) {
         console.error("Electron reload não disponível:", error);
     }
 }
 
-module.exports = ElectronApp;
+export default ElectronApp;
