@@ -4,7 +4,8 @@
     "main": "main.js",
     "scripts": {
         "start": "electron .",
-        "dev": "NODE_ENV=development electron .",
+        "dev": "electron . --dev",
+        "dev:env": "cross-env NODE_ENV=development electron .",
         "build": "electron-builder",
         "test": "jest --detectOpenHandles",
         "test:watch": "jest --watchAll --detectOpenHandles",
@@ -41,6 +42,7 @@
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^6.6.3",
+        "cross-env": "^7.0.3",
         "electron-reload": "^2.0.0-alpha.1",
         "eslint": "^9.30.1",
         "jest": "^30.0.4",
