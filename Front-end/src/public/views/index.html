@@ -38,7 +38,7 @@
                     </section>
 
                     <section class="card-grid">
-                        <div class="card">
+                        <div class="card" data-module="cliente">
                             <div class="card-header">
                                 <h3 class="card-title">👥 Clientes</h3>
                             </div>
@@ -59,7 +59,7 @@
                             </div>
                         </div>
 
-                        <div class="card">
+                        <div class="card" data-module="produto">
                             <div class="card-header">
                                 <h3 class="card-title">👔 Produtos</h3>
                             </div>
@@ -80,7 +80,7 @@
                             </div>
                         </div>
 
-                        <div class="card">
+                        <div class="card" data-module="aluguel">
                             <div class="card-header">
                                 <h3 class="card-title">📋 Aluguéis</h3>
                             </div>
@@ -205,13 +205,19 @@
                 // Carrega informações do sistema
                 loadSystemInfo();
 
-                // Adiciona listeners para os botões
+                // Adiciona listeners para os cards e botões
+                document.querySelectorAll(".card[data-module]").forEach((card) => {
+                    card.style.cursor = "pointer";
+                    card.addEventListener("click", (e) => {
+                        const module = card.getAttribute("data-module");
+                        if (module) openWindow(module);
+                    });
+                });
                 document.querySelectorAll("[data-module]").forEach((button) => {
                     button.addEventListener("click", (e) => {
+                        e.stopPropagation(); // Evita duplo trigger se clicar no botão
                         const module = e.target.getAttribute("data-module");
-                        if (module) {
-                            openWindow(module);
-                        }
+                        if (module) openWindow(module);
                     });
                 });
 
