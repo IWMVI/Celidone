@@ -1,16 +1,15 @@
 package br.edu.fateczl.celidone.repository;
 
-import br.edu.fateczl.celidone.model.Cliente;
-import br.edu.fateczl.celidone.model.TipoPessoa;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import br.edu.fateczl.celidone.model.Cliente;
+import br.edu.fateczl.celidone.model.TipoPessoa;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
@@ -25,10 +24,12 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     long countByTipoPessoa(TipoPessoa tipoPessoa);
 
-    List<Cliente> findTop10ByOrderByDataCadastroDesc();
+    @Query("SELECT c FROM Cliente c ORDER BY c.dataCadastro DESC")
+    List<Cliente> findClientesRecentes();
 
-    @Query("SELECT c.cidade FROM Cliente c GROUP BY c.cidade ORDER BY COUNT(c) DESC")
-    String findCidadeComMaisClientes();
+    @Query("SELECT c.cidade FROM Cliente c WHERE c.cidade IS NOT NULL GROUP BY c.cidade ORDER BY COUNT(c) DESC")
+    List<String> findCidadesOrdenadasPorQuantidade();
 
-    long countByCidade(String cidade);
+    @Query("SELECT COUNT(c) FROM Cliente c WHERE c.cidade = :cidade")
+    long countByCidade(@Param("cidade") String cidade);
 }

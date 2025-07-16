@@ -1,6 +1,7 @@
 package br.edu.fateczl.celidone.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
  * Segue o princípio de separação de responsabilidades
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClienteStatsDTO {
@@ -24,4 +26,4 @@ public class ClienteStatsDTO {
     private Double mediaIdade;
     private String cidadeMaisClientes;
     private Long clientesCidadeMaisClientes;
-} 
+}

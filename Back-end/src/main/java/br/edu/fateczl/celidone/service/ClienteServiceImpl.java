@@ -70,8 +70,8 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente clienteExistente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + id));
 
-        // Validações de negócio
-        validarCliente(clienteDTO);
+        // Validações de negócio (excluindo o próprio cliente)
+        validarClienteParaAtualizacao(clienteDTO, id);
 
         // Atualiza os campos
         updateClienteFromDTO(clienteExistente, clienteDTO);
@@ -131,8 +131,10 @@ public class ClienteServiceImpl implements ClienteService {
                 .countByTipoPessoa(br.edu.fateczl.celidone.model.TipoPessoa.PESSOA_JURIDICA);
 
         // Cidade com mais clientes
-        String cidadeMaisClientes = clienteRepository.findCidadeComMaisClientes();
-        long clientesCidadeMaisClientes = clienteRepository.countByCidade(cidadeMaisClientes);
+        List<String> cidadesOrdenadas = clienteRepository.findCidadesOrdenadasPorQuantidade();
+        String cidadeMaisClientes = cidadesOrdenadas.isEmpty() ? "N/A" : cidadesOrdenadas.get(0);
+        long clientesCidadeMaisClientes = "N/A".equals(cidadeMaisClientes) ? 0L
+                : clienteRepository.countByCidade(cidadeMaisClientes);
 
         return ClienteStatsDTO.builder()
                 .totalClientes(totalClientes)
@@ -154,8 +156,9 @@ public class ClienteServiceImpl implements ClienteService {
     public List<ClienteResponseDTO> listarClientesRecentes(int limit) {
         log.info("Listando {} clientes mais recentes", limit);
 
-        List<Cliente> clientes = clienteRepository.findTop10ByOrderByDataCadastroDesc();
+        List<Cliente> clientes = clienteRepository.findClientesRecentes();
         return clientes.stream()
+                .limit(limit)
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -176,6 +179,35 @@ public class ClienteServiceImpl implements ClienteService {
                 && clienteDTO.getCnpj() != null && !clienteDTO.getCnpj().isEmpty()) {
             if (clienteRepository.existsByCnpj(clienteDTO.getCnpj())) {
                 throw new RuntimeException("CNPJ já cadastrado: " + clienteDTO.getCnpj());
+            }
+        }
+    }
+
+    /**
+     * Valida os dados do cliente para atualização (excluindo o próprio cliente)
+     */
+    private void validarClienteParaAtualizacao(ClienteDTO clienteDTO, Long idCliente) {
+        // Validação de email único (excluindo o próprio cliente)
+        if (clienteDTO.getEmail() != null && !clienteDTO.getEmail().isEmpty()) {
+            if (clienteRepository.existsByEmail(clienteDTO.getEmail())) {
+                // Verificar se não é o próprio cliente
+                Cliente clienteExistente = clienteRepository.findById(idCliente).orElse(null);
+                if (clienteExistente == null || !clienteDTO.getEmail().equals(clienteExistente.getEmail())) {
+                    throw new RuntimeException("Email já cadastrado: " + clienteDTO.getEmail());
+                }
+            }
+        }
+
+        // Validação de CNPJ único (excluindo o próprio cliente)
+        if (clienteDTO.getTipoPessoa() == br.edu.fateczl.celidone.model.TipoPessoa.PESSOA_JURIDICA
+                && clienteDTO.getCnpj() != null && !clienteDTO.getCnpj().isEmpty()) {
+            // Para CNPJ, vamos usar uma abordagem mais simples por enquanto
+            if (clienteRepository.existsByCnpj(clienteDTO.getCnpj())) {
+                // Verificar se não é o próprio cliente
+                Cliente clienteExistente = clienteRepository.findById(idCliente).orElse(null);
+                if (clienteExistente == null || !clienteDTO.getCnpj().equals(clienteExistente.getCnpj())) {
+                    throw new RuntimeException("CNPJ já cadastrado: " + clienteDTO.getCnpj());
+                }
             }
         }
     }
