@@ -1,0 +1,132 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
+}
+
+group = 'br.edu.fateczl.tcc'
+version = '0.0.1-SNAPSHOT'
+description = 'Celidone'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+
+	// ===============================
+	// 🌐 CORE
+	// ===============================
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// 🔐 Segurança
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// 📊 Monitoramento
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// ===============================
+	// 📦 BANCO
+	// ===============================
+	runtimeOnly 'org.postgresql:postgresql'
+	runtimeOnly 'com.h2database:h2'
+
+	// ===============================
+	// ⚡ PRODUTIVIDADE
+	// ===============================
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// ===============================
+	// 📄 DOCUMENTAÇÃO
+	// ===============================
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+	// ===============================
+	// 🔄 MIGRAÇÃO
+	// ===============================
+	implementation 'org.flywaydb:flyway-core'
+
+	// ===============================
+	// 🧪 TESTES (CORREÇÃO DEFINITIVA)
+	// ===============================
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+
+	// 🔥 CORREÇÃO DO ERRO DO JUNIT
+	testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+	testImplementation 'org.junit.platform:junit-platform-suite-api:1.10.3'
+	testRuntimeOnly 'org.junit.platform:junit-platform-suite-engine:1.10.3'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// 🧪 Testcontainers
+	testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+	testImplementation 'org.testcontainers:postgresql:1.19.7'
+
+	// 🌐 Teste de API
+	testImplementation 'io.rest-assured:rest-assured:5.4.0'
+
+	// 🔌 Mock externo
+	testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.1'
+
+	// 🧪 BDD
+	testImplementation 'io.cucumber:cucumber-java:7.15.0'
+	testImplementation 'io.cucumber:cucumber-spring:7.15.0'
+	testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.15.0'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+jacoco {
+	toolVersion = '0.8.13'
+}
+
+tasks.named('jacocoTestReport') {
+	dependsOn tasks.named('test')
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+	dependsOn tasks.named('test')
+	violationRules {
+		rule {
+			element = 'CLASS'
+			includes = ['br.edu.fateczl.celidone.tcc.trajes.service.ClienteService']
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 1.0
+			}
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 1.0
+			}
+		}
+	}
+}
+
+tasks.named('check') {
+	dependsOn tasks.named('jacocoTestCoverageVerification')
+}
