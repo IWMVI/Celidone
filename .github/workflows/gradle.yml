@@ -31,27 +31,43 @@ jobs:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
 
+      - name: Tornar gradlew executável
+        run: chmod +x gradlew
+
       - name: Setup Gradle com cache
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
         with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}  # só escreve cache na main
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
+      # ── Build ────────────────────────────────────────────────
       - name: Build com Gradle
         run: ./gradlew build -Dfile.encoding=UTF-8 --no-daemon
 
+      # ── Cucumber ─────────────────────────────────────────────
       - name: Rodar testes Cucumber
         run: ./gradlew test -Dfile.encoding=UTF-8 --no-daemon
 
-      - name: Publicar relatório de testes
+      # ── JaCoCo ───────────────────────────────────────────────
+      - name: Gerar relatório JaCoCo
+        if: always()
+        run: ./gradlew jacocoTestReport -Dfile.encoding=UTF-8 --no-daemon
+
+      - name: Verificar cobertura minima (80%)
+        run: ./gradlew jacocoTestCoverageVerification -Dfile.encoding=UTF-8 --no-daemon
+
+      # ── Artefatos ────────────────────────────────────────────
+      - name: Publicar relatórios
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: relatorio-testes-java${{ matrix.java-version }}
+          name: relatorio-java${{ matrix.java-version }}
           path: |
             build/reports/tests/test/
+            build/reports/jacoco/test/html/
             build/cucumber-reports/
           retention-days: 7
 
+      # ── Notificação ──────────────────────────────────────────
       - name: Notificar falha no PR
         if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -72,7 +88,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Só roda na main para não duplicar submissões
     if: github.ref == 'refs/heads/main'
 
     steps:
@@ -83,6 +98,9 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+
+      - name: Tornar gradlew executável
+        run: chmod +x gradlew
 
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
