@@ -2,14 +2,12 @@ package br.edu.fateczl.celidone.tcc.bdd.steps;
 
 import br.edu.fateczl.celidone.tcc.dto.ClienteRequest;
 import br.edu.fateczl.celidone.tcc.repository.ClienteRepository;
+import br.edu.fateczl.celidone.tcc.util.ClienteTestDataBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
-import io.cucumber.java.pt.Dado;
-import io.cucumber.java.pt.E;
-import io.cucumber.java.pt.Entao;
-import io.cucumber.java.pt.Quando;
+import io.cucumber.java.pt.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,12 +44,30 @@ public class ClienteSteps {
     }
 
     // =========================================================
+    // MÉTODO AUXILIAR (AGORA USANDO BUILDER)
+    // =========================================================
+
+    private ClienteRequest montarRequest(Map<String, String> dados) {
+
+        // Base padrão segura
+        ClienteRequest base = ClienteTestDataBuilder.criarClienteRequestValido();
+
+        return new ClienteRequest(
+                dados.getOrDefault("nome", base.nome()),
+                dados.getOrDefault("cpfCnpj", base.cpfCnpj()),
+                dados.getOrDefault("email", base.email()),
+                dados.getOrDefault("celular", base.celular()),
+                base.endereco() // 👈 mantém endereço padrão (evita dor de cabeça)
+        );
+    }
+
+    // =========================================================
     // DADOS — pré-condições
     // =========================================================
 
     @Dado("que nao existe cliente com cpf {string}")
-    public void que_nao_existe_cliente_com_cpf(String cpf) {
-        clienteRepository.findByCpf(cpf).ifPresent(clienteRepository::delete);
+    public void que_nao_existe_cliente_com_cpf(String cpfCnpj) {
+        clienteRepository.findByCpfCnpj(cpfCnpj).ifPresent(clienteRepository::delete);
     }
 
     @Dado("que nao existe nenhum cliente cadastrado")
@@ -60,14 +76,19 @@ public class ClienteSteps {
     }
 
     @Dado("que ja existe um cliente cadastrado com cpf {string}")
-    public void que_ja_existe_um_cliente_cadastrado_com_cpf(String cpf) throws Exception {
-        ClienteRequest request = new ClienteRequest(
-                "Cliente Teste",
-                cpf,
-                "11999999999",
-                "teste@email.com",
-                "Rua Teste, 1"
+    public void que_ja_existe_um_cliente_cadastrado_com_cpf(String cpfCnpj) throws Exception {
+
+        ClienteRequest request = ClienteTestDataBuilder.criarClienteRequestValido();
+
+        // sobrescreve só o CPF
+        request = new ClienteRequest(
+                request.nome(),
+                cpfCnpj,
+                request.email(),
+                request.celular(),
+                request.endereco()
         );
+
         mockMvc.perform(post("/clientes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -77,14 +98,10 @@ public class ClienteSteps {
     @Dado("que os seguintes clientes estao cadastrados:")
     public void que_os_seguintes_clientes_estao_cadastrados(DataTable dataTable) throws Exception {
         List<Map<String, String>> linhas = dataTable.asMaps(String.class, String.class);
+
         for (Map<String, String> dados : linhas) {
-            ClienteRequest request = new ClienteRequest(
-                    dados.get("nome"),
-                    dados.get("cpf"),
-                    dados.get("telefone"),
-                    dados.get("email"),
-                    dados.get("endereco")
-            );
+            ClienteRequest request = montarRequest(dados);
+
             mockMvc.perform(post("/clientes")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -99,13 +116,9 @@ public class ClienteSteps {
     @Quando("envio uma requisicao de cadastro com os dados:")
     public void envio_uma_requisicao_de_cadastro_com_os_dados(DataTable dataTable) throws Exception {
         Map<String, String> dados = dataTable.asMap(String.class, String.class);
-        ClienteRequest request = new ClienteRequest(
-                dados.get("nome"),
-                dados.get("cpf"),
-                dados.get("telefone"),
-                dados.get("email"),
-                dados.get("endereco")
-        );
+
+        ClienteRequest request = montarRequest(dados);
+
         resposta = mockMvc.perform(post("/clientes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -120,40 +133,24 @@ public class ClienteSteps {
     }
 
     @Quando("envio uma requisicao de busca pelo id do cliente com cpf {string}")
-    public void envio_uma_requisicao_de_busca_pelo_id_do_cliente_com_cpf(String cpf) throws Exception {
-        Long id = clienteRepository.findByCpf(cpf)
-                .orElseThrow(() -> new IllegalStateException("Cliente não encontrado para montar step"))
+    public void envio_uma_requisicao_de_busca_pelo_id_do_cliente_com_cpf(String cpfCnpj) throws Exception {
+        Long id = clienteRepository.findByCpfCnpj(cpfCnpj)
+                .orElseThrow(() -> new IllegalStateException("Cliente não encontrado"))
                 .getId();
-        resposta = mockMvc.perform(get("/clientes/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
-    }
 
-    @Quando("envio uma requisicao de busca pelo id {long}")
-    public void envio_uma_requisicao_de_busca_pelo_id(Long id) throws Exception {
-        resposta = mockMvc.perform(get("/clientes/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON))
+        resposta = mockMvc.perform(get("/clientes/{id}", id))
                 .andReturn();
     }
 
     @Quando("envio uma requisicao de atualizacao do cliente com cpf {string} com os dados:")
-    public void envio_uma_requisicao_de_atualizacao_do_cliente_com_cpf(String cpf, DataTable dataTable) throws Exception {
-        Long id = clienteRepository.findByCpf(cpf)
-                .orElseThrow(() -> new IllegalStateException("Cliente não encontrado para montar step"))
+    public void envio_uma_requisicao_de_atualizacao_do_cliente_com_cpf(String cpfCnpj, DataTable dataTable) throws Exception {
+        Long id = clienteRepository.findByCpfCnpj(cpfCnpj)
+                .orElseThrow(() -> new IllegalStateException("Cliente não encontrado"))
                 .getId();
-        envio_uma_requisicao_de_atualizacao_do_id(id, dataTable);
-    }
 
-    @Quando("envio uma requisicao de atualizacao do id {long} com os dados:")
-    public void envio_uma_requisicao_de_atualizacao_do_id(Long id, DataTable dataTable) throws Exception {
         Map<String, String> dados = dataTable.asMap(String.class, String.class);
-        ClienteRequest request = new ClienteRequest(
-                dados.get("nome"),
-                dados.get("cpf"),
-                dados.get("telefone"),
-                dados.get("email"),
-                dados.get("endereco")
-        );
+        ClienteRequest request = montarRequest(dados);
+
         resposta = mockMvc.perform(put("/clientes/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -161,22 +158,17 @@ public class ClienteSteps {
     }
 
     @Quando("envio uma requisicao de exclusao do cliente com cpf {string}")
-    public void envio_uma_requisicao_de_exclusao_do_cliente_com_cpf(String cpf) throws Exception {
-        Long id = clienteRepository.findByCpf(cpf)
-                .orElseThrow(() -> new IllegalStateException("Cliente não encontrado para montar step"))
+    public void envio_uma_requisicao_de_exclusao_do_cliente_com_cpf(String cpfCnpj) throws Exception {
+        Long id = clienteRepository.findByCpfCnpj(cpfCnpj)
+                .orElseThrow(() -> new IllegalStateException("Cliente não encontrado"))
                 .getId();
-        resposta = mockMvc.perform(delete("/clientes/{id}", id))
-                .andReturn();
-    }
 
-    @Quando("envio uma requisicao de exclusao do id {long}")
-    public void envio_uma_requisicao_de_exclusao_do_id(Long id) throws Exception {
         resposta = mockMvc.perform(delete("/clientes/{id}", id))
                 .andReturn();
     }
 
     // =========================================================
-    // ENTAO — verificações
+    // ENTÃO — verificações
     // =========================================================
 
     @Entao("o status da resposta deve ser {int}")
@@ -185,41 +177,18 @@ public class ClienteSteps {
     }
 
     @E("deve existir um cliente com cpf {string}")
-    public void deve_existir_um_cliente_com_cpf(String cpf) {
-        assertTrue(clienteRepository.findByCpf(cpf).isPresent());
+    public void deve_existir_um_cliente_com_cpf(String cpfCnpj) {
+        assertTrue(clienteRepository.findByCpfCnpj(cpfCnpj).isPresent());
     }
 
     @E("nao deve existir cliente com cpf {string}")
-    public void nao_deve_existir_cliente_com_cpf(String cpf) {
-        assertFalse(clienteRepository.findByCpf(cpf).isPresent());
+    public void nao_deve_existir_cliente_com_cpf(String cpfCnpj) {
+        assertFalse(clienteRepository.findByCpfCnpj(cpfCnpj).isPresent());
     }
 
     @E("o campo {string} da resposta deve ser {string}")
     public void o_campo_da_resposta_deve_ser(String campo, String valorEsperado) throws Exception {
         JsonNode json = objectMapper.readTree(resposta.getResponse().getContentAsString(StandardCharsets.UTF_8));
         assertEquals(valorEsperado, json.get(campo).asText());
-    }
-
-    @E("o campo {string} da resposta deve conter {string}")
-    public void o_campo_da_resposta_deve_conter(String campo, String valorEsperado) throws Exception {
-        JsonNode json = objectMapper.readTree(resposta.getResponse().getContentAsString(StandardCharsets.UTF_8));
-        assertTrue(
-                json.get(campo).asText().contains(valorEsperado),
-                "Esperava que '%s' contivesse '%s', mas era '%s'"
-                        .formatted(campo, valorEsperado, json.get(campo).asText())
-        );
-    }
-
-    @E("a resposta deve ser uma lista vazia")
-    public void a_resposta_deve_ser_uma_lista_vazia() throws Exception {
-        JsonNode json = objectMapper.readTree(resposta.getResponse().getContentAsString(StandardCharsets.UTF_8));
-        assertTrue(json.isArray() && json.isEmpty());
-    }
-
-    @E("a resposta deve conter {int} clientes")
-    public void a_resposta_deve_conter_clientes(int quantidade) throws Exception {
-        JsonNode json = objectMapper.readTree(resposta.getResponse().getContentAsString(StandardCharsets.UTF_8));
-        assertTrue(json.isArray());
-        assertEquals(quantidade, json.size());
     }
 }

@@ -10,14 +10,14 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 
 @Entity
-@Getter
+@Data
 @Builder
 @Table(name = "cliente")
 @AllArgsConstructor
