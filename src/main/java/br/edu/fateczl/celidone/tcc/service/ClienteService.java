@@ -56,7 +56,7 @@ public class ClienteService {
             validarCpfUnico(novosDados.getCpfCnpj());
         }
 
-        cliente.atualizar(novosDados.getNome(), novosDados.getCpfCnpj(), novosDados.getCpfCnpj(), novosDados.getEmail(), novosDados.getEndereco());
+        cliente.atualizar(novosDados.getNome(), novosDados.getCpfCnpj(), novosDados.getEmail(), novosDados.getCelular(), novosDados.getEndereco());
 
         return repository.save(cliente);
     }
