@@ -17,7 +17,3 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PUBLISH_QUIET_P
 @ConfigurationParameter(key = PLUGIN_PUBLISH_QUIET_PROPERTY_NAME, value = "true")
 public class CucumberTest {
 }
-
-
-
-
