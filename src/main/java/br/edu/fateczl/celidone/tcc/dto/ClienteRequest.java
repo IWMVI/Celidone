@@ -1,12 +1,30 @@
 package br.edu.fateczl.celidone.tcc.dto;
 
+import br.edu.fateczl.celidone.tcc.domain.Endereco;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 public record ClienteRequest(
-        @NotBlank(message = "Nome é obrigatório") String nome,
-        @NotBlank(message = "CPF é obrigatório") String cpf,
-        @NotBlank(message = "Telefone é obrigatório") String telefone,
-        @Email(message = "Email inválido") @NotBlank(message = "Email é obrigatório") String email,
-        @NotBlank(message = "Endereço é obrigatório") String endereco) {
-}
+        @NotBlank(message = "Nome é obrigatório")
+        @Max(value = 50, message = "Nome deve ter no máximo 50 caracteres")
+        String nome,
+
+        @NotBlank(message = "CPF ou CNPJ é obrigatório")
+        @Pattern(regexp = "^(\\d{11}|\\d{14})$", message = "CPF ou CNPJ inválido")
+        String cpfCnpj,
+
+        @Email(message = "Email inválido")
+        @NotBlank(message = "Email é obrigatório")
+        @Max(value = 50, message = "Email deve ter no máximo 50 caracteres")
+        String email,
+
+        @NotBlank(message = "Celular é obrigatório")
+        @Pattern(regexp = "^\\d{11}$", message = "Celular deve ter 11 dígitos")
+        String celular,
+
+        @NotNull(message = "Endereço é obrigatório")
+        Endereco endereco
+) { }

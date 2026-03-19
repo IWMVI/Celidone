@@ -6,12 +6,15 @@ import br.edu.fateczl.celidone.tcc.dto.ClienteResponse;
 
 public class ClienteMapper {
 
+    // Impede a criação de instâncias da classe
+    private ClienteMapper () { }
+
     public static Cliente toEntity(ClienteRequest dto) {
         return Cliente.builder()
                 .nome(dto.nome())
-                .cpf(dto.cpf())
-                .telefone(dto.telefone())
+                .cpfCnpj(dto.cpfCnpj())
                 .email(dto.email())
+                .celular(dto.celular())
                 .endereco(dto.endereco())
                 .build();
     }
@@ -20,10 +23,11 @@ public class ClienteMapper {
         return new ClienteResponse(
                 cliente.getId(),
                 cliente.getNome(),
-                cliente.getCpf(),
-                cliente.getTelefone(),
+                cliente.getCpfCnpj(),
                 cliente.getEmail(),
-                cliente.getEndereco()
+                cliente.getCelular(),
+                cliente.getEndereco(),
+                cliente.getDataCadastro()
         );
     }
 }
