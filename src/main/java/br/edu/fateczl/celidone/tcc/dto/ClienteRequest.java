@@ -2,14 +2,14 @@ package br.edu.fateczl.celidone.tcc.dto;
 
 import br.edu.fateczl.celidone.tcc.domain.Endereco;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record ClienteRequest(
         @NotBlank(message = "Nome é obrigatório")
-        @Max(value = 50, message = "Nome deve ter no máximo 50 caracteres")
+        @Size(max = 50, message = "Nome deve ter no máximo 50 caracteres")
         String nome,
 
         @NotBlank(message = "CPF ou CNPJ é obrigatório")
@@ -18,7 +18,7 @@ public record ClienteRequest(
 
         @Email(message = "Email inválido")
         @NotBlank(message = "Email é obrigatório")
-        @Max(value = 50, message = "Email deve ter no máximo 50 caracteres")
+        @Size(max = 50, message = "Email deve ter no máximo 50 caracteres")
         String email,
 
         @NotBlank(message = "Celular é obrigatório")
