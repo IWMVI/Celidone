@@ -1,13 +1,26 @@
 package br.edu.fateczl.celidone.tcc.domain;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDate;
 
 @Entity
 @Getter
 @Builder
+@Table(name = "cliente")
 @AllArgsConstructor
-@Table(name = "clientes")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Cliente {
 
@@ -15,24 +28,37 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 50, nullable = false)
     private String nome;
-    private String cpf;
+
+    @Column(length = 14, nullable = false, unique = true)
+    private String cpfCnpj;
+
+    @Column(length = 50, nullable = false, unique = true)
     private String email;
-    private String telefone;
+
+    @Column(length = 11, nullable = false)
     private String celular;
-    private String endereco;
+
+    @Embedded
+    private Endereco endereco;
+
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDate dataCadastro;
+
 
     public void atualizar(
             String nome,
-            String cpf,
-            String telefone,
+            String cpfCnpj,
             String email,
-            String endereco
+            String celular,
+            Endereco endereco
     ) {
         this.nome = nome;
-        this.cpf = cpf;
-        this.telefone = telefone;
+        this.cpfCnpj = cpfCnpj;
         this.email = email;
+        this.celular = celular;
         this.endereco = endereco;
     }
 }

@@ -19,32 +19,32 @@ public class ClienteService {
     }
 
     // ===============================
-    // 📌 CREATE
+    // CREATE
     // ===============================
     @Transactional
     public Cliente criar(Cliente cliente) {
         validar(cliente);
-        validarCpfUnico(cliente.getCpf());
+        validarCpfUnico(cliente.getCpfCnpj());
 
         return repository.save(cliente);
     }
 
     // ===============================
-    // 📌 READ - LISTAR
+    // READ - LISTAR
     // ===============================
     public List<Cliente> listar() {
         return repository.findAll();
     }
 
     // ===============================
-    // 📌 READ - POR ID
+    // READ - POR ID
     // ===============================
     public Cliente buscarPorId(Long id) {
         return repository.findById(id).orElseThrow(() -> new BusinessException("Cliente não encontrado"));
     }
 
     // ===============================
-    // 📌 UPDATE
+    // UPDATE
     // ===============================
     @Transactional
     public Cliente atualizar(Long id, Cliente novosDados) {
@@ -52,17 +52,17 @@ public class ClienteService {
         Cliente cliente = buscarPorId(id);
 
         // Se CPF mudou, valida duplicidade
-        if (!cliente.getCpf().equals(novosDados.getCpf())) {
-            validarCpfUnico(novosDados.getCpf());
+        if (!cliente.getCpfCnpj().equals(novosDados.getCpfCnpj())) {
+            validarCpfUnico(novosDados.getCpfCnpj());
         }
 
-        cliente.atualizar(novosDados.getNome(), novosDados.getCpf(), novosDados.getTelefone(), novosDados.getEmail(), novosDados.getEndereco());
+        cliente.atualizar(novosDados.getNome(), novosDados.getCpfCnpj(), novosDados.getCpfCnpj(), novosDados.getEmail(), novosDados.getEndereco());
 
         return repository.save(cliente);
     }
 
     // ===============================
-    // 📌 DELETE
+    // DELETE
     // ===============================
     @Transactional
     public void deletar(Long id) {
@@ -70,17 +70,18 @@ public class ClienteService {
         repository.delete(cliente);
     }
 
-    // ===============================
-    // 🔒 REGRAS DE NEGÓCIO
-    // ===============================
 
+
+    // ===============================
+    // REGRAS DE NEGÓCIO
+    // ===============================
     private void validar(Cliente cliente) {
 
         if (cliente.getNome() == null || cliente.getNome().isBlank()) {
             throw new BusinessException("Nome é obrigatório");
         }
 
-        if (cliente.getCpf() == null || cliente.getCpf().isBlank()) {
+        if (cliente.getCpfCnpj() == null || cliente.getCpfCnpj().isBlank()) {
             throw new BusinessException("CPF é obrigatório");
         }
 
@@ -88,18 +89,18 @@ public class ClienteService {
             throw new BusinessException("Email é obrigatório");
         }
 
-        if (cliente.getTelefone() == null || cliente.getTelefone().isBlank()) {
+        if (cliente.getCelular() == null || cliente.getCelular().isBlank()) {
             throw new BusinessException("Telefone é obrigatório");
         }
 
-        if (cliente.getEndereco() == null || cliente.getEndereco().isBlank()) {
+        if (cliente.getEndereco() == null) {
             throw new BusinessException("Endereço é obrigatório");
         }
     }
 
     private void validarCpfUnico(String cpf) {
-        repository.findByCpf(cpf).ifPresent(c -> {
-            throw new BusinessException("CPF já cadastrado");
+        repository.findByCpfCnpj(cpf).ifPresent(c -> {
+            throw new BusinessException("CPF ou CNPJ já cadastrado");
         });
     }
 }
