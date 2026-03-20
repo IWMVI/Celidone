@@ -9,36 +9,35 @@ Funcionalidade: Gerenciamento de clientes
   Esquema do Cenario: Nao deve criar cliente quando campo obrigatorio estiver ausente
     Dado que nao existe cliente com cpf "<cpfCnpj>"
     Quando envio uma requisicao de cadastro com os dados:
-      | nome     | cpfCnpj     | email       | celular     | cep       | logradouro     | numero | cidade       | bairro | estado | complemento |
-      | <nome>  | <cpfCnpj>   | <email>     | <celular>   | <cep>     | <logradouro>   | <numero> | <cidade>    | <bairro> | <estado> | <complemento> |
+      | nome   | cpfCnpj     | email         | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | <nome> | <cpfCnpj>   | <email>       | <celular>    | <cep>    | <logradouro>  | <numero> | <cidade> | <bairro> | <estado> | <complemento> |
     Entao o status da resposta deve ser 400
     E o campo "message" da resposta deve conter "<mensagem>"
 
     Exemplos:
-      | nome         | cpfCnpj       | email           | celular      | cep       | logradouro     | numero | cidade      | bairro | estado | complemento | mensagem               |
-      |             | 12345678901   | a@email.com     | 11999999999  | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    | Nome é obrigatório     |
-      | Wallace     |               | a@email.com     | 11999999999  | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    | CPF é obrigatório      |
-      | Wallace     | 12345678901   | a@email.com     |              | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    | Celular é obrigatório |
-      | Wallace     | 12345678901   |                 | 11999999999  | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    | Email é obrigatório    |
-      | Wallace     | 12345678901   | a@email.com     | 11999999999  |           |                |        |            |        |        |             | Endereço é obrigatório |
+      | nome    | cpfCnpj     | email         | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento | mensagem                     |
+      |         | 12345678901 | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Nome é obrigatório           |
+      | Teste   |             | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | CPF ou CNPJ é obrigatório    |
+      | Teste   | 12345678901 |               | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Email é obrigatório          |
+      | Teste   | 12345678901 | a@email.com   |              | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Celular é obrigatório        |
 
   Cenario: Deve criar cliente quando todos os dados sao validos
     Dado que nao existe cliente com cpf "12345678901"
     Quando envio uma requisicao de cadastro com os dados:
-      | nome          | cpfCnpj       | email           | celular     | cep       | logradouro     | numero | cidade      | bairro | estado | complemento |
-      | João da Silva | 12345678901   | joao@email.com  | 11999999999 | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    |
+      | nome           | cpfCnpj     | email           | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Joao da Silva  | 12345678901 | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
     Entao o status da resposta deve ser 200
     E deve existir um cliente com cpf "12345678901"
     E o campo "cpfCnpj" da resposta deve ser "12345678901"
-    E o campo "nome" da resposta deve ser "João da Silva"
+    E o campo "nome" da resposta deve ser "Joao da Silva"
 
   Cenario: Nao deve criar cliente com CPF ja cadastrado
     Dado que ja existe um cliente cadastrado com cpf "12345678901"
     Quando envio uma requisicao de cadastro com os dados:
-      | nome             | cpfCnpj       | email             | celular     | cep       | logradouro     | numero | cidade      | bairro | estado | complemento |
-      | Empresa XPTO LTDA | 12345678901   | empresa@email.com | 11988888888 | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    |
+      | nome              | cpfCnpj     | email             | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Empresa XPTO LTDA | 12345678901 | empresa@email.com | 11988888888  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
     Entao o status da resposta deve ser 409
-    E o campo "message" da resposta deve conter "CPF já cadastrado"
+    E o campo "message" da resposta deve conter "CPF ou CNPJ já cadastrado"
 
   # ==========================
   # LISTAR
@@ -52,9 +51,9 @@ Funcionalidade: Gerenciamento de clientes
 
   Cenario: Deve retornar todos os clientes cadastrados
     Dado que os seguintes clientes estao cadastrados:
-      | nome           | cpfCnpj       | email          | celular     | cep       | logradouro     | numero | cidade      | bairro | estado | complemento |
-      | João da Silva  | 12345678901   | joao@email.com | 11999999999 | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    |
-      | Empresa XPTO   | 12345678000195| empresa@email.com | 11988888888 | 01001000  | Praça da Sé  | 100    | São Paulo  | Sé     | SP     | Sala 101    |
+      | nome          | cpfCnpj       | email            | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Joao da Silva | 12345678901   | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
+      | Empresa XPTO  | 12345678000195| empresa@email.com| 11988888888  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
     Quando envio uma requisicao de listagem de clientes
     Entao o status da resposta deve ser 200
     E a resposta deve conter 2 clientes
@@ -81,8 +80,8 @@ Funcionalidade: Gerenciamento de clientes
   Cenario: Deve atualizar cliente quando dados forem validos e CPF nao mudar
     Dado que ja existe um cliente cadastrado com cpf "12345678901"
     Quando envio uma requisicao de atualizacao do cliente com cpf "12345678901" com os dados:
-      | nome              | cpfCnpj       | email                  | celular     | cep       | logradouro        | numero | cidade       | bairro | estado | complemento |
-      | Cliente Atualizado | 12345678901   | cliente.atualizado@email.com | 11977777777 | 20040002 | Rua da Assembleia | 200    | Rio de Janeiro | Centro | RJ     | Apto 502    |
+      | nome                | cpfCnpj     | email                      | celular      | cep      | logradouro           | numero | cidade          | bairro | estado | complemento |
+      | Cliente Atualizado  | 12345678901 | cliente.atualizado@email.com| 11977777777  | 20040002 | Rua da Assembleia   | 200    | Rio de Janeiro  | Centro | RJ     | Apto 502    |
     Entao o status da resposta deve ser 200
     E o campo "nome" da resposta deve ser "Cliente Atualizado"
     E o campo "email" da resposta deve ser "cliente.atualizado@email.com"
@@ -91,8 +90,8 @@ Funcionalidade: Gerenciamento de clientes
     Dado que ja existe um cliente cadastrado com cpf "12345678901"
     E que nao existe cliente com cpf "00000000001"
     Quando envio uma requisicao de atualizacao do cliente com cpf "12345678901" com os dados:
-      | nome           | cpfCnpj       | email        | celular     | cep       | logradouro     | numero | cidade      | bairro | estado | complemento |
-      | Wallace        | 00000000001   | w@email.com  | 11999999999 | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    |
+      | nome    | cpfCnpj     | email        | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Teste   | 00000000001 | w@email.com | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
     Entao o status da resposta deve ser 200
     E o campo "cpfCnpj" da resposta deve ser "00000000001"
 
@@ -100,15 +99,15 @@ Funcionalidade: Gerenciamento de clientes
     Dado que ja existe um cliente cadastrado com cpf "12345678901"
     E que ja existe um cliente cadastrado com cpf "12345678000195"
     Quando envio uma requisicao de atualizacao do cliente com cpf "12345678901" com os dados:
-      | nome           | cpfCnpj       | email        | celular     | cep       | logradouro     | numero | cidade      | bairro | estado | complemento |
-      | Wallace        | 12345678000195| w@email.com  | 11999999999 | 01001000  | Praça da Sé    | 100    | São Paulo  | Sé     | SP     | Sala 101    |
+      | nome    | cpfCnpj       | email              | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Teste   | 12345678000195| 12345678000195@email.com | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
     Entao o status da resposta deve ser 409
-    E o campo "message" da resposta deve conter "CPF já cadastrado"
+    E o campo "message" da resposta deve conter "CPF ou CNPJ já cadastrado"
 
   Cenario: Deve retornar erro ao atualizar cliente com ID inexistente
     Quando envio uma requisicao de atualizacao do id 999999 com os dados:
-      | nome           | cpfCnpj       | email        | celular     | cep       | logradouro | numero | cidade | bairro | estado | complemento |
-      | Fantasma       | 11111111111   | x@email.com  | 11999999999 | 00000000  | Rua X      | 0      | Cidade X | Bairro X | XX     | Apto 0 |
+      | nome    | cpfCnpj     | email        | celular      | cep      | logradouro | numero | cidade    | bairro    | estado | complemento |
+      | Fantasma| 11111111111 | x@email.com | 11999999999  | 00000000 | Rua X      | 0      | Cidade X  | Bairro X  | XX     | Apto 0      |
     Entao o status da resposta deve ser 404
     E o campo "message" da resposta deve conter "Cliente não encontrado"
 

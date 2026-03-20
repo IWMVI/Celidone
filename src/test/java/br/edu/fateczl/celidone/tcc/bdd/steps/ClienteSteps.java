@@ -1,8 +1,9 @@
 package br.edu.fateczl.celidone.tcc.bdd.steps;
 
+import br.edu.fateczl.celidone.tcc.domain.Endereco;
 import br.edu.fateczl.celidone.tcc.dto.ClienteRequest;
+import br.edu.fateczl.celidone.tcc.enums.SiglaEstados;
 import br.edu.fateczl.celidone.tcc.repository.ClienteRepository;
-import br.edu.fateczl.celidone.tcc.util.ClienteTestDataBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -49,16 +51,39 @@ public class ClienteSteps {
 
     private ClienteRequest montarRequest(Map<String, String> dados) {
 
-        // Base padrão segura
-        ClienteRequest base = ClienteTestDataBuilder.criarClienteRequestValido();
+        Endereco endereco = new Endereco(
+                getOrDefault(dados, "cep", ""),
+                getOrDefault(dados, "logradouro", ""),
+                getOrDefault(dados, "numero", ""),
+                getOrDefault(dados, "cidade", ""),
+                getOrDefault(dados, "bairro", ""),
+                parseEstado(dados.get("estado")),
+                dados.get("complemento")
+        );
 
         return new ClienteRequest(
-                dados.getOrDefault("nome", base.nome()),
-                dados.getOrDefault("cpfCnpj", base.cpfCnpj()),
-                dados.getOrDefault("email", base.email()),
-                dados.getOrDefault("celular", base.celular()),
-                base.endereco() // 👈 mantém endereço padrão (evita dor de cabeça)
+                dados.getOrDefault("nome", ""),
+                dados.getOrDefault("cpfCnpj", ""),
+                dados.getOrDefault("email", ""),
+                dados.getOrDefault("celular", ""),
+                endereco
         );
+    }
+
+    private String getOrDefault(Map<String, String> dados, String key, String defaultValue) {
+        String value = dados.get(key);
+        return (value != null && !value.trim().isEmpty()) ? value : defaultValue;
+    }
+
+    private SiglaEstados parseEstado(String estado) {
+        if (estado == null || estado.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return SiglaEstados.valueOf(estado.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     // =========================================================
@@ -78,15 +103,16 @@ public class ClienteSteps {
     @Dado("que ja existe um cliente cadastrado com cpf {string}")
     public void que_ja_existe_um_cliente_cadastrado_com_cpf(String cpfCnpj) throws Exception {
 
-        ClienteRequest request = ClienteTestDataBuilder.criarClienteRequestValido();
+        Endereco endereco = new Endereco(
+                "01001000", "Rua Exemplo", "100", "Sao Paulo", "Centro", SiglaEstados.SP, "Sala 101"
+        );
 
-        // sobrescreve só o CPF
-        request = new ClienteRequest(
-                request.nome(),
+        ClienteRequest request = new ClienteRequest(
+                "Cliente Teste",
                 cpfCnpj,
-                request.email(),
-                request.celular(),
-                request.endereco()
+                cpfCnpj + "@email.com",
+                "11999999999",
+                endereco
         );
 
         mockMvc.perform(post("/clientes")
@@ -115,7 +141,11 @@ public class ClienteSteps {
 
     @Quando("envio uma requisicao de cadastro com os dados:")
     public void envio_uma_requisicao_de_cadastro_com_os_dados(DataTable dataTable) throws Exception {
-        Map<String, String> dados = dataTable.asMap(String.class, String.class);
+        List<Map<String, String>> linhas = dataTable.asMaps(String.class, String.class);
+        if (linhas.isEmpty()) {
+            throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
+        }
+        Map<String, String> dados = linhas.get(0);
 
         ClienteRequest request = montarRequest(dados);
 
@@ -148,7 +178,11 @@ public class ClienteSteps {
                 .orElseThrow(() -> new IllegalStateException("Cliente não encontrado"))
                 .getId();
 
-        Map<String, String> dados = dataTable.asMap(String.class, String.class);
+        List<Map<String, String>> linhas = dataTable.asMaps(String.class, String.class);
+        if (linhas.isEmpty()) {
+            throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
+        }
+        Map<String, String> dados = linhas.get(0);
         ClienteRequest request = montarRequest(dados);
 
         resposta = mockMvc.perform(put("/clientes/{id}", id)
@@ -190,5 +224,53 @@ public class ClienteSteps {
     public void o_campo_da_resposta_deve_ser(String campo, String valorEsperado) throws Exception {
         JsonNode json = objectMapper.readTree(resposta.getResponse().getContentAsString(StandardCharsets.UTF_8));
         assertEquals(valorEsperado, json.get(campo).asText());
+    }
+
+    @Entao("a resposta deve ser uma lista vazia")
+    public void a_resposta_deve_ser_uma_lista_vazia() throws Exception {
+        JsonNode json = objectMapper.readTree(resposta.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        assertTrue(json.isArray(), "A resposta deve ser um array");
+        assertEquals(0, json.size(), "A lista deve estar vazia");
+    }
+
+    @Entao("a resposta deve conter {int} clientes")
+    public void a_resposta_deve_conter_clientes(Integer quantidade) throws Exception {
+        JsonNode json = objectMapper.readTree(resposta.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        assertTrue(json.isArray(), "A resposta deve ser um array");
+        assertEquals(quantidade, json.size(), "A lista deve conter " + quantidade + " clientes");
+    }
+
+    @E("o campo {string} da resposta deve conter {string}")
+    public void o_campo_da_resposta_deve_conter(String campo, String valorEsperado) throws Exception {
+        JsonNode json = objectMapper.readTree(resposta.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        assertTrue(json.get(campo).asText().contains(valorEsperado),
+                "O campo '" + campo + "' deve conter '" + valorEsperado + "'");
+    }
+
+    @Quando("envio uma requisicao de busca pelo id {int}")
+    public void envio_uma_requisicao_de_busca_pelo_id(Integer id) throws Exception {
+        resposta = mockMvc.perform(get("/clientes/{id}", id))
+                .andReturn();
+    }
+
+    @Quando("envio uma requisicao de atualizacao do id {int} com os dados:")
+    public void envio_uma_requisicao_de_atualizacao_do_id_com_os_dados(Integer id, DataTable dataTable) throws Exception {
+        List<Map<String, String>> linhas = dataTable.asMaps(String.class, String.class);
+        if (linhas.isEmpty()) {
+            throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
+        }
+        Map<String, String> dados = linhas.get(0);
+        ClienteRequest request = montarRequest(dados);
+
+        resposta = mockMvc.perform(put("/clientes/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andReturn();
+    }
+
+    @Quando("envio uma requisicao de exclusao do id {int}")
+    public void envio_uma_requisicao_de_exclusao_do_id(Integer id) throws Exception {
+        resposta = mockMvc.perform(delete("/clientes/{id}", id))
+                .andReturn();
     }
 }
