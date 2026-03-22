@@ -1,4 +1,4 @@
-package br.edu.fateczl.celidone.tcc.bdd;
+package br.edu.fateczl.celidone.tcc.bdd.steps;
 
 import io.cucumber.spring.CucumberContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
