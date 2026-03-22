@@ -317,6 +317,8 @@ java -jar build/libs/tcc-0.0.1-SNAPSHOT.jar
 
 ### Executar Testes
 
+Os testes utilizam **H2 em memória** (configurado em `application-test.yaml`), isolados do banco de produção (MySQL).
+
 ```bash
 # Todos os testes
 ./gradlew test
@@ -324,6 +326,15 @@ java -jar build/libs/tcc-0.0.1-SNAPSHOT.jar
 # Com relatório de cobertura
 ./gradlew test jacocoTestReport
 ```
+
+#### Configuração de Teste
+
+| Configuração | Valor                                       |
+|-------------|---------------------------------------------|
+| Banco       | H2 em memória                               |
+| Dialeto     | `H2Dialect`                                 |
+| DDL         | `create-drop` (cria ao iniciar, remove ao finalizar) |
+| Console H2  | http://localhost:8080/h2-console            |
 
 ### Acessar a Aplicação
 
