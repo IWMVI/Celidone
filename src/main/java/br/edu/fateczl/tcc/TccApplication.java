@@ -21,22 +21,17 @@ public class TccApplication {
     private static void carregarVariaveisDeAmbiente() {
         try {
             Dotenv dotenv = Dotenv.configure()
-                    .ignoreIfMissing()
                     .load();
 
-            if (dotenv != null) {
-                setarSePresente("DB_HOST", dotenv.get("DB_HOST", "localhost"));
-                setarSePresente("DB_PORT", dotenv.get("DB_PORT", "3306"));
-                setarSePresente("DB_NAME", dotenv.get("DB_NAME", "tcc"));
-                setarSePresente("DB_USERNAME", dotenv.get("DB_USERNAME", "root"));
-                setarSePresente("DB_PASSWORD", dotenv.get("DB_PASSWORD", ""));
-                
-                log.info("✅ Variáveis de ambiente carregadas do .env");
-            } else {
-                log.warn("⚠️ Arquivo .env não encontrado - usando valores padrão");
-            }
+            setarSePresente("DB_HOST", dotenv.get("DB_HOST", "localhost"));
+            setarSePresente("DB_PORT", dotenv.get("DB_PORT", "3306"));
+            setarSePresente("DB_NAME", dotenv.get("DB_NAME", "tcc"));
+            setarSePresente("DB_USERNAME", dotenv.get("DB_USERNAME", "root"));
+            setarSePresente("DB_PASSWORD", dotenv.get("DB_PASSWORD", ""));
+            
+            log.info("✅ Variáveis de ambiente carregadas do .env");
         } catch (Exception e) {
-            log.warn("⚠️ Erro ao carregar .env: {} - usando valores padrão", e.getMessage());
+            log.warn("⚠️ Arquivo .env não encontrado ou erro ao carregar - usando valores padrão: {}", e.getMessage());
         }
     }
 

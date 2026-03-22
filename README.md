@@ -504,7 +504,7 @@ push / pull request
 | MockMvc          | -          | Testes de controllers |
 | Testcontainers   | 1.19.7     | MySQL em container    |
 | H2 Database      | -          | Banco em memória      |
-| Rest-Assured     | 5.4.0      | Testes de API         |
+| REST Assured     | 5.4.0      | Testes de API         |
 | WireMock         | 2.35.1     | Mock de serviços externos |
 
 ---
