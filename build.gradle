@@ -61,15 +61,15 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 
 	// ===============================
-	// 🧪 TESTES (CORREÇÃO DEFINITIVA)
+	// 🧪 TESTES
 	// ===============================
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 
 	// 🔥 CORREÇÃO DO ERRO DO JUNIT
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine'
-	testImplementation 'org.junit.platform:junit-platform-suite-api:1.10.3'
-	testRuntimeOnly 'org.junit.platform:junit-platform-suite-engine:1.10.3'
+	testImplementation 'org.junit.platform:junit-platform-suite-api'
+	testImplementation 'org.junit.platform:junit-platform-suite-engine'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// 🧪 Testcontainers
