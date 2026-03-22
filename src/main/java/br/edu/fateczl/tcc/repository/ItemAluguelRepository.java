@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ItemAluguelRepository extends JpaRepository<ItemAluguel, Long> {
@@ -17,5 +18,5 @@ public interface ItemAluguelRepository extends JpaRepository<ItemAluguel, Long> 
     List<ItemAluguel> findByAluguelIdWithTraje(@Param("aluguelId") Long aluguelId);
 
     @Query("SELECT SUM(ia.subtotal) FROM item_aluguel ia WHERE ia.aluguel.id = :aluguelId")
-    java.math.BigDecimal calcularTotalAluguel(@Param("aluguelId") Long aluguelId);
+    BigDecimal calcularTotalAluguel(@Param("aluguelId") Long aluguelId);
 }

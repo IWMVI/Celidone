@@ -23,12 +23,13 @@ public interface TrajeRepository extends JpaRepository<Traje, Long> {
     List<Traje> findByTamanho(TamanhoTraje tamanho);
 
     @Query("SELECT t FROM traje t WHERE " +
-           "t.status = 'DISPONIVEL' AND " +
+           "t.status = :status AND " +
            "t.genero = :genero AND " +
            "t.tamanho = :tamanho")
     List<Traje> findDisponiveisPorGeneroETamanho(
             @Param("genero") SexoEnum genero,
-            @Param("tamanho") TamanhoTraje tamanho);
+            @Param("tamanho") TamanhoTraje tamanho,
+            @Param("status") StatusTraje status);
 
     @Query("SELECT t FROM traje t WHERE " +
            "t.nome LIKE LOWER(CONCAT('%', :busca, '%')) OR " +
@@ -40,6 +41,10 @@ public interface TrajeRepository extends JpaRepository<Traje, Long> {
             @Param("min") BigDecimal min,
             @Param("max") BigDecimal max);
 
-    @Query("SELECT COUNT(t) FROM traje t WHERE t.status = 'DISPONIVEL'")
-    long countDisponiveis();
+    @Query("SELECT COUNT(t) FROM traje t WHERE t.status = :status")
+    long countByStatus(@Param("status") StatusTraje status);
+
+    default long countDisponiveis() {
+        return countByStatus(StatusTraje.DISPONIVEL);
+    }
 }
