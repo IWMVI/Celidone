@@ -8,6 +8,10 @@ public record EnderecoRequest(
         String numero,
         String cidade,
         String bairro,
-        SiglaEstados estado,
+        String estado,
         String complemento
-) {}
+) {
+    public SiglaEstados getEstadoEnum() {
+        return SiglaEstados.valueOf(estado);
+    }
+}

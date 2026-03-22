@@ -2,6 +2,7 @@ package br.edu.fateczl.celidone.tcc.util;
 
 import br.edu.fateczl.celidone.tcc.domain.Cliente;
 import br.edu.fateczl.celidone.tcc.domain.Endereco;
+import br.edu.fateczl.celidone.tcc.dto.EnderecoRequest;
 import br.edu.fateczl.celidone.tcc.dto.ClienteRequest;
 import br.edu.fateczl.celidone.tcc.enums.SiglaEstados;
 
@@ -46,10 +47,38 @@ public class ClienteTestDataBuilder {
     }
 
     // =========================================================
-    // ENDEREÇO
+    // ENDEREÇO (DTO Request)
     // =========================================================
 
-    public static Endereco criarEnderecoValido() {
+    public static EnderecoRequest criarEnderecoValido() {
+        return new EnderecoRequest(
+                "01001000",
+                "Praça da Sé",
+                "100",
+                "São Paulo",
+                "Sé",
+                "SP",
+                "Sala 101"
+        );
+    }
+
+    public static EnderecoRequest criarEnderecoAtualizado() {
+        return new EnderecoRequest(
+                "20040002",
+                "Rua da Assembleia",
+                "200",
+                "Rio de Janeiro",
+                "Centro",
+                "RJ",
+                "Apto 502"
+        );
+    }
+
+    // =========================================================
+    // ENDEREÇO (Domain Entity)
+    // =========================================================
+
+    public static Endereco criarEnderecoEntityValido() {
         return new Endereco(
                 "01001000",
                 "Praça da Sé",
@@ -61,7 +90,7 @@ public class ClienteTestDataBuilder {
         );
     }
 
-    public static Endereco criarEnderecoAtualizado() {
+    public static Endereco criarEnderecoEntityAtualizado() {
         return new Endereco(
                 "20040002",
                 "Rua da Assembleia",
@@ -83,7 +112,7 @@ public class ClienteTestDataBuilder {
                 .cpfCnpj("12345678901")
                 .email("joao@email.com")
                 .celular("11999999999")
-                .endereco(criarEnderecoValido())
+                .endereco(criarEnderecoEntityValido())
                 .build();
     }
 
@@ -94,7 +123,7 @@ public class ClienteTestDataBuilder {
                 .cpfCnpj("12345678901")
                 .email("joao@email.com")
                 .celular("11999999999")
-                .endereco(criarEnderecoValido())
+                .endereco(criarEnderecoEntityValido())
                 .build();
     }
 
@@ -105,7 +134,7 @@ public class ClienteTestDataBuilder {
                 .cpfCnpj("12345678901")
                 .email("cliente.atualizado@email.com")
                 .celular("11977777777")
-                .endereco(criarEnderecoAtualizado())
+                .endereco(criarEnderecoEntityAtualizado())
                 .build();
     }
 }

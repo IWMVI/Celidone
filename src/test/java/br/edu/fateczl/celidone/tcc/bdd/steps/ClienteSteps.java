@@ -1,8 +1,7 @@
 package br.edu.fateczl.celidone.tcc.bdd.steps;
 
-import br.edu.fateczl.celidone.tcc.domain.Endereco;
+import br.edu.fateczl.celidone.tcc.dto.EnderecoRequest;
 import br.edu.fateczl.celidone.tcc.dto.ClienteRequest;
-import br.edu.fateczl.celidone.tcc.enums.SiglaEstados;
 import br.edu.fateczl.celidone.tcc.repository.ClienteRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,12 +16,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+@SuppressWarnings({"SpringJavaInjectionPointsAutowiringInspection", "null"})
 public class ClienteSteps {
 
     @Autowired
@@ -51,39 +49,26 @@ public class ClienteSteps {
 
     private ClienteRequest montarRequest(Map<String, String> dados) {
 
-        Endereco endereco = new Endereco(
+        EnderecoRequest endereco = new EnderecoRequest(
                 getOrDefault(dados, "cep", ""),
                 getOrDefault(dados, "logradouro", ""),
                 getOrDefault(dados, "numero", ""),
                 getOrDefault(dados, "cidade", ""),
                 getOrDefault(dados, "bairro", ""),
-                parseEstado(dados.get("estado")),
-                dados.get("complemento")
-        );
+                dados.get("estado"),
+                dados.get("complemento"));
 
         return new ClienteRequest(
                 dados.getOrDefault("nome", ""),
                 dados.getOrDefault("cpfCnpj", ""),
                 dados.getOrDefault("email", ""),
                 dados.getOrDefault("celular", ""),
-                endereco
-        );
+                endereco);
     }
 
     private String getOrDefault(Map<String, String> dados, String key, String defaultValue) {
         String value = dados.get(key);
         return (value != null && !value.trim().isEmpty()) ? value : defaultValue;
-    }
-
-    private SiglaEstados parseEstado(String estado) {
-        if (estado == null || estado.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return SiglaEstados.valueOf(estado.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 
     // =========================================================
@@ -103,21 +88,19 @@ public class ClienteSteps {
     @Dado("que ja existe um cliente cadastrado com cpf {string}")
     public void que_ja_existe_um_cliente_cadastrado_com_cpf(String cpfCnpj) throws Exception {
 
-        Endereco endereco = new Endereco(
-                "01001000", "Rua Exemplo", "100", "Sao Paulo", "Centro", SiglaEstados.SP, "Sala 101"
-        );
+        EnderecoRequest endereco = new EnderecoRequest(
+                "01001000", "Rua Exemplo", "100", "Sao Paulo", "Centro", "SP", "Sala 101");
 
         ClienteRequest request = new ClienteRequest(
                 "Cliente Teste",
                 cpfCnpj,
                 cpfCnpj + "@email.com",
                 "11999999999",
-                endereco
-        );
+                endereco);
 
         mockMvc.perform(post("/clientes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andReturn();
     }
 
@@ -129,8 +112,8 @@ public class ClienteSteps {
             ClienteRequest request = montarRequest(dados);
 
             mockMvc.perform(post("/clientes")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
                     .andReturn();
         }
     }
@@ -150,15 +133,15 @@ public class ClienteSteps {
         ClienteRequest request = montarRequest(dados);
 
         resposta = mockMvc.perform(post("/clientes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andReturn();
     }
 
     @Quando("envio uma requisicao de listagem de clientes")
     public void envio_uma_requisicao_de_listagem_de_clientes() throws Exception {
         resposta = mockMvc.perform(get("/clientes")
-                        .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
 
@@ -173,7 +156,8 @@ public class ClienteSteps {
     }
 
     @Quando("envio uma requisicao de atualizacao do cliente com cpf {string} com os dados:")
-    public void envio_uma_requisicao_de_atualizacao_do_cliente_com_cpf(String cpfCnpj, DataTable dataTable) throws Exception {
+    public void envio_uma_requisicao_de_atualizacao_do_cliente_com_cpf(String cpfCnpj, DataTable dataTable)
+            throws Exception {
         Long id = clienteRepository.findByCpfCnpj(cpfCnpj)
                 .orElseThrow(() -> new IllegalStateException("Cliente não encontrado"))
                 .getId();
@@ -186,8 +170,8 @@ public class ClienteSteps {
         ClienteRequest request = montarRequest(dados);
 
         resposta = mockMvc.perform(put("/clientes/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andReturn();
     }
 
@@ -254,7 +238,8 @@ public class ClienteSteps {
     }
 
     @Quando("envio uma requisicao de atualizacao do id {int} com os dados:")
-    public void envio_uma_requisicao_de_atualizacao_do_id_com_os_dados(Integer id, DataTable dataTable) throws Exception {
+    public void envio_uma_requisicao_de_atualizacao_do_id_com_os_dados(Integer id, DataTable dataTable)
+            throws Exception {
         List<Map<String, String>> linhas = dataTable.asMaps(String.class, String.class);
         if (linhas.isEmpty()) {
             throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
@@ -263,8 +248,8 @@ public class ClienteSteps {
         ClienteRequest request = montarRequest(dados);
 
         resposta = mockMvc.perform(put("/clientes/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andReturn();
     }
 
