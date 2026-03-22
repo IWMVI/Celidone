@@ -1,6 +1,5 @@
 package br.edu.fateczl.celidone.tcc.dto;
 
-import br.edu.fateczl.celidone.tcc.domain.Endereco;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,5 +25,5 @@ public record ClienteRequest(
         String celular,
 
         @NotNull(message = "Endereço é obrigatório")
-        Endereco endereco
+        EnderecoRequest endereco
 ) { }

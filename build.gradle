@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.3.5'
+	id 'org.springframework.boot' version '3.4.0'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'jacoco'
 }
@@ -13,6 +13,10 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
 	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs.add("-parameters")
 }
 
 configurations {
@@ -47,12 +51,6 @@ dependencies {
 	runtimeOnly 'com.h2database:h2'
 
 	// ===============================
-	// ⚡ PRODUTIVIDADE
-	// ===============================
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-
-	// ===============================
 	// 📄 DOCUMENTAÇÃO
 	// ===============================
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
@@ -63,15 +61,15 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 
 	// ===============================
-	// 🧪 TESTES (CORREÇÃO DEFINITIVA)
+	// 🧪 TESTES
 	// ===============================
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 
 	// 🔥 CORREÇÃO DO ERRO DO JUNIT
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine'
-	testImplementation 'org.junit.platform:junit-platform-suite-api:1.10.3'
-	testRuntimeOnly 'org.junit.platform:junit-platform-suite-engine:1.10.3'
+	testImplementation 'org.junit.platform:junit-platform-suite-api'
+	testImplementation 'org.junit.platform:junit-platform-suite-engine'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// 🧪 Testcontainers
