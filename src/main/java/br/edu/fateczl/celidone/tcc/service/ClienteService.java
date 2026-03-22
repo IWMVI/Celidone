@@ -1,13 +1,13 @@
 package br.edu.fateczl.celidone.tcc.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
 
 import br.edu.fateczl.celidone.tcc.domain.Cliente;
 import br.edu.fateczl.celidone.tcc.exception.BusinessException;
 import br.edu.fateczl.celidone.tcc.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ClienteService {
@@ -66,7 +66,8 @@ public class ClienteService {
             validarCpfUnico(novosDados.getCpfCnpj());
         }
 
-        cliente.atualizar(novosDados.getNome(), novosDados.getCpfCnpj(), novosDados.getEmail(), novosDados.getCelular(), novosDados.getEndereco());
+        cliente.atualizar(novosDados.getNome(), novosDados.getCpfCnpj(), novosDados.getEmail(), novosDados.getCelular(),
+                novosDados.getEndereco());
 
         return repository.save(cliente);
     }
@@ -79,8 +80,6 @@ public class ClienteService {
         Cliente cliente = buscarPorId(id);
         repository.delete(cliente);
     }
-
-
 
     // ===============================
     // REGRAS DE NEGÓCIO

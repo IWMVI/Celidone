@@ -6,28 +6,17 @@ import br.edu.fateczl.celidone.tcc.repository.ClienteRepository;
 import br.edu.fateczl.celidone.tcc.util.ClienteTestDataBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
-
-import br.edu.fateczl.celidone.tcc.domain.Cliente;
-import br.edu.fateczl.celidone.tcc.repository.ClienteRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @DisplayName("Testes de Comportamento do ClienteService")
 class ClienteServiceTest {
@@ -196,7 +185,8 @@ class ClienteServiceTest {
         @Test
         @DisplayName("Deve retornar erro quando endereco for vazio")
         void deve_retornar_erro_quando_endereco_for_vazio() {
-            // Como endereco é objeto, "vazio" não faz sentido; tratamos como nulo ou campos inválidos
+            // Como endereco é objeto, "vazio" não faz sentido; tratamos como nulo ou campos
+            // inválidos
             Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
             cliente.getEndereco().setLogradouro(""); // exemplo de campo inválido
 
@@ -211,74 +201,77 @@ class ClienteServiceTest {
     // =========================================================
     // READ
     // =========================================================
-//    @Nested
-//    @DisplayName("Read")
-//    class Read {
-//
-//        @Test
-//        @DisplayName("Deve retornar lista vazia quando não existirem clientes")
-//        void deve_retornar_lista_vazia_quando_nao_existirem_clientes() {
-//        }
-//
-//        @Test
-//        @DisplayName("Deve retornar lista de clientes quando existirem registros")
-//        void deve_retornar_lista_de_clientes_quando_existirem_registros() {
-//        }
-//
-//        @Test
-//        @DisplayName("Deve retornar cliente quando ID existir")
-//        void deve_retornar_cliente_quando_id_existir() {
-//        }
-//
-//        @Test
-//        @DisplayName("Deve retornar erro quando cliente não for encontrado por ID")
-//        void deve_retornar_erro_quando_cliente_nao_for_encontrado_por_id() {
-//        }
-//    }
+    // @Nested
+    // @DisplayName("Read")
+    // class Read {
+    //
+    // @Test
+    // @DisplayName("Deve retornar lista vazia quando não existirem clientes")
+    // void deve_retornar_lista_vazia_quando_nao_existirem_clientes() {
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve retornar lista de clientes quando existirem registros")
+    // void deve_retornar_lista_de_clientes_quando_existirem_registros() {
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve retornar cliente quando ID existir")
+    // void deve_retornar_cliente_quando_id_existir() {
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve retornar erro quando cliente não for encontrado por ID")
+    // void deve_retornar_erro_quando_cliente_nao_for_encontrado_por_id() {
+    // }
+    // }
 
     // =========================================================
     // UPDATE
     // =========================================================
-//    @Nested
-//    @DisplayName("Update")
-//    class Update {
-//
-//        @Test
-//        @DisplayName("Deve atualizar cliente quando CPF não for alterado")
-//        void deve_atualizar_cliente_quando_cpf_nao_for_alterado() {
-//        }
-//
-//        @Test
-//        @DisplayName("Deve atualizar cliente quando CPF for alterado e estiver disponível")
-//        void deve_atualizar_cliente_quando_cpf_for_alterado_e_estiver_disponivel() {
-//        }
-//
-//        @Test
-//        @DisplayName("Deve retornar erro quando CPF novo já estiver em uso no update")
-//        void deve_retornar_erro_quando_cpf_novo_ja_estiver_em_uso_no_update() {
-//        }
-//
-//        @Test
-//        @DisplayName("Deve retornar erro quando tentar atualizar cliente inexistente")
-//        void deve_retornar_erro_quando_tentar_atualizar_cliente_inexistente() {
-//        }
-//    }
+    // @Nested
+    // @DisplayName("Update")
+    // class Update {
+    //
+    // @Test
+    // @DisplayName("Deve atualizar cliente quando CPF não for alterado")
+    // void deve_atualizar_cliente_quando_cpf_nao_for_alterado() {
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve atualizar cliente quando CPF for alterado e estiver
+    // disponível")
+    // void deve_atualizar_cliente_quando_cpf_for_alterado_e_estiver_disponivel() {
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve retornar erro quando CPF novo já estiver em uso no
+    // update")
+    // void deve_retornar_erro_quando_cpf_novo_ja_estiver_em_uso_no_update() {
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve retornar erro quando tentar atualizar cliente
+    // inexistente")
+    // void deve_retornar_erro_quando_tentar_atualizar_cliente_inexistente() {
+    // }
+    // }
 
     // =========================================================
     // DELETE
     // =========================================================
-//    @Nested
-//    @DisplayName("Delete")
-//    class Delete {
-//
-//        @Test
-//        @DisplayName("Deve deletar cliente quando ID existir")
-//        void deve_deletar_cliente_quando_id_existir() {
-//        }
-//
-//        @Test
-//        @DisplayName("Deve retornar erro quando tentar deletar cliente inexistente")
-//        void deve_retornar_erro_quando_tentar_deletar_cliente_inexistente() {
-//        }
-//    }
+    // @Nested
+    // @DisplayName("Delete")
+    // class Delete {
+    //
+    // @Test
+    // @DisplayName("Deve deletar cliente quando ID existir")
+    // void deve_deletar_cliente_quando_id_existir() {
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve retornar erro quando tentar deletar cliente inexistente")
+    // void deve_retornar_erro_quando_tentar_deletar_cliente_inexistente() {
+    // }
+    // }
 }
