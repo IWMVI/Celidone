@@ -15,11 +15,35 @@ Funcionalidade: Gerenciamento de clientes
     E o campo "message" da resposta deve conter "<mensagem>"
 
     Exemplos:
-      | nome    | cpfCnpj     | email         | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento | mensagem                     |
-      |         | 12345678901 | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Nome é obrigatório           |
-      | Teste   |             | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | CPF ou CNPJ é obrigatório    |
-      | Teste   | 12345678901 |               | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Email é obrigatório          |
-      | Teste   | 12345678901 | a@email.com   |              | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Celular é obrigatório        |
+      | nome    | cpfCnpj     | email         | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento | mensagem                         |
+      |         | 12345678901 | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Nome é obrigatório               |
+      | Teste   |             | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | CPF ou CNPJ é obrigatório        |
+      | Teste   | 12345678901 |               | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Email é obrigatório              |
+      | Teste   | 12345678901 | a@email.com   |              | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Celular é obrigatório           |
+
+  Esquema do Cenario: Nao deve criar cliente quando campo contiver apenas espacos
+    Dado que nao existe cliente com cpf "<cpfCnpj>"
+    Quando envio uma requisicao de cadastro com os dados:
+      | nome   | cpfCnpj     | email         | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | <nome> | <cpfCnpj>   | <email>       | <celular>    | <cep>    | <logradouro>  | <numero> | <cidade> | <bairro> | <estado> | <complemento> |
+    Entao o status da resposta deve ser 400
+    E o campo "message" da resposta deve conter "<mensagem>"
+
+    Exemplos:
+      | nome    | cpfCnpj     | email         | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento | mensagem                         |
+      |         | 12345678901 | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Nome é obrigatório               |
+      |   | 12345678901 | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Nome é obrigatório               |
+      | Teste   |     | a@email.com   | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | CPF ou CNPJ é obrigatório        |
+      | Teste   | 12345678901 |     | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Email é obrigatório              |
+      | Teste   | 12345678901 | a@email.com   |     | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | Celular é obrigatório           |
+
+  Cenario: Nao deve criar cliente quando endereco for nulo
+    Dado que nao existe cliente com cpf "12345678901"
+    Quando envio uma requisicao de cadastro com os dados:
+      | nome   | cpfCnpj     | email         | celular      | cep | logradouro | numero | cidade | bairro | estado | complemento |
+      | Teste  | 12345678901 | a@email.com  | 11999999999  |     |            |        |        |        |        |              |
+    Entao o status da resposta deve ser 400
+    E o campo "message" da resposta deve conter "Endereço é obrigatório"
 
   Cenario: Deve criar cliente quando todos os dados sao validos
     Dado que nao existe cliente com cpf "12345678901"
@@ -40,7 +64,7 @@ Funcionalidade: Gerenciamento de clientes
     E o campo "message" da resposta deve conter "CPF ou CNPJ já cadastrado"
 
   # ==========================
-  # LISTAR
+  # LISTAR / BUSCAR COM FILTRO
   # ==========================
 
   Cenario: Deve retornar lista vazia quando nenhum cliente estiver cadastrado
@@ -57,6 +81,57 @@ Funcionalidade: Gerenciamento de clientes
     Quando envio uma requisicao de listagem de clientes
     Entao o status da resposta deve ser 200
     E a resposta deve conter 2 clientes
+
+  Cenario: Deve retornar todos os clientes quando busca for nula
+    Dado que os seguintes clientes estao cadastrados:
+      | nome          | cpfCnpj       | email            | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Joao da Silva | 12345678901   | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
+    Quando envio uma requisicao de listagem de clientes sem filtro
+    Entao o status da resposta deve ser 200
+    E a resposta deve conter 1 clientes
+
+  Cenario: Deve retornar todos os clientes quando busca for vazia
+    Dado que os seguintes clientes estao cadastrados:
+      | nome          | cpfCnpj       | email            | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Joao da Silva | 12345678901   | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
+    Quando envio uma requisicao de listagem de clientes com filtro ""
+    Entao o status da resposta deve ser 200
+    E a resposta deve conter 1 clientes
+
+  Cenario: Deve buscar clientes por termo quando filtro for valido
+    Dado que os seguintes clientes estao cadastrados:
+      | nome          | cpfCnpj       | email            | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Joao da Silva | 12345678901   | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
+      | Maria Santos  | 98765432100   | maria@email.com | 11988888888  | 01001000 | Rua Teste     | 200    | Sao Paulo  | Vila   | SP     | Sala 200    |
+    Quando envio uma requisicao de listagem de clientes com filtro "Joao"
+    Entao o status da resposta deve ser 200
+    E a resposta deve conter 1 clientes
+
+  Cenario: Deve buscar clientes por CPF quando filtro for valido
+    Dado que os seguintes clientes estao cadastrados:
+      | nome          | cpfCnpj       | email            | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Joao da Silva | 12345678901   | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
+      | Maria Santos  | 98765432100   | maria@email.com | 11988888888  | 01001000 | Rua Teste     | 200    | Sao Paulo  | Vila   | SP     | Sala 200    |
+    Quando envio uma requisicao de listagem de clientes com filtro "12345678901"
+    Entao o status da resposta deve ser 200
+    E a resposta deve conter 1 clientes
+
+  Cenario: Deve buscar clientes por email quando filtro for valido
+    Dado que os seguintes clientes estao cadastrados:
+      | nome          | cpfCnpj       | email            | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Joao da Silva | 12345678901   | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
+      | Maria Santos  | 98765432100   | maria@email.com | 11988888888  | 01001000 | Rua Teste     | 200    | Sao Paulo  | Vila   | SP     | Sala 200    |
+    Quando envio uma requisicao de listagem de clientes com filtro "maria"
+    Entao o status da resposta deve ser 200
+    E a resposta deve conter 1 clientes
+
+  Cenario: Deve remover espacos em branco do termo de busca
+    Dado que os seguintes clientes estao cadastrados:
+      | nome          | cpfCnpj       | email            | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Joao da Silva | 12345678901   | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    |
+    Quando envio uma requisicao de listagem de clientes com filtro "   Joao   "
+    Entao o status da resposta deve ser 200
+    E a resposta deve conter 1 clientes
 
   # ==========================
   # BUSCAR POR ID
@@ -107,9 +182,18 @@ Funcionalidade: Gerenciamento de clientes
   Cenario: Deve retornar erro ao atualizar cliente com ID inexistente
     Quando envio uma requisicao de atualizacao do id 999999 com os dados:
       | nome    | cpfCnpj     | email        | celular      | cep      | logradouro | numero | cidade    | bairro    | estado | complemento |
-      | Fantasma| 11111111111 | x@email.com | 11999999999  | 00000000 | Rua X      | 0      | Cidade X  | Bairro X  | XX     | Apto 0      |
+      | Fantasma| 11111111111 | x@email.com | 11999999999  | 00000000 | Rua X      | 1      | Cidade X  | Bairro X  | SP     | Apto 1      |
     Entao o status da resposta deve ser 404
     E o campo "message" da resposta deve conter "Cliente não encontrado"
+
+  Cenario: Deve permitir atualizar quando mesmo CPF for mantido
+    Dado que ja existe um cliente cadastrado com cpf "12345678901"
+    Quando envio uma requisicao de atualizacao do cliente com cpf "12345678901" com os dados:
+      | nome              | cpfCnpj     | email                  | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento |
+      | Nome Atualizado   | 12345678901 | novo.email@email.com  | 11977777777  | 01001000 | Rua Nova      | 50     | Sao Paulo  | Bela   | SP     | Apto 50     |
+    Entao o status da resposta deve ser 200
+    E o campo "nome" da resposta deve ser "Nome Atualizado"
+    E o campo "email" da resposta deve ser "novo.email@email.com"
 
   # ==========================
   # DELETAR
