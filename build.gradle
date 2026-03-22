@@ -7,7 +7,7 @@ plugins {
 
 group = 'br.edu.fateczl.tcc'
 version = '0.0.1-SNAPSHOT'
-description = 'Celidone'
+description = 'TCC'
 
 java {
 	toolchain {
@@ -110,7 +110,7 @@ tasks.named('jacocoTestCoverageVerification') {
 	violationRules {
 		rule {
 			element = 'CLASS'
-			includes = ['br.edu.fateczl.celidone.tcc.service.ClienteService']
+			includes = ['br.edu.fateczl.tcc.service.ClienteService']
 			limit {
 				counter = 'LINE'
 				value = 'COVEREDRATIO'
