@@ -103,6 +103,109 @@ public class MedidaFeminina extends Medida {
         this.comprimentoVestido = comprimentoVestido;
     }
 
+    public static MedidaFemininaBuilder builder() {
+        return new MedidaFemininaBuilder();
+    }
+
+    public static class MedidaFemininaBuilder {
+        private Long id;
+        private BigDecimal cintura;
+        private BigDecimal manga;
+        private SexoEnum sexo;
+        private LocalDate dataMedida;
+        private Cliente cliente;
+        private BigDecimal alturaBusto;
+        private BigDecimal raioBusto;
+        private BigDecimal corpo;
+        private BigDecimal ombro;
+        private BigDecimal decote;
+        private BigDecimal quadril;
+        private BigDecimal comprimentoVestido;
+
+        public MedidaFemininaBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public MedidaFemininaBuilder cintura(BigDecimal cintura) {
+            this.cintura = cintura;
+            return this;
+        }
+
+        public MedidaFemininaBuilder manga(BigDecimal manga) {
+            this.manga = manga;
+            return this;
+        }
+
+        public MedidaFemininaBuilder sexo(SexoEnum sexo) {
+            this.sexo = sexo;
+            return this;
+        }
+
+        public MedidaFemininaBuilder dataMedida(LocalDate dataMedida) {
+            this.dataMedida = dataMedida;
+            return this;
+        }
+
+        public MedidaFemininaBuilder cliente(Cliente cliente) {
+            this.cliente = cliente;
+            return this;
+        }
+
+        public MedidaFemininaBuilder alturaBusto(BigDecimal alturaBusto) {
+            this.alturaBusto = alturaBusto;
+            return this;
+        }
+
+        public MedidaFemininaBuilder raioBusto(BigDecimal raioBusto) {
+            this.raioBusto = raioBusto;
+            return this;
+        }
+
+        public MedidaFemininaBuilder corpo(BigDecimal corpo) {
+            this.corpo = corpo;
+            return this;
+        }
+
+        public MedidaFemininaBuilder ombro(BigDecimal ombro) {
+            this.ombro = ombro;
+            return this;
+        }
+
+        public MedidaFemininaBuilder decote(BigDecimal decote) {
+            this.decote = decote;
+            return this;
+        }
+
+        public MedidaFemininaBuilder quadril(BigDecimal quadril) {
+            this.quadril = quadril;
+            return this;
+        }
+
+        public MedidaFemininaBuilder comprimentoVestido(BigDecimal comprimentoVestido) {
+            this.comprimentoVestido = comprimentoVestido;
+            return this;
+        }
+
+        public MedidaFeminina build() {
+            MedidaFeminina mf = new MedidaFeminina();
+            mf.setId(this.id);
+            mf.setCintura(this.cintura);
+            mf.setManga(this.manga);
+            mf.setSexo(this.sexo);
+            mf.setDataMedida(this.dataMedida);
+            mf.setCliente(this.cliente);
+            mf.setAlturaBusto(this.alturaBusto);
+            mf.setRaioBusto(this.raioBusto);
+            mf.setCorpo(this.corpo);
+            mf.setOmbro(this.ombro);
+            mf.setDecote(this.decote);
+            mf.setQuadril(this.quadril);
+            mf.setComprimentoVestido(this.comprimentoVestido);
+            return mf;
+        }
+    }
+
     public void atualizar(BigDecimal cintura, BigDecimal manga, SexoEnum sexo, LocalDate dataMedida, Cliente cliente, BigDecimal alturaBusto, BigDecimal raioBusto, BigDecimal corpo, BigDecimal ombro, BigDecimal decote, BigDecimal quadril, BigDecimal comprimentoVestido) {
         super.atualizar(cintura, manga, sexo, dataMedida, cliente);
         this.alturaBusto = alturaBusto;
