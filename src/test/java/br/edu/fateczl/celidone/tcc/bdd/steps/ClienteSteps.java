@@ -20,7 +20,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-@SuppressWarnings({"SpringJavaInjectionPointsAutowiringInspection", "null"})
+@SuppressWarnings({ "SpringJavaInjectionPointsAutowiringInspection", "null" })
 public class ClienteSteps {
 
     @Autowired
@@ -48,15 +48,19 @@ public class ClienteSteps {
     // =========================================================
 
     private ClienteRequest montarRequest(Map<String, String> dados) {
-
-        EnderecoRequest endereco = new EnderecoRequest(
-                getOrDefault(dados, "cep", ""),
-                getOrDefault(dados, "logradouro", ""),
-                getOrDefault(dados, "numero", ""),
-                getOrDefault(dados, "cidade", ""),
-                getOrDefault(dados, "bairro", ""),
-                dados.get("estado"),
-                dados.get("complemento"));
+        boolean temEndereco = dados.get("cep") != null && !dados.get("cep").isEmpty();
+        
+        EnderecoRequest endereco = null;
+        if (temEndereco) {
+            endereco = new EnderecoRequest(
+                    getOrDefault(dados, "cep", ""),
+                    getOrDefault(dados, "logradouro", ""),
+                    getOrDefault(dados, "numero", ""),
+                    getOrDefault(dados, "cidade", ""),
+                    getOrDefault(dados, "bairro", ""),
+                    dados.get("estado"),
+                    dados.get("complemento"));
+        }
 
         return new ClienteRequest(
                 dados.getOrDefault("nome", ""),
@@ -77,7 +81,9 @@ public class ClienteSteps {
 
     @Dado("que nao existe cliente com cpf {string}")
     public void que_nao_existe_cliente_com_cpf(String cpfCnpj) {
-        clienteRepository.findByCpfCnpj(cpfCnpj).ifPresent(clienteRepository::delete);
+        if (cpfCnpj != null && !cpfCnpj.isEmpty()) {
+            clienteRepository.findByCpfCnpj(cpfCnpj).ifPresent(clienteRepository::delete);
+        }
     }
 
     @Dado("que nao existe nenhum cliente cadastrado")
@@ -141,6 +147,21 @@ public class ClienteSteps {
     @Quando("envio uma requisicao de listagem de clientes")
     public void envio_uma_requisicao_de_listagem_de_clientes() throws Exception {
         resposta = mockMvc.perform(get("/clientes")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    @Quando("envio uma requisicao de listagem de clientes sem filtro")
+    public void envio_uma_requisicao_de_listagem_de_clientes_sem_filtro() throws Exception {
+        resposta = mockMvc.perform(get("/clientes")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    @Quando("envio uma requisicao de listagem de clientes com filtro {string}")
+    public void envio_uma_requisicao_de_listagem_de_clientes_com_filtro(String filtro) throws Exception {
+        resposta = mockMvc.perform(get("/clientes")
+                .param("busca", filtro)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
