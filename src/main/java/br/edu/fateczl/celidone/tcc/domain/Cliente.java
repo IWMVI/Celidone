@@ -20,8 +20,8 @@ import java.time.LocalDate;
 @Data
 @Builder
 @Table(name = "cliente")
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Cliente {
 
     @Id
