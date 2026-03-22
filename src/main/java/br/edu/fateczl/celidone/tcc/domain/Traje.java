@@ -17,17 +17,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity(name = "traje")
 @Table(name = "traje")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Traje {
 
     @Id
@@ -79,6 +74,128 @@ public class Traje {
     @Enumerated(EnumType.STRING)
     private CondicaoTraje condicao;
 
+    public Traje() {
+    }
+
+    public Traje(Long id, String descricao, TamanhoTraje tamanho, CorTraje cor, TipoTraje tipo, SexoEnum genero, BigDecimal valorItem, StatusTraje status, String nome, TecidoTraje tecido, EstampaTraje estampa, TexturaTraje textura, CondicaoTraje condicao) {
+        this.id = id;
+        this.descricao = descricao;
+        this.tamanho = tamanho;
+        this.cor = cor;
+        this.tipo = tipo;
+        this.genero = genero;
+        this.valorItem = valorItem;
+        this.status = status;
+        this.nome = nome;
+        this.tecido = tecido;
+        this.estampa = estampa;
+        this.textura = textura;
+        this.condicao = condicao;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public TamanhoTraje getTamanho() {
+        return tamanho;
+    }
+
+    public void setTamanho(TamanhoTraje tamanho) {
+        this.tamanho = tamanho;
+    }
+
+    public CorTraje getCor() {
+        return cor;
+    }
+
+    public void setCor(CorTraje cor) {
+        this.cor = cor;
+    }
+
+    public TipoTraje getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoTraje tipo) {
+        this.tipo = tipo;
+    }
+
+    public SexoEnum getGenero() {
+        return genero;
+    }
+
+    public void setGenero(SexoEnum genero) {
+        this.genero = genero;
+    }
+
+    public BigDecimal getValorItem() {
+        return valorItem;
+    }
+
+    public void setValorItem(BigDecimal valorItem) {
+        this.valorItem = valorItem;
+    }
+
+    public StatusTraje getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusTraje status) {
+        this.status = status;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public TecidoTraje getTecido() {
+        return tecido;
+    }
+
+    public void setTecido(TecidoTraje tecido) {
+        this.tecido = tecido;
+    }
+
+    public EstampaTraje getEstampa() {
+        return estampa;
+    }
+
+    public void setEstampa(EstampaTraje estampa) {
+        this.estampa = estampa;
+    }
+
+    public TexturaTraje getTextura() {
+        return textura;
+    }
+
+    public void setTextura(TexturaTraje textura) {
+        this.textura = textura;
+    }
+
+    public CondicaoTraje getCondicao() {
+        return condicao;
+    }
+
+    public void setCondicao(CondicaoTraje condicao) {
+        this.condicao = condicao;
+    }
 
     public void atualizar(String descricao, TamanhoTraje tamanho, CorTraje cor, TipoTraje tipo, SexoEnum genero, BigDecimal valorItem, StatusTraje status, String nome, TecidoTraje tecido, EstampaTraje estampa, TexturaTraje textura, CondicaoTraje condicao) {
         this.descricao = descricao;
@@ -93,5 +210,37 @@ public class Traje {
         this.estampa = estampa;
         this.textura = textura;
         this.condicao = condicao;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Traje traje = (Traje) o;
+        return Objects.equals(id, traje.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Traje{" +
+                "id=" + id +
+                ", descricao='" + descricao + '\'' +
+                ", tamanho=" + tamanho +
+                ", cor=" + cor +
+                ", tipo=" + tipo +
+                ", genero=" + genero +
+                ", valorItem=" + valorItem +
+                ", status=" + status +
+                ", nome='" + nome + '\'' +
+                ", tecido=" + tecido +
+                ", estampa=" + estampa +
+                ", textura=" + textura +
+                ", condicao=" + condicao +
+                '}';
     }
 }
