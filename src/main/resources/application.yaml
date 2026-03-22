@@ -18,5 +18,9 @@ spring:
     console:
       enabled: true
 
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
+
 server:
   port: 8080
