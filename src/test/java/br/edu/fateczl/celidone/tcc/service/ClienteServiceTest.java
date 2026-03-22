@@ -1,10 +1,13 @@
 package br.edu.fateczl.celidone.tcc.service;
 
 import br.edu.fateczl.celidone.tcc.domain.Cliente;
+import br.edu.fateczl.celidone.tcc.domain.Endereco;
+import br.edu.fateczl.celidone.tcc.enums.SiglaEstados;
 import br.edu.fateczl.celidone.tcc.exception.BusinessException;
 import br.edu.fateczl.celidone.tcc.repository.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,7 +18,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @DisplayName("Testes de Comportamento do ClienteService")
@@ -32,270 +34,462 @@ class ClienteServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    @DisplayName("Deve salvar cliente quando dados obrigatórios forem válidos")
-    void deve_salvar_cliente_quando_dados_obrigatorios_forem_validos() {
-        Cliente cliente = criarClienteValido();
+    @Nested
+    @DisplayName("Criar Cliente - Caso Feliz")
+    class CriarCliente_CasoFeliz {
 
-        when(repository.findByCpf(cliente.getCpf())).thenReturn(Optional.empty());
-        when(repository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        @Test
+        @DisplayName("Deve criar cliente com dados pessoais válidos")
+        void deve_criar_cliente_com_dados_pessoais_validos() {
+            Cliente clienteValido = ClienteTestDataBuilder.criarClienteValido();
 
-        Cliente resultado = service.criar(cliente);
+            when(repository.findByCpfCnpj(clienteValido.getCpfCnpj())).thenReturn(Optional.empty());
+            when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
 
-        assertNotNull(resultado);
-        assertEquals("Wallace", resultado.getNome());
-        assertEquals("12345678900", resultado.getCpf());
-        assertEquals("wallace@email.com", resultado.getEmail());
+            Cliente resultado = service.criar(clienteValido);
+
+            assertNotNull(resultado);
+            assertEquals("João da Silva", resultado.getNome());
+            verify(repository, times(1)).save(any(Cliente.class));
+        }
+
+        @Test
+        @DisplayName("Deve criar cliente quando todos os dados obrigatórios forem válidos")
+        void deve_criar_cliente_quando_todos_os_dados_obrigatorios_forem_validos() {
+            Cliente clienteValido = ClienteTestDataBuilder.criarClienteValido();
+
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
+
+            Cliente resultado = service.criar(clienteValido);
+
+            assertNotNull(resultado);
+            assertEquals("12345678901", resultado.getCpfCnpj());
+            assertEquals("joao@email.com", resultado.getEmail());
+            assertEquals("11999999999", resultado.getCelular());
+            assertNotNull(resultado.getEndereco());
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar erro quando CPF já estiver cadastrado no create")
-    void deve_retornar_erro_quando_cpf_ja_estiver_cadastrado_no_create() {
-        Cliente cliente = criarClienteValido();
-        when(repository.findByCpf(cliente.getCpf())).thenReturn(Optional.of(criarClienteValido()));
+    @Nested
+    @DisplayName("Criar Cliente - Erros de Validação")
+    class CriarCliente_ErrosDeValidacao {
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
+        @Test
+        @DisplayName("Deve retornar erro quando nome for nulo")
+        void deve_retornar_erro_quando_nome_for_nulo() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setNome(null);
 
-        assertEquals("CPF já cadastrado", exception.getMessage());
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("Nome é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando nome for vazio")
+        void deve_retornar_erro_quando_nome_for_vazio() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setNome("");
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("Nome é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando nome contiver apenas espaços")
+        void deve_retornar_erro_quando_nome_contiver_apenas_espacos() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setNome("   ");
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("Nome é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando CPF for nulo")
+        void deve_retornar_erro_quando_cpf_for_nulo() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setCpfCnpj(null);
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("CPF é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando CPF for vazio")
+        void deve_retornar_erro_quando_cpf_for_vazio() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setCpfCnpj("");
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("CPF é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando email for nulo")
+        void deve_retornar_erro_quando_email_for_nulo() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setEmail(null);
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("Email é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando email for vazio")
+        void deve_retornar_erro_quando_email_for_vazio() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setEmail("");
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("Email é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando celular for nulo")
+        void deve_retornar_erro_quando_celular_for_nulo() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setCelular(null);
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("Telefone é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando celular for vazio")
+        void deve_retornar_erro_quando_celular_for_vazio() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setCelular("");
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("Telefone é obrigatório"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando endereco for nulo")
+        void deve_retornar_erro_quando_endereco_for_nulo() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
+            cliente.setEndereco(null);
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
+            assertTrue(ex.getMessage().contains("Endereço é obrigatório"));
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar erro quando nome for nulo")
-    void deve_retornar_erro_quando_nome_for_nulo() {
-        Cliente cliente = criarClienteValidoCom(null, "12345678900", "wallace@email.com", "11999999999", "Rua A, 123");
+    @Nested
+    @DisplayName("Criar Cliente - Erros de Duplicidade")
+    class CriarCliente_ErrosDeDuplicidade {
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
+        @Test
+        @DisplayName("Deve retornar erro quando CPF já estiver cadastrado")
+        void deve_retornar_erro_quando_cpf_ja_estiver_cadastrado() {
+            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            Cliente novoCliente = ClienteTestDataBuilder.criarClienteValido();
 
-        assertEquals("Nome é obrigatório", exception.getMessage());
+            when(repository.findByCpfCnpj(novoCliente.getCpfCnpj()))
+                    .thenReturn(Optional.of(clienteExistente));
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(novoCliente));
+            assertTrue(ex.getMessage().contains("CPF ou CNPJ já cadastrado"));
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar erro quando nome for vazio")
-    void deve_retornar_erro_quando_nome_for_vazio() {
-        Cliente cliente = criarClienteValidoCom(" ", "12345678900", "wallace@email.com", "11999999999", "Rua A, 123");
+    @Nested
+    @DisplayName("Listar Clientes")
+    class ListarClientes {
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
+        @Test
+        @DisplayName("Deve retornar lista vazia quando não existirem clientes")
+        void deve_retornar_lista_vazia_quando_nao_existirem_clientes() {
+            when(repository.findAll()).thenReturn(List.of());
 
-        assertEquals("Nome é obrigatório", exception.getMessage());
+            List<Cliente> resultado = service.listar();
+
+            assertTrue(resultado.isEmpty());
+            verify(repository, times(1)).findAll();
+        }
+
+        @Test
+        @DisplayName("Deve retornar todos os clientes quando existirem registros")
+        void deve_retornar_todos_os_clientes_quando_existirem_registros() {
+            List<Cliente> clientes = List.of(
+                    ClienteTestDataBuilder.criarClienteValidoComId(1L),
+                    ClienteTestDataBuilder.criarClienteAtualizadoComId(2L)
+            );
+            when(repository.findAll()).thenReturn(clientes);
+
+            List<Cliente> resultado = service.listar();
+
+            assertEquals(2, resultado.size());
+            verify(repository, times(1)).findAll();
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar erro quando CPF for nulo")
-    void deve_retornar_erro_quando_cpf_for_nulo() {
-        Cliente cliente = criarClienteValidoCom("Wallace", null, "wallace@email.com", "11999999999", "Rua A, 123");
+    @Nested
+    @DisplayName("Buscar Com Filtro")
+    class BuscarComFiltro {
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
+        @Test
+        @DisplayName("Deve retornar todos os clientes quando filtro for nulo")
+        void deve_retornar_todos_os_clientes_quando_filtro_for_nulo() {
+            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
+            when(repository.findAll()).thenReturn(clientes);
 
-        assertEquals("CPF é obrigatório", exception.getMessage());
+            List<Cliente> resultado = service.buscarComFiltro(null);
+
+            assertEquals(1, resultado.size());
+            verify(repository, times(1)).findAll();
+            verify(repository, never()).buscarPorTermo(anyString());
+        }
+
+        @Test
+        @DisplayName("Deve retornar todos os clientes quando filtro for vazio")
+        void deve_retornar_todos_os_clientes_quando_filtro_for_vazio() {
+            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
+            when(repository.findAll()).thenReturn(clientes);
+
+            List<Cliente> resultado = service.buscarComFiltro("");
+
+            assertEquals(1, resultado.size());
+        }
+
+        @Test
+        @DisplayName("Deve retornar todos os clientes quando filtro contiver apenas espaços")
+        void deve_retornar_todos_os_clientes_quando_filtro_contiver_apenas_espacos() {
+            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
+            when(repository.findAll()).thenReturn(clientes);
+
+            List<Cliente> resultado = service.buscarComFiltro("   ");
+
+            assertEquals(1, resultado.size());
+        }
+
+        @Test
+        @DisplayName("Deve remover espaços em branco do termo de busca")
+        void deve_remover_espacos_em_branco_do_termo_de_busca() {
+            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
+            when(repository.buscarPorTermo("Joao")).thenReturn(clientes);
+
+            List<Cliente> resultado = service.buscarComFiltro("  Joao  ");
+
+            assertEquals(1, resultado.size());
+            verify(repository, times(1)).buscarPorTermo("Joao");
+        }
+
+        @Test
+        @DisplayName("Deve buscar por termo quando filtro for válido")
+        void deve_buscar_por_termo_quando_filtro_for_valido() {
+            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
+            when(repository.buscarPorTermo("Joao")).thenReturn(clientes);
+
+            List<Cliente> resultado = service.buscarComFiltro("Joao");
+
+            assertEquals(1, resultado.size());
+            verify(repository, times(1)).buscarPorTermo("Joao");
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar erro quando CPF for vazio")
-    void deve_retornar_erro_quando_cpf_for_vazio() {
-        Cliente cliente = criarClienteValidoCom("Wallace", "", "wallace@email.com", "11999999999", "Rua A, 123");
+    @Nested
+    @DisplayName("Buscar Cliente por ID")
+    class BuscarPorId {
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
+        @Test
+        @DisplayName("Deve retornar cliente quando ID existir")
+        void deve_retornar_cliente_quando_id_existir() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            when(repository.findById(1L)).thenReturn(Optional.of(cliente));
 
-        assertEquals("CPF é obrigatório", exception.getMessage());
+            Cliente resultado = service.buscarPorId(1L);
+
+            assertNotNull(resultado);
+            assertEquals(1L, resultado.getId());
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando cliente não for encontrado por ID")
+        void deve_retornar_erro_quando_cliente_nao_for_encontrado_por_id() {
+            when(repository.findById(999L)).thenReturn(Optional.empty());
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.buscarPorId(999L));
+            assertTrue(ex.getMessage().contains("Cliente não encontrado"));
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar erro quando email for nulo")
-    void deve_retornar_erro_quando_email_for_nulo() {
-        Cliente cliente = criarClienteValidoCom("Wallace", "12345678900", null, "11999999999", "Rua A, 123");
+    @Nested
+    @DisplayName("Atualizar Cliente - Caso Feliz")
+    class AtualizarCliente_CasoFeliz {
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
+        @Test
+        @DisplayName("Deve atualizar cliente quando dados forem válidos e CPF não mudar")
+        void deve_atualizar_cliente_quando_dados_forem_validos_e_cpf_nao_mudar() {
+            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            Cliente novosDados = ClienteTestDataBuilder.criarClienteAtualizadoComId(1L);
 
-        assertEquals("Email é obrigatório", exception.getMessage());
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
+            when(repository.save(any(Cliente.class))).thenReturn(novosDados);
+
+            Cliente resultado = service.atualizar(1L, novosDados);
+
+            assertNotNull(resultado);
+            assertEquals("Cliente Atualizado", resultado.getNome());
+        }
+
+        @Test
+        @DisplayName("Deve atualizar cliente quando novo CPF for único")
+        void deve_atualizar_cliente_quando_novo_cpf_for_unico() {
+            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            Cliente novosDados = ClienteTestDataBuilder.criarClienteValido();
+            novosDados.setCpfCnpj("00000000001");
+
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
+            when(repository.findByCpfCnpj("00000000001")).thenReturn(Optional.empty());
+            when(repository.save(any(Cliente.class))).thenReturn(novosDados);
+
+            Cliente resultado = service.atualizar(1L, novosDados);
+
+            assertEquals("00000000001", resultado.getCpfCnpj());
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar erro quando email for vazio")
-    void deve_retornar_erro_quando_email_for_vazio() {
-        Cliente cliente = criarClienteValidoCom("Wallace", "12345678900", "", "11999999999", "Rua A, 123");
+    @Nested
+    @DisplayName("Atualizar Cliente - Erros")
+    class AtualizarCliente_Erros {
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
+        @Test
+        @DisplayName("Deve retornar erro ao tentar atualizar cliente inexistente")
+        void deve_retornar_erro_ao_tentar_atualizar_cliente_inexistente() {
+            Cliente novosDados = ClienteTestDataBuilder.criarClienteValido();
 
-        assertEquals("Email é obrigatório", exception.getMessage());
+            when(repository.findById(999L)).thenReturn(Optional.empty());
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.atualizar(999L, novosDados));
+            assertTrue(ex.getMessage().contains("Cliente não encontrado"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando novo CPF já pertencer a outro cliente")
+        void deve_retornar_erro_quando_novo_cpf_ja_pertencer_a_outro_cliente() {
+            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            Cliente outroCliente = Cliente.builder()
+                    .id(2L)
+                    .nome("Outro Cliente")
+                    .cpfCnpj("99999999999")
+                    .email("outro@email.com")
+                    .celular("11988888888")
+                    .endereco(ClienteTestDataBuilder.criarEnderecoValido())
+                    .build();
+            Cliente novosDados = Cliente.builder()
+                    .nome("Teste")
+                    .cpfCnpj("99999999999")
+                    .email("teste@email.com")
+                    .celular("11999999999")
+                    .endereco(ClienteTestDataBuilder.criarEnderecoValido())
+                    .build();
+
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
+            when(repository.findByCpfCnpj("99999999999")).thenReturn(Optional.of(outroCliente));
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.atualizar(1L, novosDados));
+            assertTrue(ex.getMessage().contains("CPF ou CNPJ já cadastrado"));
+        }
+
+        @Test
+        @DisplayName("Deve permitir atualizar quando mesmo CPF for mantido")
+        void deve_permitir_atualizar_quando_mesmo_cpf_for_mantido() {
+            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            Cliente novosDados = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            novosDados.setNome("Nome Atualizado");
+            novosDados.setEmail("novo.email@email.com");
+
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
+            when(repository.save(any(Cliente.class))).thenReturn(novosDados);
+
+            Cliente resultado = service.atualizar(1L, novosDados);
+
+            assertEquals("Nome Atualizado", resultado.getNome());
+            assertEquals("novo.email@email.com", resultado.getEmail());
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar erro quando telefone for nulo")
-    void deve_retornar_erro_quando_telefone_for_nulo() {
-        Cliente cliente = criarClienteValidoCom("Wallace", "12345678900", "wallace@email.com", null, "Rua A, 123");
+    @Nested
+    @DisplayName("Deletar Cliente")
+    class DeletarCliente {
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
+        @Test
+        @DisplayName("Deve deletar cliente quando ID existir")
+        void deve_deletar_cliente_quando_id_existir() {
+            Cliente cliente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            when(repository.findById(1L)).thenReturn(Optional.of(cliente));
 
-        assertEquals("Telefone é obrigatório", exception.getMessage());
+            assertDoesNotThrow(() -> service.deletar(1L));
+            verify(repository, times(1)).delete(cliente);
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro ao tentar deletar cliente inexistente")
+        void deve_retornar_erro_ao_tentar_deletar_cliente_inexistente() {
+            when(repository.findById(999L)).thenReturn(Optional.empty());
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.deletar(999L));
+            assertTrue(ex.getMessage().contains("Cliente não encontrado"));
+        }
     }
+}
 
-    @Test
-    @DisplayName("Deve retornar erro quando telefone for vazio")
-    void deve_retornar_erro_quando_telefone_for_vazio() {
-        Cliente cliente = criarClienteValidoCom("Wallace", "12345678900", "wallace@email.com", "", "Rua A, 123");
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
-
-        assertEquals("Telefone é obrigatório", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Deve retornar erro quando endereco for nulo")
-    void deve_retornar_erro_quando_endereco_for_nulo() {
-        Cliente cliente = criarClienteValidoCom("Wallace", "12345678900", "wallace@email.com", "11999999999", null);
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
-
-        assertEquals("Endereço é obrigatório", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Deve retornar erro quando endereco for vazio")
-    void deve_retornar_erro_quando_endereco_for_vazio() {
-        Cliente cliente = criarClienteValidoCom("Wallace", "12345678900", "wallace@email.com", "11999999999", " ");
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.criar(cliente));
-
-        assertEquals("Endereço é obrigatório", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Deve retornar lista vazia quando não existirem clientes")
-    void deve_retornar_lista_vazia_quando_nao_existirem_clientes() {
-        when(repository.findAll()).thenReturn(List.of());
-
-        List<Cliente> resultado = service.listar();
-
-        assertTrue(resultado.isEmpty());
-    }
-
-    @Test
-    @DisplayName("Deve retornar lista de clientes quando existirem registros")
-    void deve_retornar_lista_de_clientes_quando_existirem_registros() {
-        Cliente c1 = criarClienteValidoCom("Wallace", "12345678900", "w1@email.com", "11111111111", "Rua A");
-        Cliente c2 = criarClienteValidoCom("Ana", "99988877766", "ana@email.com", "22222222222", "Rua B");
-        when(repository.findAll()).thenReturn(List.of(c1, c2));
-
-        List<Cliente> resultado = service.listar();
-
-        assertEquals(2, resultado.size());
-        assertEquals("Ana", resultado.get(1).getNome());
-    }
-
-    @Test
-    @DisplayName("Deve retornar cliente quando ID existir")
-    void deve_retornar_cliente_quando_id_existir() {
-        Cliente cliente = Cliente.builder().id(1L).nome("Wallace").build();
-        when(repository.findById(1L)).thenReturn(Optional.of(cliente));
-
-        Cliente resultado = service.buscarPorId(1L);
-
-        assertNotNull(resultado);
-        assertEquals(1L, resultado.getId());
-        assertEquals("Wallace", resultado.getNome());
-    }
-
-    @Test
-    @DisplayName("Deve retornar erro quando cliente não for encontrado por ID")
-    void deve_retornar_erro_quando_cliente_nao_for_encontrado_por_id() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.buscarPorId(99L));
-
-        assertEquals("Cliente não encontrado", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Deve atualizar cliente quando CPF não for alterado")
-    void deve_atualizar_cliente_quando_cpf_nao_for_alterado() {
-        Cliente existente = criarClienteValidoCom("Wallace", "12345678900", "old@email.com", "11111111111", "Rua Antiga");
-        Cliente novosDados = criarClienteValidoCom("Wallace Atualizado", "12345678900", "novo@email.com", "11999998888", "Rua Nova");
-
-        when(repository.findById(1L)).thenReturn(Optional.of(existente));
-        when(repository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Cliente resultado = service.atualizar(1L, novosDados);
-
-        assertEquals("Wallace Atualizado", resultado.getNome());
-        assertEquals("12345678900", resultado.getCpf());
-        assertEquals("novo@email.com", resultado.getEmail());
-        assertEquals("11999998888", resultado.getTelefone());
-        assertEquals("Rua Nova", resultado.getEndereco());
-    }
-
-    @Test
-    @DisplayName("Deve atualizar cliente quando CPF for alterado e estiver disponível")
-    void deve_atualizar_cliente_quando_cpf_for_alterado_e_estiver_disponivel() {
-        Cliente existente = criarClienteValidoCom("Wallace", "12345678900", "old@email.com", "11111111111", "Rua Antiga");
-        Cliente novosDados = criarClienteValidoCom("Wallace Atualizado", "00011122233", "novo@email.com", "11999998888", "Rua Nova");
-
-        when(repository.findById(1L)).thenReturn(Optional.of(existente));
-        when(repository.findByCpf("00011122233")).thenReturn(Optional.empty());
-        when(repository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Cliente resultado = service.atualizar(1L, novosDados);
-
-        assertEquals("00011122233", resultado.getCpf());
-        assertEquals("Wallace Atualizado", resultado.getNome());
-    }
-
-    @Test
-    @DisplayName("Deve retornar erro quando CPF novo já estiver em uso no update")
-    void deve_retornar_erro_quando_cpf_novo_ja_estiver_em_uso_no_update() {
-        Cliente existente = criarClienteValidoCom("Wallace", "11122233344", "w@email.com", "11111111111", "Rua A");
-        Cliente novosDados = criarClienteValidoCom("Wallace Novo", "99988877766", "w2@email.com", "11999999999", "Rua B");
-
-        when(repository.findById(1L)).thenReturn(Optional.of(existente));
-        when(repository.findByCpf("99988877766")).thenReturn(Optional.of(Cliente.builder().id(2L).build()));
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.atualizar(1L, novosDados));
-
-        assertEquals("CPF já cadastrado", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Deve retornar erro quando tentar atualizar cliente inexistente")
-    void deve_retornar_erro_quando_tentar_atualizar_cliente_inexistente() {
-        Cliente novosDados = criarClienteValido();
-        when(repository.findById(anyLong())).thenReturn(Optional.empty());
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.atualizar(1L, novosDados));
-
-        assertEquals("Cliente não encontrado", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Deve deletar cliente quando ID existir")
-    void deve_deletar_cliente_quando_id_existir() {
-        Cliente cliente = Cliente.builder().id(10L).nome("Wallace").build();
-        when(repository.findById(10L)).thenReturn(Optional.of(cliente));
-
-        service.deletar(10L);
-
-        verify(repository).delete(cliente);
-    }
-
-    @Test
-    @DisplayName("Deve retornar erro quando tentar deletar cliente inexistente")
-    void deve_retornar_erro_quando_tentar_deletar_cliente_inexistente() {
-        when(repository.findById(10L)).thenReturn(Optional.empty());
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> service.deletar(10L));
-
-        assertEquals("Cliente não encontrado", exception.getMessage());
-    }
-
-    private Cliente criarClienteValido() {
-        return criarClienteValidoCom("Wallace", "12345678900", "wallace@email.com", "11999999999", "Rua A, 123");
-    }
-
-    private Cliente criarClienteValidoCom(String nome, String cpf, String email, String telefone, String endereco) {
+class ClienteTestDataBuilder {
+    static Cliente criarClienteValido() {
         return Cliente.builder()
-                .nome(nome)
-                .cpf(cpf)
-                .email(email)
-                .telefone(telefone)
-                .endereco(endereco)
+                .nome("João da Silva")
+                .cpfCnpj("12345678901")
+                .email("joao@email.com")
+                .celular("11999999999")
+                .endereco(criarEnderecoValido())
+                .build();
+    }
+
+    static Cliente criarClienteValidoComId(Long id) {
+        return Cliente.builder()
+                .id(id)
+                .nome("João da Silva")
+                .cpfCnpj("12345678901")
+                .email("joao@email.com")
+                .celular("11999999999")
+                .endereco(criarEnderecoValido())
+                .build();
+    }
+
+    static Cliente criarClienteAtualizadoComId(Long id) {
+        return Cliente.builder()
+                .id(id)
+                .nome("Cliente Atualizado")
+                .cpfCnpj("12345678901")
+                .email("cliente.atualizado@email.com")
+                .celular("11977777777")
+                .endereco(criarEnderecoAtualizado())
+                .build();
+    }
+
+    static Endereco criarEnderecoValido() {
+        return Endereco.builder()
+                .cep("01001000")
+                .logradouro("Praça da Sé")
+                .numero("100")
+                .cidade("São Paulo")
+                .bairro("Sé")
+                .estado(SiglaEstados.SP)
+                .complemento("Sala 101")
+                .build();
+    }
+
+    static Endereco criarEnderecoAtualizado() {
+        return Endereco.builder()
+                .cep("20040002")
+                .logradouro("Rua da Assembleia")
+                .numero("200")
+                .cidade("Rio de Janeiro")
+                .bairro("Centro")
+                .estado(SiglaEstados.RJ)
+                .complemento("Apto 502")
                 .build();
     }
 }

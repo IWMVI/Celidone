@@ -1,12 +1,13 @@
 package br.edu.fateczl.celidone.tcc.mapper;
 
 import br.edu.fateczl.celidone.tcc.domain.Cliente;
+import br.edu.fateczl.celidone.tcc.domain.Endereco;
 import br.edu.fateczl.celidone.tcc.dto.ClienteRequest;
 import br.edu.fateczl.celidone.tcc.dto.ClienteResponse;
+import br.edu.fateczl.celidone.tcc.dto.EnderecoRequest;
 
 public class ClienteMapper {
 
-    // Impede a criação de instâncias da classe
     private ClienteMapper () { }
 
     public static Cliente toEntity(ClienteRequest dto) {
@@ -15,7 +16,19 @@ public class ClienteMapper {
                 .cpfCnpj(dto.cpfCnpj())
                 .email(dto.email())
                 .celular(dto.celular())
-                .endereco(dto.endereco())
+                .endereco(toEnderecoEntity(dto.endereco()))
+                .build();
+    }
+
+    private static Endereco toEnderecoEntity(EnderecoRequest dto) {
+        return Endereco.builder()
+                .cep(dto.cep())
+                .logradouro(dto.logradouro())
+                .numero(dto.numero())
+                .cidade(dto.cidade())
+                .bairro(dto.bairro())
+                .estado(dto.getEstadoEnum())
+                .complemento(dto.complemento())
                 .build();
     }
 
