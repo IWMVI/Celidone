@@ -1,4 +1,4 @@
-# Estratégia de Testes — Celidone
+# Estratégia de Testes — TCC
 
 Este documento descreve como o **Cucumber (BDD)**, **JUnit (testes unitários)**, **JaCoCo (cobertura de código)** e o **CI com GitHub Actions** são utilizados no projeto.
 
@@ -82,7 +82,7 @@ Testes unitários verificam o comportamento de métodos e classes isoladamente, 
 src/
 └── test/
     └── java/
-        └── br/edu/fateczl/celidone/tcc/
+        └── br/edu/fateczl/tcc/
             └── service/
                 └── ClienteServiceTest.java    # Testes da camada Service
 ```
@@ -161,7 +161,7 @@ tasks.named('jacocoTestCoverageVerification') {
     violationRules {
         rule {
             element = 'CLASS'
-            includes = ['br.edu.fateczl.celidone.tcc.service.ClienteService']
+            includes = ['br.edu.fateczl.tcc.service.ClienteService']
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
