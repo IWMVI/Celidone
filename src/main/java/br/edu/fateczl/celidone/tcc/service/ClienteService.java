@@ -37,6 +37,16 @@ public class ClienteService {
     }
 
     // ===============================
+    // READ - BUSCAR COM FILTRO
+    // ===============================
+    public List<Cliente> buscarComFiltro(String busca) {
+        if (busca == null || busca.isBlank()) {
+            return repository.findAll();
+        }
+        return repository.buscarPorTermo(busca.trim());
+    }
+
+    // ===============================
     // READ - POR ID
     // ===============================
     public Cliente buscarPorId(Long id) {
