@@ -46,10 +46,9 @@ class ClienteControllerIntegrationTest {
 
         // Execução: O Controller chamará o Service REAL e o Repository REAL
         mockMvc.perform(post("/clientes")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                )
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         // Verificação real: o cliente realmente existe no banco de dados?
@@ -63,10 +62,9 @@ class ClienteControllerIntegrationTest {
         ClienteRequest request = ClienteTestDataBuilder.criarClienteRequestPJ();
 
         mockMvc.perform(post("/clientes")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                )
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         boolean existeNoBanco = clienteRepository.findByCpfCnpj(request.cpfCnpj()).isPresent();
