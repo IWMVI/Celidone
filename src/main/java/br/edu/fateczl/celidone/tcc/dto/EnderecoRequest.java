@@ -1,6 +1,7 @@
 package br.edu.fateczl.celidone.tcc.dto;
 
 import br.edu.fateczl.celidone.tcc.enums.SiglaEstados;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public record EnderecoRequest(
         String cep,
@@ -9,8 +10,8 @@ public record EnderecoRequest(
         String cidade,
         String bairro,
         String estado,
-        String complemento
-) {
+        String complemento) {
+    @JsonIgnore
     public SiglaEstados getEstadoEnum() {
         return SiglaEstados.valueOf(estado);
     }
