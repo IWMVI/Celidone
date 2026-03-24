@@ -15,59 +15,63 @@ import br.edu.fateczl.tcc.repository.MedidaRepository;
 import br.edu.fateczl.tcc.strategy.MedidaStrategy;
 import org.springframework.stereotype.Service;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MedidaService {
 
     private final ClienteRepository clienteRepository;
     private final MedidaRepository medidaRepository;
-    private final List<MedidaStrategy> strategies;
+    private final Map<SexoEnum, MedidaStrategy<?>> strategyMap;
 
     public MedidaService(ClienteRepository clienteRepository,
                          MedidaRepository medidaRepository,
-                         List<MedidaStrategy> strategies) {
+                         List<MedidaStrategy<?>> strategies) {
         this.clienteRepository = clienteRepository;
         this.medidaRepository = medidaRepository;
-        this.strategies = strategies;
+        this.strategyMap = new EnumMap<>(SexoEnum.class);
+
+        for (MedidaStrategy<?> strategy : strategies) {
+            strategyMap.put(strategy.getTipo(), strategy);
+        }
     }
 
-    /**
-     * Cria uma medida feminina
-     */
     public MedidaFemininaResponse criarFeminina(MedidaFemininaRequest dto) {
         Cliente cliente = buscarCliente(dto.clienteId());
-        MedidaFeminina medida = (MedidaFeminina) getStrategy(SexoEnum.FEMININO)
-                .criar(dto, cliente);
+
+        MedidaStrategy<MedidaFemininaRequest> strategy = getStrategy(SexoEnum.FEMININO);
+
+        MedidaFeminina medida = (MedidaFeminina) strategy.criar(dto, cliente);
+
         medidaRepository.save(medida);
         return MedidaFemininaMapper.toResponse(medida);
     }
 
-    /**
-     * Cria uma medida masculina
-     */
     public MedidaMasculinaResponse criarMasculina(MedidaMasculinaRequest dto) {
         Cliente cliente = buscarCliente(dto.clienteId());
-        MedidaMasculina medida = (MedidaMasculina) getStrategy(SexoEnum.MASCULINO)
-                .criar(dto, cliente);
+
+        MedidaStrategy<MedidaMasculinaRequest> strategy = getStrategy(SexoEnum.MASCULINO);
+
+        MedidaMasculina medida = (MedidaMasculina) strategy.criar(dto, cliente);
+
         medidaRepository.save(medida);
         return MedidaMasculinaMapper.toResponse(medida);
     }
 
 
-    /**
-     * Busca a strategy pelo tipo de sexo
-     */
-    private MedidaStrategy getStrategy(SexoEnum sexo) {
-        return strategies.stream()
-                .filter(s -> s.getTipo() == sexo)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Strategy não encontrada para: " + sexo));
+    @SuppressWarnings("unchecked")
+    private <T> MedidaStrategy<T> getStrategy(SexoEnum sexo) {
+        MedidaStrategy<?> strategy = strategyMap.get(sexo);
+
+        if (strategy == null) {
+            throw new IllegalStateException("Strategy não encontrada para: " + sexo);
+        }
+
+        return (MedidaStrategy<T>) strategy;
     }
 
-    /**
-     * Busca cliente pelo ID
-     */
     private Cliente buscarCliente(Long clienteId) {
         return clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + clienteId));

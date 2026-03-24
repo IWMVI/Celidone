@@ -4,7 +4,7 @@ import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Medida;
 import br.edu.fateczl.tcc.enums.SexoEnum;
 
-public interface MedidaStrategy {
+public interface MedidaStrategy<T> {
 
     /**
      * Cria uma medida a partir do DTO apropriado
@@ -12,7 +12,7 @@ public interface MedidaStrategy {
      * @param cliente Cliente associado
      * @return Entidade Medida
      */
-    Medida criar(Object dto, Cliente cliente);
+    Medida criar(T dto, Cliente cliente);
 
     /**
      * Retorna o tipo de sexo que essa strategy atende
