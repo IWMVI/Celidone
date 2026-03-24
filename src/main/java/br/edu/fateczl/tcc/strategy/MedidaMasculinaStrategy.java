@@ -8,15 +8,11 @@ import br.edu.fateczl.tcc.mapper.MedidaMasculinaMapper;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MedidaMasculinaStrategy implements MedidaStrategy {
+public class MedidaMasculinaStrategy implements MedidaStrategy<MedidaMasculinaRequest> {
 
     @Override
-    public Medida criar(Object dto, Cliente cliente) {
-        if (!(dto instanceof MedidaMasculinaRequest masculinaDTO)) {
-            throw new IllegalArgumentException("DTO inválido para MedidaMasculina");
-        }
-
-        return MedidaMasculinaMapper.toEntity(masculinaDTO, cliente);
+    public Medida criar(MedidaMasculinaRequest dto, Cliente cliente) {
+        return MedidaMasculinaMapper.toEntity(dto, cliente);
     }
 
     @Override
