@@ -28,10 +28,10 @@ public abstract class Medida {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal cintura;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal manga;
 
     @Column(length = 9, nullable = false)
@@ -45,10 +45,10 @@ public abstract class Medida {
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
-    public Medida() {
+    protected Medida() {
     }
 
-    public Medida(Long id, BigDecimal cintura, BigDecimal manga, SexoEnum sexo, LocalDate dataMedida, Cliente cliente) {
+    protected Medida(Long id, BigDecimal cintura, BigDecimal manga, SexoEnum sexo, LocalDate dataMedida, Cliente cliente) {
         this.id = id;
         this.cintura = cintura;
         this.manga = manga;

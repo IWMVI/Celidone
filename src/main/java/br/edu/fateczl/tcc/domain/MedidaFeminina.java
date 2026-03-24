@@ -12,25 +12,25 @@ import java.time.LocalDate;
 @Table(name = "medida_feminina")
 public class MedidaFeminina extends Medida {
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal alturaBusto;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal raioBusto;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal corpo;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal ombro;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal decote;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal quadril;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal comprimentoVestido;
 
     public MedidaFeminina() {

@@ -12,13 +12,13 @@ import java.time.LocalDate;
 @Table(name = "medida_masculina")
 public class MedidaMasculina extends Medida {
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal colarinho;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal barra;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal torax;
 
     public MedidaMasculina() {
