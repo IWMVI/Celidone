@@ -9,10 +9,10 @@ public record MedidaFemininaResponse(
 
         Long id,
         Long clienteId,
-        BigDecimal cintura,
-        BigDecimal manga,
         SexoEnum sexo,
         LocalDate dataMedida,
+        BigDecimal cintura,
+        BigDecimal manga,
 
         BigDecimal alturaBusto,
         BigDecimal raioBusto,
