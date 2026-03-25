@@ -29,10 +29,10 @@ public class MedidaMasculinaMapper {
         return new MedidaMasculinaResponse(
                 entity.getId(),
                 entity.getCliente().getId(),
-                entity.getCintura(),
-                entity.getManga(),
                 entity.getSexo(),
                 entity.getDataMedida(),
+                entity.getCintura(),
+                entity.getManga(),
                 entity.getColarinho(),
                 entity.getBarra(),
                 entity.getTorax()

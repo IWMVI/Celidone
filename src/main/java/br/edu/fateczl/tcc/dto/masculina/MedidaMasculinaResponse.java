@@ -9,10 +9,11 @@ public record MedidaMasculinaResponse(
 
         Long id,
         Long clienteId,
-        BigDecimal cintura,
-        BigDecimal manga,
         SexoEnum sexo,
         LocalDate dataMedida,
+        BigDecimal cintura,
+        BigDecimal manga,
+
         BigDecimal colarinho,
         BigDecimal barra,
         BigDecimal torax
