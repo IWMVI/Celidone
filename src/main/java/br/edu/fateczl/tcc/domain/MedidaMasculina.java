@@ -12,13 +12,13 @@ import java.time.LocalDate;
 @Table(name = "medida_masculina")
 public class MedidaMasculina extends Medida {
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal colarinho;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal barra;
 
-    @Column(precision = 4, scale = 1, nullable = false)
+    @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal torax;
 
     public MedidaMasculina() {
@@ -53,6 +53,81 @@ public class MedidaMasculina extends Medida {
 
     public void setTorax(BigDecimal torax) {
         this.torax = torax;
+    }
+
+    public static MedidaMasculinaBuilder builder() {
+        return new MedidaMasculinaBuilder();
+    }
+
+    public static class MedidaMasculinaBuilder {
+        private Long id;
+        private BigDecimal cintura;
+        private BigDecimal manga;
+        private SexoEnum sexo;
+        private LocalDate dataMedida;
+        private Cliente cliente;
+        private BigDecimal colarinho;
+        private BigDecimal barra;
+        private BigDecimal torax;
+
+        public MedidaMasculinaBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public MedidaMasculinaBuilder cintura(BigDecimal cintura) {
+            this.cintura = cintura;
+            return this;
+        }
+
+        public MedidaMasculinaBuilder manga(BigDecimal manga) {
+            this.manga = manga;
+            return this;
+        }
+
+        public MedidaMasculinaBuilder sexo(SexoEnum sexo) {
+            this.sexo = sexo;
+            return this;
+        }
+
+        public MedidaMasculinaBuilder dataMedida(LocalDate dataMedida) {
+            this.dataMedida = dataMedida;
+            return this;
+        }
+
+        public MedidaMasculinaBuilder cliente(Cliente cliente) {
+            this.cliente = cliente;
+            return this;
+        }
+
+        public MedidaMasculinaBuilder colarinho(BigDecimal colarinho) {
+            this.colarinho = colarinho;
+            return this;
+        }
+
+        public MedidaMasculinaBuilder barra(BigDecimal barra) {
+            this.barra = barra;
+            return this;
+        }
+
+        public MedidaMasculinaBuilder torax(BigDecimal torax) {
+            this.torax = torax;
+            return this;
+        }
+
+        public MedidaMasculina build() {
+            MedidaMasculina mm = new MedidaMasculina();
+            mm.setId(this.id);
+            mm.setCintura(this.cintura);
+            mm.setManga(this.manga);
+            mm.setSexo(this.sexo);
+            mm.setDataMedida(this.dataMedida);
+            mm.setCliente(this.cliente);
+            mm.setColarinho(this.colarinho);
+            mm.setBarra(this.barra);
+            mm.setTorax(this.torax);
+            return mm;
+        }
     }
 
     public void atualizar(BigDecimal cintura, BigDecimal manga, SexoEnum sexo, LocalDate dataMedida, Cliente cliente, BigDecimal colarinho, BigDecimal barra, BigDecimal torax) {
