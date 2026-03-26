@@ -67,7 +67,7 @@ public class ClienteService {
         }
 
         cliente.atualizar(novosDados.getNome(), novosDados.getCpfCnpj(), novosDados.getEmail(), novosDados.getCelular(),
-                novosDados.getEndereco());
+                novosDados.getSexo(), novosDados.getEndereco());
 
         return repository.save(cliente);
     }

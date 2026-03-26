@@ -1,6 +1,5 @@
 package br.edu.fateczl.tcc.dto;
 
-import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Endereco;
 import br.edu.fateczl.tcc.enums.SiglaEstados;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +18,7 @@ class DtoTest {
         @Test
         void deve_criar_cliente_request() {
             EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
-            ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", endereco);
+            ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", endereco, "MASCULINO");
 
             assertEquals("João", request.nome());
             assertEquals("12345678901", request.cpfCnpj());
@@ -58,7 +57,7 @@ class DtoTest {
                     .estado(SiglaEstados.SP)
                     .complemento("Sala 1")
                     .build();
-            ClienteResponse response = new ClienteResponse(1L, "João", "12345678901", "joao@email.com", "11999999999", endereco, null);
+            ClienteResponse response = new ClienteResponse(1L, "João", "12345678901", "joao@email.com", "11999999999", "MASCULINO", endereco, null);
 
             assertEquals(1L, response.id());
             assertEquals("João", response.nome());
