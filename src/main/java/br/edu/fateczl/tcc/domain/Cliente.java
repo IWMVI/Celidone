@@ -1,8 +1,11 @@
 package br.edu.fateczl.tcc.domain;
 
+import br.edu.fateczl.tcc.enums.SexoEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,6 +35,10 @@ public class Cliente {
     @Column(length = 11, nullable = false)
     private String celular;
 
+    @Column(length = 9, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SexoEnum sexo;
+
     @Embedded
     private Endereco endereco;
 
@@ -42,11 +49,12 @@ public class Cliente {
     public Cliente() {
     }
 
-    public Cliente(String nome, String cpfCnpj, String email, String celular, Endereco endereco) {
+    public Cliente(String nome, String cpfCnpj, String email, String celular, SexoEnum sexo, Endereco endereco) {
         this.nome = nome;
         this.cpfCnpj = cpfCnpj;
         this.email = email;
         this.celular = celular;
+        this.sexo = sexo;
         this.endereco = endereco;
     }
 
@@ -90,6 +98,14 @@ public class Cliente {
         this.celular = celular;
     }
 
+    public SexoEnum getSexo() {
+        return sexo;
+    }
+
+    public void setSexo(SexoEnum sexo) {
+        this.sexo = sexo;
+    }
+
     public Endereco getEndereco() {
         return endereco;
     }
@@ -111,12 +127,14 @@ public class Cliente {
             String cpfCnpj,
             String email,
             String celular,
+            SexoEnum sexo,
             Endereco endereco
     ) {
         this.nome = nome;
         this.cpfCnpj = cpfCnpj;
         this.email = email;
         this.celular = celular;
+        this.sexo = sexo;
         this.endereco = endereco;
     }
 
@@ -130,6 +148,7 @@ public class Cliente {
         private String cpfCnpj;
         private String email;
         private String celular;
+        private SexoEnum sexo;
         private Endereco endereco;
         private LocalDate dataCadastro;
 
@@ -158,6 +177,11 @@ public class Cliente {
             return this;
         }
 
+        public ClienteBuilder sexo(SexoEnum sexo) {
+            this.sexo = sexo;
+            return this;
+        }
+
         public ClienteBuilder endereco(Endereco endereco) {
             this.endereco = endereco;
             return this;
@@ -175,6 +199,7 @@ public class Cliente {
             cliente.cpfCnpj = this.cpfCnpj;
             cliente.email = this.email;
             cliente.celular = this.celular;
+            cliente.sexo = this.sexo;
             cliente.endereco = this.endereco;
             cliente.dataCadastro = this.dataCadastro;
             return cliente;
@@ -203,6 +228,7 @@ public class Cliente {
                 ", cpfCnpj='" + cpfCnpj + '\'' +
                 ", email='" + email + '\'' +
                 ", celular='" + celular + '\'' +
+                ", sexo=" + sexo +
                 ", endereco=" + endereco +
                 ", dataCadastro=" + dataCadastro +
                 '}';

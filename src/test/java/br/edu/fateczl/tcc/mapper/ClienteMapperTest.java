@@ -24,7 +24,7 @@ class ClienteMapperTest {
         @Test
         void deveConverter_request_para_entity() {
             EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
-            ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", enderecoRequest);
+            ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", enderecoRequest, "MASCULINO");
 
             Cliente entity = ClienteMapper.toEntity(request);
 
@@ -39,7 +39,7 @@ class ClienteMapperTest {
 
         @Test
         void deve_lancar_exception_quando_request_for_nulo() {
-            ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", null);
+            ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", null, "MASCULINO");
             
             assertThrows(NullPointerException.class, () -> ClienteMapper.toEntity(request));
         }

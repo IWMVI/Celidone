@@ -22,7 +22,8 @@ public class ClienteTestDataBuilder {
                 "12345678901",
                 "joao@email.com",
                 "11999999999",
-                criarEnderecoValido()
+                criarEnderecoValido(),
+                "MASCULINO"
         );
     }
 
@@ -32,7 +33,8 @@ public class ClienteTestDataBuilder {
                 "12345678000195",
                 "empresa@email.com",
                 "11988888888",
-                criarEnderecoValido()
+                criarEnderecoValido(),
+                "MASCULINO"
         );
     }
 
@@ -42,7 +44,8 @@ public class ClienteTestDataBuilder {
                 "12345678901",
                 "cliente.atualizado@email.com",
                 "11977777777",
-                criarEnderecoAtualizado()
+                criarEnderecoAtualizado(),
+                "FEMININO"
         );
     }
 

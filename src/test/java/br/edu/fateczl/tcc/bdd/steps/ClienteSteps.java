@@ -67,7 +67,8 @@ public class ClienteSteps {
                 dados.getOrDefault("cpfCnpj", ""),
                 dados.getOrDefault("email", ""),
                 dados.getOrDefault("celular", ""),
-                endereco);
+                endereco,
+                dados.getOrDefault("sexo", null));
     }
 
     private String getOrDefault(Map<String, String> dados, String key, String defaultValue) {
@@ -102,7 +103,8 @@ public class ClienteSteps {
                 cpfCnpj,
                 cpfCnpj + "@email.com",
                 "11999999999",
-                endereco);
+                endereco,
+                "MASCULINO");
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -134,7 +136,7 @@ public class ClienteSteps {
         if (linhas.isEmpty()) {
             throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
         }
-        Map<String, String> dados = linhas.get(0);
+        Map<String, String> dados = linhas.getFirst();
 
         ClienteRequest request = montarRequest(dados);
 
@@ -187,7 +189,7 @@ public class ClienteSteps {
         if (linhas.isEmpty()) {
             throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
         }
-        Map<String, String> dados = linhas.get(0);
+        Map<String, String> dados = linhas.getFirst();
         ClienteRequest request = montarRequest(dados);
 
         resposta = mockMvc.perform(put("/clientes/{id}", id)
@@ -265,7 +267,7 @@ public class ClienteSteps {
         if (linhas.isEmpty()) {
             throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
         }
-        Map<String, String> dados = linhas.get(0);
+        Map<String, String> dados = linhas.getFirst();
         ClienteRequest request = montarRequest(dados);
 
         resposta = mockMvc.perform(put("/clientes/{id}", id)

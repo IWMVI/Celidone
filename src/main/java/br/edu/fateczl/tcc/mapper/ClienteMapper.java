@@ -5,6 +5,7 @@ import br.edu.fateczl.tcc.domain.Endereco;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
+import br.edu.fateczl.tcc.enums.SexoEnum;
 
 public class ClienteMapper {
 
@@ -16,6 +17,7 @@ public class ClienteMapper {
                 .cpfCnpj(dto.cpfCnpj())
                 .email(dto.email())
                 .celular(dto.celular())
+                .sexo(dto.sexo() != null ? SexoEnum.valueOf(dto.sexo()) : null)
                 .endereco(toEnderecoEntity(dto.endereco()))
                 .build();
     }
@@ -39,6 +41,7 @@ public class ClienteMapper {
                 cliente.getCpfCnpj(),
                 cliente.getEmail(),
                 cliente.getCelular(),
+                cliente.getSexo() != null ? cliente.getSexo().name() : null,
                 cliente.getEndereco(),
                 cliente.getDataCadastro()
         );
