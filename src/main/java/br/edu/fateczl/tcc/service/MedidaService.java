@@ -199,7 +199,14 @@ public class MedidaService {
     }
 
     private Cliente buscarCliente(Long clienteId) {
-        return clienteRepository.findById(clienteId)
+        if (clienteId == null) {
+            throw new IllegalArgumentException("ID do cliente não pode ser nulo");
+        }
+        Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + clienteId));
+        if (cliente.getId() == null) {
+            throw new IllegalArgumentException("Cliente retornou ID nulo");
+        }
+        return cliente;
     }
 }
