@@ -34,7 +34,7 @@ public interface TrajeRepository extends JpaRepository<Traje, Long> {
     @Query("SELECT t FROM traje t WHERE " +
            "t.nome LIKE LOWER(CONCAT('%', :busca, '%')) OR " +
            "LOWER(t.descricao) LIKE LOWER(CONCAT('%', :busca, '%'))")
-    List<Traje> buscarPorTermo(@Param("busca") String termo);
+    List<Traje> buscarPorNomeOuDescricao(@Param("busca") String termo);
 
     @Query("SELECT t FROM traje t WHERE t.valorItem BETWEEN :min AND :max")
     List<Traje> findByFaixaDePreco(
