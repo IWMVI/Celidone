@@ -1,6 +1,7 @@
 package br.edu.fateczl.tcc.domain;
 
 import br.edu.fateczl.tcc.enums.SiglaEstados;
+import br.edu.fateczl.tcc.enums.SexoEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ class ClienteTest {
         @Test
         void deve_criar_cliente_com_construtor_completo() {
             Endereco endereco = new Endereco("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
-            Cliente cliente = new Cliente("João", "12345678901", "joao@email.com", "11999999999", endereco);
+            Cliente cliente = new Cliente("João", "12345678901", "joao@email.com", "11999999999", SexoEnum.MASCULINO, endereco);
 
             assertEquals("João", cliente.getNome());
             assertEquals("12345678901", cliente.getCpfCnpj());
@@ -45,7 +46,7 @@ class ClienteTest {
             Cliente cliente = new Cliente();
             Endereco endereco = new Endereco("01001000", "Rua Nova", "50", "São Paulo", "Vila", SiglaEstados.SP, "Apto");
 
-            cliente.atualizar("João Atualizado", "11111111111", "novo@email.com", "1188888888", endereco);
+            cliente.atualizar("João Atualizado", "11111111111", "novo@email.com", "1188888888", SexoEnum.FEMININO, endereco);
 
             assertEquals("João Atualizado", cliente.getNome());
             assertEquals("11111111111", cliente.getCpfCnpj());
