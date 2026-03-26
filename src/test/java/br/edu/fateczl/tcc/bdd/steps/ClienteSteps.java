@@ -53,11 +53,11 @@ public class ClienteSteps {
         EnderecoRequest endereco = null;
         if (temEndereco) {
             endereco = new EnderecoRequest(
-                    getOrDefault(dados, "cep", ""),
-                    getOrDefault(dados, "logradouro", ""),
-                    getOrDefault(dados, "numero", ""),
-                    getOrDefault(dados, "cidade", ""),
-                    getOrDefault(dados, "bairro", ""),
+                    getOrDefault(dados, "cep"),
+                    getOrDefault(dados, "logradouro"),
+                    getOrDefault(dados, "numero"),
+                    getOrDefault(dados, "cidade"),
+                    getOrDefault(dados, "bairro"),
                     dados.get("estado"),
                     dados.get("complemento"));
         }
@@ -71,9 +71,9 @@ public class ClienteSteps {
                 dados.getOrDefault("sexo", null));
     }
 
-    private String getOrDefault(Map<String, String> dados, String key, String defaultValue) {
+    private String getOrDefault(Map<String, String> dados, String key) {
         String value = dados.get(key);
-        return (value != null && !value.trim().isEmpty()) ? value : defaultValue;
+        return (value != null && !value.trim().isEmpty()) ? value : "";
     }
 
     // =========================================================
