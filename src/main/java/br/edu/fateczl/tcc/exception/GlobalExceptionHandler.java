@@ -31,6 +31,13 @@ public class GlobalExceptionHandler {
                 .body(Map.of(MESSAGE_KEY, message));
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of(MESSAGE_KEY, ex.getMessage()));
+    }
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, String>> handleNegocio(BusinessException ex) {
         HttpStatus status = resolverStatus(ex.getMessage());
@@ -60,7 +67,7 @@ public class GlobalExceptionHandler {
         log.error("Erro interno: ", ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(MESSAGE_KEY, "Erro interno no servidor: " + ex.getMessage()));
+                .body(Map.of(MESSAGE_KEY, "Erro interno no servidor"));
     }
 
     private HttpStatus resolverStatus(String mensagem) {
