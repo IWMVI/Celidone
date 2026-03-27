@@ -1,9 +1,8 @@
 package br.edu.fateczl.tcc.service;
 
 import br.edu.fateczl.tcc.domain.Traje;
-import br.edu.fateczl.tcc.dto.traje.TrajeCreateRequest;
+import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
-import br.edu.fateczl.tcc.dto.traje.TrajeUpdateRequest;
 import br.edu.fateczl.tcc.enums.SexoEnum;
 import br.edu.fateczl.tcc.enums.StatusTraje;
 import br.edu.fateczl.tcc.enums.TamanhoTraje;
@@ -29,7 +28,7 @@ public class TrajeService {
     // ===============================
     // CREATE
     // ===============================
-    public TrajeResponse criar(TrajeCreateRequest dto) {
+    public TrajeResponse criar(TrajeRequest dto) {
         Traje traje = TrajeMapper.toEntity(dto);
         trajeRepository.save(traje);
         return TrajeMapper.toResponse(traje);
@@ -91,7 +90,7 @@ public class TrajeService {
     // ===============================
     // UPDATE
     // ===============================
-    public TrajeResponse atualizar(Long id, TrajeUpdateRequest dto) {
+    public TrajeResponse atualizar(Long id, TrajeRequest dto) {
         Traje traje = trajeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(
                         TRAJE_NAO_ENCONTRADO.formatted(id)

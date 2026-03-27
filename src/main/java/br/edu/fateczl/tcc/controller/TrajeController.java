@@ -1,8 +1,7 @@
 package br.edu.fateczl.tcc.controller;
 
-import br.edu.fateczl.tcc.dto.traje.TrajeCreateRequest;
+import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
-import br.edu.fateczl.tcc.dto.traje.TrajeUpdateRequest;
 import br.edu.fateczl.tcc.enums.SexoEnum;
 import br.edu.fateczl.tcc.enums.StatusTraje;
 import br.edu.fateczl.tcc.enums.TamanhoTraje;
@@ -40,7 +39,7 @@ public class TrajeController {
     // ===============================
     @PostMapping
     public ResponseEntity<TrajeResponse> criar(
-            @Valid @RequestBody TrajeCreateRequest dto) {
+            @Valid @RequestBody TrajeRequest dto) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(trajeService.criar(dto));
@@ -88,7 +87,7 @@ public class TrajeController {
     @PutMapping("/{id}")
     public ResponseEntity<TrajeResponse> atualizar(
             @PathVariable Long id,
-            @Valid @RequestBody TrajeUpdateRequest dto) {
+            @Valid @RequestBody TrajeRequest dto) {
 
         return ResponseEntity.ok(trajeService.atualizar(id, dto));
     }
