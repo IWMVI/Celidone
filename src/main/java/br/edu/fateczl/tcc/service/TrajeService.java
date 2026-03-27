@@ -10,6 +10,8 @@ import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.mapper.TrajeMapper;
 import br.edu.fateczl.tcc.repository.TrajeRepository;
+import br.edu.fateczl.tcc.specification.TrajeSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -50,23 +52,13 @@ public class TrajeService {
                                       TipoTraje tipo,
                                       TamanhoTraje tamanho) {
 
-        List<Traje> trajes;
+        Specification<Traje> spec = Specification
+                .where(TrajeSpecification.comStatus(status))
+                .and(TrajeSpecification.comGenero(genero))
+                .and(TrajeSpecification.comTipo(tipo))
+                .and(TrajeSpecification.comTamanho(tamanho));
 
-        if (status != null && genero != null && tamanho != null) {
-            trajes = trajeRepository.findDisponiveisPorGeneroETamanho(genero, tamanho, status);
-        } else if (status != null) {
-            trajes = trajeRepository.findByStatus(status);
-        } else if (genero != null) {
-            trajes = trajeRepository.findByGenero(genero);
-        } else if (tipo != null) {
-            trajes = trajeRepository.findByTipo(tipo);
-        } else if (tamanho != null) {
-            trajes = trajeRepository.findByTamanho(tamanho);
-        } else {
-            trajes = trajeRepository.findAll();
-        }
-
-        return trajes.stream()
+        return trajeRepository.findAll(spec).stream()
                 .map(TrajeMapper::toResponse)
                 .toList();
     }
