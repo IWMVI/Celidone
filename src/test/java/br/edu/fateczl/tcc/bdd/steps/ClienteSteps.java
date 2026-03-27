@@ -62,13 +62,18 @@ public class ClienteSteps {
                     dados.get("complemento"));
         }
 
+        String sexo = dados.get("sexo");
+        if (sexo == null || sexo.trim().isEmpty()) {
+            sexo = "MASCULINO";
+        }
+
         return new ClienteRequest(
                 dados.getOrDefault("nome", ""),
                 dados.getOrDefault("cpfCnpj", ""),
                 dados.getOrDefault("email", ""),
                 dados.getOrDefault("celular", ""),
                 endereco,
-                dados.getOrDefault("sexo", null));
+                sexo);
     }
 
     private String getOrDefault(Map<String, String> dados, String key) {
@@ -168,6 +173,28 @@ public class ClienteSteps {
                 .andReturn();
     }
 
+    @Quando("envoy requisicao de listagem de clientes")
+    public void envoy_requisicao_de_listagem_de_clientes() throws Exception {
+        resposta = mockMvc.perform(get("/clientes")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    @Quando("envoy requisicao de listagem de clientes sem filtro")
+    public void envoy_requisicao_de_listagem_de_clientes_sem_filtro() throws Exception {
+        resposta = mockMvc.perform(get("/clientes")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    @Quando("envoy requisicao de listagem de clientes com filtro {string}")
+    public void envoy_requisicao_de_listagem_de_clientes_com_filtro(String filtro) throws Exception {
+        resposta = mockMvc.perform(get("/clientes")
+                .param("busca", filtro)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
     @Quando("envio uma requisicao de busca pelo id do cliente com cpf {string}")
     public void envio_uma_requisicao_de_busca_pelo_id_do_cliente_com_cpf(String cpfCnpj) throws Exception {
         Long id = clienteRepository.findByCpfCnpj(cpfCnpj)
@@ -185,6 +212,42 @@ public class ClienteSteps {
                 .orElseThrow(() -> new IllegalStateException("Cliente não encontrado"))
                 .getId();
 
+        List<Map<String, String>> linhas = dataTable.asMaps(String.class, String.class);
+        if (linhas.isEmpty()) {
+            throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
+        }
+        Map<String, String> dados = linhas.getFirst();
+        ClienteRequest request = montarRequest(dados);
+
+        resposta = mockMvc.perform(put("/clientes/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andReturn();
+    }
+
+    @Quando("envoy requisicao de atualizacao do cliente com cpf {string} com os dados:")
+    public void envoy_requisicao_de_atualizacao_do_cliente_com_cpf(String cpfCnpj, DataTable dataTable)
+            throws Exception {
+        Long id = clienteRepository.findByCpfCnpj(cpfCnpj)
+                .orElseThrow(() -> new IllegalStateException("Cliente não encontrado"))
+                .getId();
+
+        List<Map<String, String>> linhas = dataTable.asMaps(String.class, String.class);
+        if (linhas.isEmpty()) {
+            throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
+        }
+        Map<String, String> dados = linhas.getFirst();
+        ClienteRequest request = montarRequest(dados);
+
+        resposta = mockMvc.perform(put("/clientes/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andReturn();
+    }
+
+    @Quando("envoy requisicao de atualizacao do id {int} com os dados:")
+    public void envoy_requisicao_de_atualizacao_do_id_com_os_dados(Integer id, DataTable dataTable)
+            throws Exception {
         List<Map<String, String>> linhas = dataTable.asMaps(String.class, String.class);
         if (linhas.isEmpty()) {
             throw new IllegalStateException("DataTable esta vazia - sem dados para processar");
