@@ -1,15 +1,14 @@
 package br.edu.fateczl.tcc.mapper;
 
 import br.edu.fateczl.tcc.domain.Traje;
-import br.edu.fateczl.tcc.dto.traje.TrajeCreateRequest;
+import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
-import br.edu.fateczl.tcc.dto.traje.TrajeUpdateRequest;
 
 public class TrajeMapper {
 
     private TrajeMapper() { }
 
-    public static Traje toEntity(TrajeCreateRequest dto) {
+    public static Traje toEntity(TrajeRequest dto) {
         return Traje.builder()
                 .descricao(dto.descricao())
                 .tamanho(dto.tamanho())
@@ -26,7 +25,7 @@ public class TrajeMapper {
                 .build();
     }
 
-    public static void updateEntity(Traje entity, TrajeUpdateRequest dto) {
+    public static void updateEntity(Traje entity, TrajeRequest dto) {
         entity.atualizar(
                 dto.descricao(),
                 dto.tamanho(),

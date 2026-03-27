@@ -17,7 +17,7 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
-public record TrajeUpdateRequest(
+public record TrajeRequest(
 
         @NotBlank(message = "A descrição é obrigatória")
         @Size(max = 200, message = "A descrição deve ter no máximo 200 caracteres")
@@ -36,7 +36,7 @@ public record TrajeUpdateRequest(
         SexoEnum genero,
 
         @NotNull(message = "O valor do item é obrigatório")
-        @Digits(integer = 6, fraction = 2, message = "O valor deve ter no máximo 8 dígitos no total, sendo 2 decimais")
+        @Digits(integer = 6, fraction = 2, message = "O valor deve ter no máximo 8 dígitos no total, sendo 2 decimais (ex: 999999.99)")
         @Positive(message = "O valor do item deve ser positivo")
         BigDecimal valorItem,
 
