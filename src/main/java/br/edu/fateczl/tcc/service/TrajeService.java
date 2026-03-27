@@ -7,6 +7,7 @@ import br.edu.fateczl.tcc.enums.SexoEnum;
 import br.edu.fateczl.tcc.enums.StatusTraje;
 import br.edu.fateczl.tcc.enums.TamanhoTraje;
 import br.edu.fateczl.tcc.enums.TipoTraje;
+import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.mapper.TrajeMapper;
 import br.edu.fateczl.tcc.repository.TrajeRepository;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ import java.util.List;
 public class TrajeService {
 
     private final TrajeRepository trajeRepository;
-    private static final String TRAJE_NAO_ENCONTRADO = "Traje não encontrado: %d";
+    private static final String RESOURCE = "Traje";
 
     public TrajeService(TrajeRepository trajeRepository) {
         this.trajeRepository = trajeRepository;
@@ -38,12 +39,7 @@ public class TrajeService {
     // READ - por ID
     // ===============================
     public TrajeResponse buscarPorId(Long id) {
-        Traje traje = trajeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        TRAJE_NAO_ENCONTRADO.formatted(id)
-                ));
-
-        return TrajeMapper.toResponse(traje);
+        return TrajeMapper.toResponse(buscarOuFalhar(id));
     }
 
     // ===============================
@@ -91,13 +87,8 @@ public class TrajeService {
     // UPDATE
     // ===============================
     public TrajeResponse atualizar(Long id, TrajeRequest dto) {
-        Traje traje = trajeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        TRAJE_NAO_ENCONTRADO.formatted(id)
-                ));
-
+        Traje traje = buscarOuFalhar(id);
         TrajeMapper.updateEntity(traje, dto);
-
         trajeRepository.save(traje);
         return TrajeMapper.toResponse(traje);
     }
@@ -106,11 +97,15 @@ public class TrajeService {
     // DELETE
     // ===============================
     public void deletar(Long id) {
-        Traje traje = trajeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        TRAJE_NAO_ENCONTRADO.formatted(id)
-                ));
+        trajeRepository.delete(buscarOuFalhar(id));
+    }
 
-        trajeRepository.delete(traje);
+
+    // ===============================
+    // HELPERS
+    // ===============================
+    private Traje buscarOuFalhar(Long id) {
+        return trajeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RESOURCE, id));
     }
 }
