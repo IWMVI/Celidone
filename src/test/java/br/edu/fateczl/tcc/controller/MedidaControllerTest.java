@@ -1,14 +1,24 @@
 package br.edu.fateczl.tcc.controller;
 
-import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaRequest;
-import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaResponse;
-import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaUpdateRequest;
-import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaRequest;
-import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaResponse;
-import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaUpdateRequest;
-import br.edu.fateczl.tcc.enums.SexoEnum;
-import br.edu.fateczl.tcc.service.MedidaService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,16 +29,16 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaRequest;
+import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaResponse;
+import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaUpdateRequest;
+import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaRequest;
+import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaResponse;
+import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaUpdateRequest;
+import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.service.MedidaService;
 
 @WebMvcTest(MedidaController.class)
 @DisplayName("Testes de comportamento do MedidaController")
@@ -378,7 +388,7 @@ class MedidaControllerTest {
 
             mockMvc.perform(delete("/medidas/999")
                             .with(csrf()))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().is4xxClientError());
 
             verify(medidaService).deletar(999L);
         }
