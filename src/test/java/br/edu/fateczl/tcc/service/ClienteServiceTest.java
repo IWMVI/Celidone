@@ -18,7 +18,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.inOrder;
+import org.mockito.InOrder;
 import static org.mockito.Mockito.*;
 
 @DisplayName("Testes de Comportamento do ClienteService")
@@ -435,8 +438,10 @@ class ClienteServiceTest {
             when(repository.existsById(1L)).thenReturn(true);
 
             assertDoesNotThrow(() -> service.deletar(1L));
-            
+
             verify(repository, times(1)).existsById(1L);
+            verify(repository, times(1)).deletarMedidasPorCliente(1L);
+            verify(repository, times(1)).deletarAlugueisPorCliente(1L);
             verify(repository, times(1)).deleteById(1L);
         }
 
@@ -447,6 +452,10 @@ class ClienteServiceTest {
 
             BusinessException ex = assertThrows(BusinessException.class, () -> service.deletar(999L));
             assertTrue(ex.getMessage().contains("Cliente não encontrado"));
+            
+            verify(repository, never()).deletarMedidasPorCliente(anyLong());
+            verify(repository, never()).deletarAlugueisPorCliente(anyLong());
+            verify(repository, never()).deleteById(anyLong());
         }
 
         @Test
@@ -457,19 +466,26 @@ class ClienteServiceTest {
                     .when(repository).deleteById(1L);
 
             assertThrows(RuntimeException.class, () -> service.deletar(1L));
+            
+            verify(repository, times(1)).existsById(1L);
+            verify(repository, times(1)).deletarMedidasPorCliente(1L);
+            verify(repository, times(1)).deletarAlugueisPorCliente(1L);
         }
 
         @Test
-        @DisplayName("Deve garantir que cliente foi removido após exclusão")
-        void deve_garantir_que_cliente_foi_removido_apos_exclusao() {
+        @DisplayName("Deve garantir que dependências sejam removidas antes do cliente")
+        void deve_garantir_que_dependencias_sejam_removidas_antes_do_cliente() {
             Long clienteId = 1L;
             when(repository.existsById(clienteId)).thenReturn(true);
 
             service.deletar(clienteId);
 
-            verify(repository, never()).findById(clienteId);
-            verify(repository, times(1)).existsById(clienteId);
-            verify(repository, times(1)).deleteById(clienteId);
+            // Verificar ordem das chamadas
+            InOrder inOrder = inOrder(repository);
+            inOrder.verify(repository).existsById(clienteId);
+            inOrder.verify(repository).deletarMedidasPorCliente(clienteId);
+            inOrder.verify(repository).deletarAlugueisPorCliente(clienteId);
+            inOrder.verify(repository).deleteById(clienteId);
         }
     }
 }
