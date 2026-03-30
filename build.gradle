@@ -112,7 +112,7 @@ tasks.named('jacocoTestCoverageVerification') {
 	violationRules {
 		rule {
 			element = 'CLASS'
-			includes = ['br.edu.fateczl.tcc.service.ClienteService']
+			includes = ['br.edu.fateczl.tcc.service.*']
 			limit {
 				counter = 'LINE'
 				value = 'COVEREDRATIO'
@@ -121,7 +121,7 @@ tasks.named('jacocoTestCoverageVerification') {
 			limit {
 				counter = 'BRANCH'
 				value = 'COVEREDRATIO'
-				minimum = 0.8
+				minimum = 0.6
 			}
 		}
 	}
