@@ -6,6 +6,7 @@ import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
 import br.edu.fateczl.tcc.enums.SiglaEstados;
+import br.edu.fateczl.tcc.enums.SexoEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,16 @@ class ClienteMapperTest {
             ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", null, "MASCULINO");
             
             assertThrows(NullPointerException.class, () -> ClienteMapper.toEntity(request));
+        }
+
+        @Test
+        void deve_definir_sexo_neutro_quando_sexo_for_nulo() {
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, null);
+
+            Cliente entity = ClienteMapper.toEntity(request);
+
+            assertEquals(SexoEnum.NEUTRO, entity.getSexo());
         }
     }
 

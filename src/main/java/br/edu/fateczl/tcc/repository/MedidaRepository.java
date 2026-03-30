@@ -12,7 +12,8 @@ import java.util.Optional;
 
 public interface MedidaRepository extends JpaRepository<Medida, Long> {
 
-    List<Medida> findByClienteId(Long clienteId);
+    @Query("SELECT m FROM medida m WHERE m.cliente.id = :clienteId")
+    List<Medida> findByClienteId(@Param("clienteId") Long clienteId);
 
     List<Medida> findBySexo(SexoEnum sexo);
 

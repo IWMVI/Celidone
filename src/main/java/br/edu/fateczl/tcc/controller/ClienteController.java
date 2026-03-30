@@ -5,6 +5,7 @@ import br.edu.fateczl.tcc.dto.ClienteResponse;
 import br.edu.fateczl.tcc.mapper.ClienteMapper;
 import br.edu.fateczl.tcc.service.ClienteService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,10 +32,31 @@ public class ClienteController {
     }
 
     // ===============================
-    // READ - LISTAR
+    // READ - LISTAR COM PAGINAÇÃO
     // ===============================
     @GetMapping
-    public List<ClienteResponse> listar(@RequestParam(value = "busca", required = false) String busca) {
+    public Page<ClienteResponse> listar(
+            @RequestParam(value = "busca", required = false) String busca,
+            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(value = "tamanho", defaultValue = "10") int tamanho) {
+        var clientesPage = service.buscarComFiltroPaginado(busca, pagina, tamanho);
+        return clientesPage.map(ClienteMapper::toResponse);
+    }
+
+    // ===============================
+    // READ - LISTAR TODOS (SEM PAGINAÇÃO)
+    // ===============================
+    @GetMapping("/todos")
+    public List<ClienteResponse> listarTodos() {
+        var clientes = service.listar();
+        return clientes.stream().map(ClienteMapper::toResponse).toList();
+    }
+
+    // ===============================
+    // READ - BUSCAR COM FILTRO (SEM PAGINAÇÃO)
+    // ===============================
+    @GetMapping("/buscar")
+    public List<ClienteResponse> buscar(@RequestParam(value = "busca", required = false) String busca) {
         var clientes = service.buscarComFiltro(busca);
         return clientes.stream().map(ClienteMapper::toResponse).toList();
     }

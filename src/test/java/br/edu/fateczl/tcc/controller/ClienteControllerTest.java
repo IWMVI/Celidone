@@ -1,6 +1,7 @@
 package br.edu.fateczl.tcc.controller;
 
 import br.edu.fateczl.tcc.dto.ClienteRequest;
+import br.edu.fateczl.tcc.mapper.ClienteMapper;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
 import br.edu.fateczl.tcc.util.ClienteTestDataBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -69,5 +71,16 @@ class ClienteControllerIntegrationTest {
 
         boolean existeNoBanco = clienteRepository.findByCpfCnpj(request.cpfCnpj()).isPresent();
         assertTrue(existeNoBanco, "O cliente feminino deveria ter sido salvo no banco de dados real");
+    }
+
+    @Test
+    void deveListarClientesDoBancoDeVerdade() throws Exception {
+        ClienteRequest request = ClienteTestDataBuilder.criarClienteRequestValido();
+        clienteRepository.save(ClienteMapper.toEntity(request));
+
+        mockMvc.perform(get("/clientes")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }

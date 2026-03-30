@@ -1,5 +1,6 @@
 package br.edu.fateczl.tcc;
 
+import br.edu.fateczl.tcc.util.PortUtil;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,15 @@ public class TccApplication {
 
     public static void main(String[] args) {
         carregarVariaveisDeAmbiente();
-        
+
+        // Se porta 8080 estiver ocupada, tenta libertar e reiniciar
+        try {
+            PortUtil.ensurePortFree(8080);
+        } catch (Exception e) {
+            log.error("Não foi possível liberar porta 8080: {}", e.getMessage(), e);
+            System.exit(1);
+        }
+
         SpringApplication.run(TccApplication.class, args);
     }
 

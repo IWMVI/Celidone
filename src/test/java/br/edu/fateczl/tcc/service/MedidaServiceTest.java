@@ -20,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -33,7 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Testes de comportamento do MedidaService")
+@DisplayName("Testes de Serviço de Medidas")
 class MedidaServiceTest {
 
     @Mock
@@ -43,208 +44,229 @@ class MedidaServiceTest {
     private MedidaRepository medidaRepository;
 
     @Mock
-    private MedidaMasculinaStrategy masculinaStrategy;
-
-    @Mock
     private MedidaFemininaStrategy femininaStrategy;
 
-    private MedidaService medidaService;
+    @Mock
+    private MedidaMasculinaStrategy masculinaStrategy;
 
-    private Cliente clienteMock;
-    private MedidaMasculina medidaMasculinaMock;
-    private MedidaFeminina medidaFemininaMock;
+    @InjectMocks
+    private MedidaService service;
+
+    private Cliente clienteValido;
 
     @BeforeEach
     void setUp() {
-        when(masculinaStrategy.getTipo()).thenReturn(SexoEnum.MASCULINO);
-        when(femininaStrategy.getTipo()).thenReturn(SexoEnum.FEMININO);
-
-        medidaService = new MedidaService(
-                clienteRepository,
-                medidaRepository,
-                List.of(masculinaStrategy, femininaStrategy)
-        );
-
-        clienteMock = new Cliente();
-        clienteMock.setId(1L);
-        clienteMock.setNome("Cliente Teste");
-        clienteMock.setCpfCnpj("12345678901");
-
-        medidaMasculinaMock = new MedidaMasculina();
-        medidaMasculinaMock.setId(1L);
-        medidaMasculinaMock.setCliente(clienteMock);
-        medidaMasculinaMock.setCintura(new BigDecimal("80.00"));
-        medidaMasculinaMock.setManga(new BigDecimal("60.00"));
-        medidaMasculinaMock.setColarinho(new BigDecimal("40.00"));
-        medidaMasculinaMock.setBarra(new BigDecimal("50.00"));
-        medidaMasculinaMock.setTorax(new BigDecimal("100.00"));
-        medidaMasculinaMock.setSexo(SexoEnum.MASCULINO);
-        medidaMasculinaMock.setDataMedida(LocalDate.now());
-
-        medidaFemininaMock = new MedidaFeminina();
-        medidaFemininaMock.setId(2L);
-        medidaFemininaMock.setCliente(clienteMock);
-        medidaFemininaMock.setCintura(new BigDecimal("70.00"));
-        medidaFemininaMock.setManga(new BigDecimal("55.00"));
-        medidaFemininaMock.setAlturaBusto(new BigDecimal("90.00"));
-        medidaFemininaMock.setRaioBusto(new BigDecimal("18.00"));
-        medidaFemininaMock.setCorpo(new BigDecimal("45.00"));
-        medidaFemininaMock.setOmbro(new BigDecimal("38.00"));
-        medidaFemininaMock.setDecote(new BigDecimal("15.00"));
-        medidaFemininaMock.setQuadril(new BigDecimal("95.00"));
-        medidaFemininaMock.setComprimentoVestido(new BigDecimal("110.00"));
-        medidaFemininaMock.setSexo(SexoEnum.FEMININO);
-        medidaFemininaMock.setDataMedida(LocalDate.now());
+        clienteValido = new Cliente();
+        clienteValido.setId(1L);
+        clienteValido.setNome("Cliente Teste");
+        clienteValido.setCpfCnpj("12345678901");
     }
 
     @Nested
-    @DisplayName("Criar medida masculina")
-    class CriarMasculina {
+    @DisplayName("Criar Medida Feminina")
+    class CriarMedidaFeminina {
 
         @Test
-        @DisplayName("Deve criar medida masculina quando cliente existir")
-        void deve_criar_medida_masculina_quando_cliente_existir() {
-            MedidaMasculinaRequest request = new MedidaMasculinaRequest(
+        @DisplayName("Deve criar medida feminina quando dados forem válidos")
+        void deve_criarMedidaFeminina_quando_dadosForemValidos() {
+            // Arrange
+            MedidaFemininaRequest request = new MedidaFemininaRequest(
                     1L,
-                    new BigDecimal("80.00"),
-                    new BigDecimal("60.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("50.00"),
-                    new BigDecimal("100.00")
+                    BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50), BigDecimal.valueOf(0.30),
+                    BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.40), BigDecimal.valueOf(0.35),
+                    BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.90), BigDecimal.valueOf(1.20)
             );
 
-            when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteMock));
-            when(masculinaStrategy.criar(any(), any())).thenReturn(medidaMasculinaMock);
-            when(medidaRepository.save(any())).thenReturn(medidaMasculinaMock);
+            MedidaFeminina medidaCriada = new MedidaFeminina();
+            medidaCriada.setId(1L);
+            medidaCriada.setCliente(clienteValido);
+            medidaCriada.setCintura(BigDecimal.valueOf(0.80));
+            medidaCriada.setSexo(SexoEnum.FEMININO);
 
-            MedidaMasculinaResponse response = medidaService.criarMasculina(request);
+            when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteValido));
+            when(femininaStrategy.criar(any(MedidaFemininaRequest.class), any(Cliente.class)))
+                    .thenReturn(medidaCriada);
+            when(medidaRepository.save(any(MedidaFeminina.class))).thenReturn(medidaCriada);
 
-            assertNotNull(response);
-            assertEquals(1L, response.id());
+            // Act
+            MedidaFemininaResponse resultado = service.criarFeminina(request);
+
+            // Assert
+            assertNotNull(resultado);
+            assertEquals(1L, resultado.id());
             verify(clienteRepository).findById(1L);
-            verify(masculinaStrategy).criar(request, clienteMock);
-            verify(medidaRepository).save(any(MedidaMasculina.class));
+            verify(femininaStrategy).criar(request, clienteValido);
+            verify(medidaRepository).save(medidaCriada);
         }
 
         @Test
-        @DisplayName("Deve falhar quando cliente nao existir ao criar medida masculina")
-        void deve_falhar_quando_cliente_nao_existir_ao_criar_medida_masculina() {
-            MedidaMasculinaRequest request = new MedidaMasculinaRequest(
-                    999L,
-                    new BigDecimal("80.00"),
-                    new BigDecimal("60.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("50.00"),
-                    new BigDecimal("100.00")
+        @DisplayName("Deve lançar exceção quando cliente não for encontrado")
+        void deve_lancarExcecao_quando_clienteNaoForEncontrado() {
+            // Arrange
+            MedidaFemininaRequest request = new MedidaFemininaRequest(
+                    1L,
+                    BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50), BigDecimal.valueOf(0.30),
+                    BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.40), BigDecimal.valueOf(0.35),
+                    BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.90), BigDecimal.valueOf(1.20)
             );
 
-            when(clienteRepository.findById(999L)).thenReturn(Optional.empty());
+            when(clienteRepository.findById(1L)).thenReturn(Optional.empty());
 
+            // Act & Assert
             IllegalArgumentException exception = assertThrows(
                     IllegalArgumentException.class,
-                    () -> medidaService.criarMasculina(request)
+                    () -> service.criarFeminina(request)
             );
 
             assertTrue(exception.getMessage().contains("Cliente não encontrado"));
+            verify(clienteRepository).findById(1L);
+            verify(femininaStrategy, never()).criar(any(), any());
+            verify(medidaRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando ID do cliente for nulo")
+        void deve_lancarExcecao_quando_idClienteForNulo() {
+            // Arrange
+            MedidaFemininaRequest request = new MedidaFemininaRequest(
+                    null,
+                    BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50), BigDecimal.valueOf(0.30),
+                    BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.40), BigDecimal.valueOf(0.35),
+                    BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.90), BigDecimal.valueOf(1.20)
+            );
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> service.criarFeminina(request)
+            );
+
+            assertTrue(exception.getMessage().contains("ID do cliente não pode ser nulo"));
+            verify(clienteRepository, never()).findById(any());
+            verify(femininaStrategy, never()).criar(any(), any());
             verify(medidaRepository, never()).save(any());
         }
     }
 
     @Nested
-    @DisplayName("Criar medida feminina")
-    class CriarFeminina {
+    @DisplayName("Criar Medida Masculina")
+    class CriarMedidaMasculina {
 
         @Test
-        @DisplayName("Deve criar medida feminina quando cliente existir")
-        void deve_criar_medida_feminina_quando_cliente_existir() {
-            MedidaFemininaRequest request = new MedidaFemininaRequest(
+        @DisplayName("Deve criar medida masculina quando dados forem válidos")
+        void deve_criarMedidaMasculina_quando_dadosForemValidos() {
+            // Arrange
+            MedidaMasculinaRequest request = new MedidaMasculinaRequest(
                     1L,
-                    new BigDecimal("70.00"),
-                    new BigDecimal("55.00"),
-                    new BigDecimal("90.00"),
-                    new BigDecimal("18.00"),
-                    new BigDecimal("45.00"),
-                    new BigDecimal("38.00"),
-                    new BigDecimal("15.00"),
-                    new BigDecimal("95.00"),
-                    new BigDecimal("110.00")
+                    BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50),
+                    BigDecimal.valueOf(0.40), BigDecimal.valueOf(1.00),
+                    BigDecimal.valueOf(0.60)
             );
 
-            when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteMock));
-            when(femininaStrategy.criar(any(), any())).thenReturn(medidaFemininaMock);
-            when(medidaRepository.save(any())).thenReturn(medidaFemininaMock);
+            MedidaMasculina medidaCriada = new MedidaMasculina();
+            medidaCriada.setId(1L);
+            medidaCriada.setCliente(clienteValido);
+            medidaCriada.setCintura(BigDecimal.valueOf(0.80));
+            medidaCriada.setSexo(SexoEnum.MASCULINO);
 
-            MedidaFemininaResponse response = medidaService.criarFeminina(request);
+            when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteValido));
+            when(masculinaStrategy.criar(any(MedidaMasculinaRequest.class), any(Cliente.class)))
+                    .thenReturn(medidaCriada);
+            when(medidaRepository.save(any(MedidaMasculina.class))).thenReturn(medidaCriada);
 
-            assertNotNull(response);
-            assertEquals(2L, response.id());
+            // Act
+            MedidaMasculinaResponse resultado = service.criarMasculina(request);
+
+            // Assert
+            assertNotNull(resultado);
+            assertEquals(1L, resultado.id());
             verify(clienteRepository).findById(1L);
-            verify(femininaStrategy).criar(request, clienteMock);
-            verify(medidaRepository).save(any(MedidaFeminina.class));
+            verify(masculinaStrategy).criar(request, clienteValido);
+            verify(medidaRepository).save(medidaCriada);
         }
 
         @Test
-        @DisplayName("Deve falhar quando cliente nao existir ao criar medida feminina")
-        void deve_falhar_quando_cliente_nao_existir_ao_criar_medida_feminina() {
-            MedidaFemininaRequest request = new MedidaFemininaRequest(
-                    999L,
-                    new BigDecimal("70.00"),
-                    new BigDecimal("55.00"),
-                    new BigDecimal("90.00"),
-                    new BigDecimal("18.00"),
-                    new BigDecimal("45.00"),
-                    new BigDecimal("38.00"),
-                    new BigDecimal("15.00"),
-                    new BigDecimal("95.00"),
-                    new BigDecimal("110.00")
+        @DisplayName("Deve lançar exceção quando cliente não for encontrado")
+        void deve_lancarExcecao_quando_clienteNaoForEncontrado() {
+            // Arrange
+            MedidaMasculinaRequest request = new MedidaMasculinaRequest(
+                    1L,
+                    BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50),
+                    BigDecimal.valueOf(0.40), BigDecimal.valueOf(1.00),
+                    BigDecimal.valueOf(0.60)
             );
 
-            when(clienteRepository.findById(999L)).thenReturn(Optional.empty());
+            when(clienteRepository.findById(1L)).thenReturn(Optional.empty());
 
+            // Act & Assert
             IllegalArgumentException exception = assertThrows(
                     IllegalArgumentException.class,
-                    () -> medidaService.criarFeminina(request)
+                    () -> service.criarMasculina(request)
             );
 
             assertTrue(exception.getMessage().contains("Cliente não encontrado"));
+            verify(clienteRepository).findById(1L);
+            verify(masculinaStrategy, never()).criar(any(), any());
             verify(medidaRepository, never()).save(any());
         }
     }
 
     @Nested
-    @DisplayName("Buscar por ID")
+    @DisplayName("Buscar Medida por ID")
     class BuscarPorId {
 
         @Test
-        @DisplayName("Deve buscar medida masculina por ID")
-        void deve_buscar_medida_masculina_por_id() {
-            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.of(medidaMasculinaMock));
+        @DisplayName("Deve buscar medida feminina quando existir")
+        void deve_buscarMedidaFeminina_quando_existir() {
+            // Arrange
+            MedidaFeminina medidaFeminina = new MedidaFeminina();
+            medidaFeminina.setId(1L);
+            medidaFeminina.setCliente(clienteValido);
+            medidaFeminina.setCintura(BigDecimal.valueOf(0.80));
+            medidaFeminina.setSexo(SexoEnum.FEMININO);
 
-            Object response = medidaService.buscarPorId(1L);
+            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.of(medidaFeminina));
 
-            assertNotNull(response);
-            assertTrue(response instanceof MedidaMasculinaResponse);
+            // Act
+            Object resultado = service.buscarPorId(1L);
+
+            // Assert
+            assertNotNull(resultado);
+            assertInstanceOf(MedidaFemininaResponse.class, resultado);
+            assertEquals(1L, ((MedidaFemininaResponse) resultado).id());
         }
 
         @Test
-        @DisplayName("Deve buscar medida feminina por ID")
-        void deve_buscar_medida_feminina_por_id() {
-            when(medidaRepository.findByIdWithCliente(2L)).thenReturn(Optional.of(medidaFemininaMock));
+        @DisplayName("Deve buscar medida masculina quando existir")
+        void deve_buscarMedidaMasculina_quando_existir() {
+            // Arrange
+            MedidaMasculina medidaMasculina = new MedidaMasculina();
+            medidaMasculina.setId(1L);
+            medidaMasculina.setCliente(clienteValido);
+            medidaMasculina.setCintura(BigDecimal.valueOf(0.80));
+            medidaMasculina.setSexo(SexoEnum.MASCULINO);
 
-            Object response = medidaService.buscarPorId(2L);
+            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.of(medidaMasculina));
 
-            assertNotNull(response);
-            assertTrue(response instanceof MedidaFemininaResponse);
+            // Act
+            Object resultado = service.buscarPorId(1L);
+
+            // Assert
+            assertNotNull(resultado);
+            assertInstanceOf(MedidaMasculinaResponse.class, resultado);
+            assertEquals(1L, ((MedidaMasculinaResponse) resultado).id());
         }
 
         @Test
-        @DisplayName("Deve falhar quando medida nao existir ao buscar por ID")
-        void deve_falhar_quando_medida_nao_existir_ao_buscar_por_id() {
-            when(medidaRepository.findByIdWithCliente(999L)).thenReturn(Optional.empty());
+        @DisplayName("Deve lançar exceção quando medida não for encontrada")
+        void deve_lancarExcecao_quando_medidaNaoForEncontrada() {
+            // Arrange
+            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.empty());
 
+            // Act & Assert
             IllegalArgumentException exception = assertThrows(
                     IllegalArgumentException.class,
-                    () -> medidaService.buscarPorId(999L)
+                    () -> service.buscarPorId(1L)
             );
 
             assertTrue(exception.getMessage().contains("Medida não encontrada"));
@@ -252,182 +274,189 @@ class MedidaServiceTest {
     }
 
     @Nested
-    @DisplayName("Buscar com filtros")
-    class BuscarComFiltros {
+    @DisplayName("Atualizar Medida Feminina")
+    class AtualizarMedidaFeminina {
 
         @Test
-        @DisplayName("Deve buscar todas as medidas quando nenhum filtro for informado")
-        void deve_buscar_todas_medidas_quando_nenhum_filtro_informado() {
-            when(medidaRepository.findAll()).thenReturn(List.of(medidaMasculinaMock, medidaFemininaMock));
+        @DisplayName("Deve atualizar medida feminina quando dados forem válidos")
+        void deve_atualizarMedidaFeminina_quando_dadosForemValidos() {
+            // Arrange
+            MedidaFeminina medidaExistente = new MedidaFeminina();
+            medidaExistente.setId(1L);
+            medidaExistente.setCliente(clienteValido);
+            medidaExistente.setCintura(BigDecimal.valueOf(0.70));
+            medidaExistente.setSexo(SexoEnum.FEMININO);
 
-            List<Object> result = medidaService.buscar(null, null);
+            MedidaFemininaUpdateRequest request = new MedidaFemininaUpdateRequest(
+                    BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50), BigDecimal.valueOf(0.30),
+                    BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.40), BigDecimal.valueOf(0.35),
+                    BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.90), BigDecimal.valueOf(1.20)
+            );
 
-            assertEquals(2, result.size());
+            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.of(medidaExistente));
+            when(medidaRepository.save(any(MedidaFeminina.class))).thenReturn(medidaExistente);
+
+            // Act
+            MedidaFemininaResponse resultado = service.atualizarFeminina(1L, request);
+
+            // Assert
+            assertNotNull(resultado);
+            verify(medidaRepository).findByIdWithCliente(1L);
+            verify(medidaRepository).save(medidaExistente);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando medida não for encontrada")
+        void deve_lancarExcecao_quando_medidaNaoForEncontrada() {
+            // Arrange
+            MedidaFemininaUpdateRequest request = new MedidaFemininaUpdateRequest(
+                    BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50), BigDecimal.valueOf(0.30),
+                    BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.40), BigDecimal.valueOf(0.35),
+                    BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.90), BigDecimal.valueOf(1.20)
+            );
+
+            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> service.atualizarFeminina(1L, request)
+            );
+
+            assertTrue(exception.getMessage().contains("Medida não encontrada"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Atualizar Medida Masculina")
+    class AtualizarMedidaMasculina {
+
+        @Test
+        @DisplayName("Deve atualizar medida masculina quando dados forem válidos")
+        void deve_atualizarMedidaMasculina_quando_dadosForemValidos() {
+            // Arrange
+            MedidaMasculina medidaExistente = new MedidaMasculina();
+            medidaExistente.setId(1L);
+            medidaExistente.setCliente(clienteValido);
+            medidaExistente.setCintura(BigDecimal.valueOf(0.70));
+            medidaExistente.setSexo(SexoEnum.MASCULINO);
+
+            MedidaMasculinaUpdateRequest request = new MedidaMasculinaUpdateRequest(
+                    BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50),
+                    BigDecimal.valueOf(0.40), BigDecimal.valueOf(1.00),
+                    BigDecimal.valueOf(0.60)
+            );
+
+            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.of(medidaExistente));
+            when(medidaRepository.save(any(MedidaMasculina.class))).thenReturn(medidaExistente);
+
+            // Act
+            MedidaMasculinaResponse resultado = service.atualizarMasculina(1L, request);
+
+            // Assert
+            assertNotNull(resultado);
+            verify(medidaRepository).findByIdWithCliente(1L);
+            verify(medidaRepository).save(medidaExistente);
+        }
+    }
+
+    @Nested
+    @DisplayName("Buscar Medidas")
+    class BuscarMedidas {
+
+        @Test
+        @DisplayName("Deve buscar todas as medidas quando sem filtros")
+        void deve_buscarTodasMedidas_quando_semFiltros() {
+            // Arrange
+            MedidaFeminina medida1 = new MedidaFeminina();
+            medida1.setId(1L);
+            medida1.setCliente(clienteValido);
+
+            MedidaMasculina medida2 = new MedidaMasculina();
+            medida2.setId(2L);
+            medida2.setCliente(clienteValido);
+
+            when(medidaRepository.findAll()).thenReturn(List.of(medida1, medida2));
+
+            // Act
+            List<Object> resultado = service.buscar(null, null);
+
+            // Assert
+            assertNotNull(resultado);
+            assertEquals(2, resultado.size());
             verify(medidaRepository).findAll();
         }
 
         @Test
-        @DisplayName("Deve buscar medidas por cliente ID")
-        void deve_buscar_medidas_por_cliente_id() {
-            when(medidaRepository.findByClienteId(1L)).thenReturn(List.of(medidaMasculinaMock));
+        @DisplayName("Deve buscar medidas por cliente quando clienteId informado")
+        void deve_buscarMedidasPorCliente_quando_clienteIdInformado() {
+            // Arrange
+            MedidaFeminina medida = new MedidaFeminina();
+            medida.setId(1L);
+            medida.setCliente(clienteValido);
 
-            List<Object> result = medidaService.buscar(1L, null);
+            when(medidaRepository.findByClienteId(1L)).thenReturn(List.of(medida));
 
-            assertEquals(1, result.size());
+            // Act
+            List<Object> resultado = service.buscar(1L, null);
+
+            // Assert
+            assertNotNull(resultado);
+            assertEquals(1, resultado.size());
             verify(medidaRepository).findByClienteId(1L);
         }
 
         @Test
-        @DisplayName("Deve buscar medidas por sexo")
-        void deve_buscar_medidas_por_sexo() {
-            when(medidaRepository.findBySexo(SexoEnum.MASCULINO)).thenReturn(List.of(medidaMasculinaMock));
+        @DisplayName("Deve buscar medidas por sexo quando sexo informado")
+        void deve_buscarMedidasPorSexo_quando_sexoInformado() {
+            // Arrange
+            MedidaMasculina medida = new MedidaMasculina();
+            medida.setId(1L);
+            medida.setCliente(clienteValido);
 
-            List<Object> result = medidaService.buscar(null, SexoEnum.MASCULINO);
+            when(medidaRepository.findBySexo(SexoEnum.MASCULINO)).thenReturn(List.of(medida));
 
-            assertEquals(1, result.size());
+            // Act
+            List<Object> resultado = service.buscar(null, SexoEnum.MASCULINO);
+
+            // Assert
+            assertNotNull(resultado);
+            assertEquals(1, resultado.size());
             verify(medidaRepository).findBySexo(SexoEnum.MASCULINO);
         }
-
-        @Test
-        @DisplayName("Deve buscar medidas por cliente ID e sexo")
-        void deve_buscar_medidas_por_cliente_id_e_sexo() {
-            when(medidaRepository.findByClienteIdAndSexo(1L, SexoEnum.MASCULINO))
-                    .thenReturn(List.of(medidaMasculinaMock));
-
-            List<Object> result = medidaService.buscar(1L, SexoEnum.MASCULINO);
-
-            assertEquals(1, result.size());
-            verify(medidaRepository).findByClienteIdAndSexo(1L, SexoEnum.MASCULINO);
-        }
     }
 
     @Nested
-    @DisplayName("Atualizar medida masculina")
-    class AtualizarMasculina {
-
-        @Test
-        @DisplayName("Deve atualizar medida masculina quando existir")
-        void deve_atualizar_medida_masculina_quando_existir() {
-            MedidaMasculinaUpdateRequest updateRequest = new MedidaMasculinaUpdateRequest(
-                    new BigDecimal("85.00"),
-                    new BigDecimal("62.00"),
-                    new BigDecimal("42.00"),
-                    new BigDecimal("52.00"),
-                    new BigDecimal("105.00")
-            );
-
-            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.of(medidaMasculinaMock));
-            when(medidaRepository.save(any())).thenReturn(medidaMasculinaMock);
-
-            MedidaMasculinaResponse response = medidaService.atualizarMasculina(1L, updateRequest);
-
-            assertNotNull(response);
-            verify(medidaRepository).findByIdWithCliente(1L);
-            verify(medidaRepository).save(any(MedidaMasculina.class));
-        }
-
-        @Test
-        @DisplayName("Deve falhar quando medida masculina nao existir ao atualizar")
-        void deve_falhar_quando_medida_masculina_nao_existir_ao_atualizar() {
-            MedidaMasculinaUpdateRequest updateRequest = new MedidaMasculinaUpdateRequest(
-                    new BigDecimal("85.00"),
-                    new BigDecimal("62.00"),
-                    new BigDecimal("42.00"),
-                    new BigDecimal("52.00"),
-                    new BigDecimal("105.00")
-            );
-
-            when(medidaRepository.findByIdWithCliente(999L)).thenReturn(Optional.empty());
-
-            IllegalArgumentException exception = assertThrows(
-                    IllegalArgumentException.class,
-                    () -> medidaService.atualizarMasculina(999L, updateRequest)
-            );
-
-            assertTrue(exception.getMessage().contains("Medida não encontrada"));
-            verify(medidaRepository, never()).save(any());
-        }
-    }
-
-    @Nested
-    @DisplayName("Atualizar medida feminina")
-    class AtualizarFeminina {
-
-        @Test
-        @DisplayName("Deve atualizar medida feminina quando existir")
-        void deve_atualizar_medida_feminina_quando_existir() {
-            MedidaFemininaUpdateRequest updateRequest = new MedidaFemininaUpdateRequest(
-                    new BigDecimal("72.00"),
-                    new BigDecimal("57.00"),
-                    new BigDecimal("92.00"),
-                    new BigDecimal("19.00"),
-                    new BigDecimal("47.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("16.00"),
-                    new BigDecimal("97.00"),
-                    new BigDecimal("115.00")
-            );
-
-            when(medidaRepository.findByIdWithCliente(2L)).thenReturn(Optional.of(medidaFemininaMock));
-            when(medidaRepository.save(any())).thenReturn(medidaFemininaMock);
-
-            MedidaFemininaResponse response = medidaService.atualizarFeminina(2L, updateRequest);
-
-            assertNotNull(response);
-            verify(medidaRepository).findByIdWithCliente(2L);
-            verify(medidaRepository).save(any(MedidaFeminina.class));
-        }
-
-        @Test
-        @DisplayName("Deve falhar quando medida feminina nao existir ao atualizar")
-        void deve_falhar_quando_medida_feminina_nao_existir_ao_atualizar() {
-            MedidaFemininaUpdateRequest updateRequest = new MedidaFemininaUpdateRequest(
-                    new BigDecimal("72.00"),
-                    new BigDecimal("57.00"),
-                    new BigDecimal("92.00"),
-                    new BigDecimal("19.00"),
-                    new BigDecimal("47.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("16.00"),
-                    new BigDecimal("97.00"),
-                    new BigDecimal("115.00")
-            );
-
-            when(medidaRepository.findByIdWithCliente(999L)).thenReturn(Optional.empty());
-
-            IllegalArgumentException exception = assertThrows(
-                    IllegalArgumentException.class,
-                    () -> medidaService.atualizarFeminina(999L, updateRequest)
-            );
-
-            assertTrue(exception.getMessage().contains("Medida não encontrada"));
-            verify(medidaRepository, never()).save(any());
-        }
-    }
-
-    @Nested
-    @DisplayName("Deletar medida")
-    class Deletar {
+    @DisplayName("Deletar Medida")
+    class DeletarMedida {
 
         @Test
         @DisplayName("Deve deletar medida quando existir")
-        void deve_deletar_medida_quando_existir() {
-            when(medidaRepository.findById(1L)).thenReturn(Optional.of(medidaMasculinaMock));
+        void deve_deletarMedida_quando_existir() {
+            // Arrange
+            MedidaFeminina medida = new MedidaFeminina();
+            medida.setId(1L);
 
-            medidaService.deletar(1L);
+            when(medidaRepository.findById(1L)).thenReturn(Optional.of(medida));
 
+            // Act
+            service.deletar(1L);
+
+            // Assert
             verify(medidaRepository).findById(1L);
-            verify(medidaRepository).delete(medidaMasculinaMock);
+            verify(medidaRepository).delete(medida);
         }
 
         @Test
-        @DisplayName("Deve falhar quando medida nao existir ao deletar")
-        void deve_falhar_quando_medida_nao_existir_ao_deletar() {
-            when(medidaRepository.findById(999L)).thenReturn(Optional.empty());
+        @DisplayName("Deve lançar exceção quando medida não for encontrada para deletar")
+        void deve_lancarExcecao_quando_medidaNaoExistirParaDeletar() {
+            // Arrange
+            when(medidaRepository.findById(1L)).thenReturn(Optional.empty());
 
+            // Act & Assert
             IllegalArgumentException exception = assertThrows(
                     IllegalArgumentException.class,
-                    () -> medidaService.deletar(999L)
+                    () -> service.deletar(1L)
             );
 
             assertTrue(exception.getMessage().contains("Medida não encontrada"));

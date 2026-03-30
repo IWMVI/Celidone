@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @DisplayName("Testes de Comportamento do ClienteService")
@@ -191,6 +192,19 @@ class ClienteServiceTest {
 
             BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(novoCliente));
             assertTrue(ex.getMessage().contains("CPF ou CNPJ já cadastrado"));
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro quando email já estiver cadastrado")
+        void deve_retornar_erro_quando_email_ja_estiver_cadastrado() {
+            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            Cliente novoCliente = ClienteTestDataBuilder.criarClienteValido();
+
+            when(repository.findByCpfCnpj(novoCliente.getCpfCnpj())).thenReturn(Optional.empty());
+            when(repository.findByEmail(novoCliente.getEmail())).thenReturn(Optional.of(clienteExistente));
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(novoCliente));
+            assertTrue(ex.getMessage().contains("Email já cadastrado"));
         }
     }
 
@@ -416,22 +430,46 @@ class ClienteServiceTest {
     class DeletarCliente {
 
         @Test
-        @DisplayName("Deve deletar cliente quando ID existir")
-        void deve_deletar_cliente_quando_id_existir() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            when(repository.findById(1L)).thenReturn(Optional.of(cliente));
+        @DisplayName("Deve remover cliente da base de dados quando ID existir")
+        void deve_remover_cliente_da_base_de_dados_quando_id_existir() {
+            when(repository.existsById(1L)).thenReturn(true);
 
             assertDoesNotThrow(() -> service.deletar(1L));
-            verify(repository, times(1)).delete(cliente);
+            
+            verify(repository, times(1)).existsById(1L);
+            verify(repository, times(1)).deleteById(1L);
         }
 
         @Test
         @DisplayName("Deve retornar erro ao tentar deletar cliente inexistente")
         void deve_retornar_erro_ao_tentar_deletar_cliente_inexistente() {
-            when(repository.findById(999L)).thenReturn(Optional.empty());
+            when(repository.existsById(999L)).thenReturn(false);
 
             BusinessException ex = assertThrows(BusinessException.class, () -> service.deletar(999L));
             assertTrue(ex.getMessage().contains("Cliente não encontrado"));
+        }
+
+        @Test
+        @DisplayName("Não deve permitir exclusão quando ocorrer erro de integridade")
+        void nao_deve_permitir_exclusao_quando_ocorrer_erro_de_integridade() {
+            when(repository.existsById(1L)).thenReturn(true);
+            doThrow(new RuntimeException("Erro de integridade"))
+                    .when(repository).deleteById(1L);
+
+            assertThrows(RuntimeException.class, () -> service.deletar(1L));
+        }
+
+        @Test
+        @DisplayName("Deve garantir que cliente foi removido após exclusão")
+        void deve_garantir_que_cliente_foi_removido_apos_exclusao() {
+            Long clienteId = 1L;
+            when(repository.existsById(clienteId)).thenReturn(true);
+
+            service.deletar(clienteId);
+
+            verify(repository, never()).findById(clienteId);
+            verify(repository, times(1)).existsById(clienteId);
+            verify(repository, times(1)).deleteById(clienteId);
         }
     }
 }

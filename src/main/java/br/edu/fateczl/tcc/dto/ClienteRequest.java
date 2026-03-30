@@ -27,6 +27,5 @@ public record ClienteRequest(
         @NotNull(message = "Endereço é obrigatório")
         EnderecoRequest endereco,
 
-        @NotBlank(message = "Sexo é obrigatório")
         String sexo
 ) { }

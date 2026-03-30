@@ -153,21 +153,21 @@ public class ClienteSteps {
 
     @Quando("envio uma requisicao de listagem de clientes")
     public void envio_uma_requisicao_de_listagem_de_clientes() throws Exception {
-        resposta = mockMvc.perform(get("/clientes")
+        resposta = mockMvc.perform(get("/clientes/todos")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
 
     @Quando("envio uma requisicao de listagem de clientes sem filtro")
     public void envio_uma_requisicao_de_listagem_de_clientes_sem_filtro() throws Exception {
-        resposta = mockMvc.perform(get("/clientes")
+        resposta = mockMvc.perform(get("/clientes/todos")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
 
     @Quando("envio uma requisicao de listagem de clientes com filtro {string}")
     public void envio_uma_requisicao_de_listagem_de_clientes_com_filtro(String filtro) throws Exception {
-        resposta = mockMvc.perform(get("/clientes")
+        resposta = mockMvc.perform(get("/clientes/buscar")
                 .param("busca", filtro)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -175,21 +175,21 @@ public class ClienteSteps {
 
     @Quando("envoy requisicao de listagem de clientes")
     public void envoy_requisicao_de_listagem_de_clientes() throws Exception {
-        resposta = mockMvc.perform(get("/clientes")
+        resposta = mockMvc.perform(get("/clientes/todos")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
 
     @Quando("envoy requisicao de listagem de clientes sem filtro")
     public void envoy_requisicao_de_listagem_de_clientes_sem_filtro() throws Exception {
-        resposta = mockMvc.perform(get("/clientes")
+        resposta = mockMvc.perform(get("/clientes/todos")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
 
     @Quando("envoy requisicao de listagem de clientes com filtro {string}")
     public void envoy_requisicao_de_listagem_de_clientes_com_filtro(String filtro) throws Exception {
-        resposta = mockMvc.perform(get("/clientes")
+        resposta = mockMvc.perform(get("/clientes/buscar")
                 .param("busca", filtro)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
