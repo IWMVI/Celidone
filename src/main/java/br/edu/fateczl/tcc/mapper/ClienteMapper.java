@@ -12,12 +12,19 @@ public class ClienteMapper {
     private ClienteMapper () { }
 
     public static Cliente toEntity(ClienteRequest dto) {
+        SexoEnum sexo;
+        if (dto.sexo() == null || dto.sexo().isBlank()) {
+            sexo = SexoEnum.NEUTRO;
+        } else {
+            sexo = SexoEnum.valueOf(dto.sexo().toUpperCase());
+        }
+
         return Cliente.builder()
                 .nome(dto.nome())
                 .cpfCnpj(dto.cpfCnpj())
                 .email(dto.email())
                 .celular(dto.celular())
-                .sexo(dto.sexo() != null ? SexoEnum.valueOf(dto.sexo()) : null)
+                .sexo(sexo)
                 .endereco(toEnderecoEntity(dto.endereco()))
                 .build();
     }

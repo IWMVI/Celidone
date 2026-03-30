@@ -1,18 +1,24 @@
 package br.edu.fateczl.tcc.domain;
 
 import br.edu.fateczl.tcc.enums.SexoEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -35,7 +41,7 @@ public class Cliente {
     @Column(length = 11, nullable = false)
     private String celular;
 
-    @Column(length = 9, nullable = false)
+    @Column(length = 9, nullable = true)
     @Enumerated(EnumType.STRING)
     private SexoEnum sexo;
 
@@ -46,7 +52,17 @@ public class Cliente {
     @CreationTimestamp
     private LocalDate dataCadastro;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Medida> medidas;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Aluguel> alugueis;
+
     public Cliente() {
+        this.medidas = new ArrayList<>();
+        this.alugueis = new ArrayList<>();
     }
 
     public Cliente(String nome, String cpfCnpj, String email, String celular, SexoEnum sexo, Endereco endereco) {
@@ -56,6 +72,8 @@ public class Cliente {
         this.celular = celular;
         this.sexo = sexo;
         this.endereco = endereco;
+        this.medidas = new ArrayList<>();
+        this.alugueis = new ArrayList<>();
     }
 
     public Long getId() {
@@ -120,6 +138,22 @@ public class Cliente {
 
     public void setDataCadastro(LocalDate dataCadastro) {
         this.dataCadastro = dataCadastro;
+    }
+
+    public List<Medida> getMedidas() {
+        return medidas;
+    }
+
+    public void setMedidas(List<Medida> medidas) {
+        this.medidas = medidas;
+    }
+
+    public List<Aluguel> getAlugueis() {
+        return alugueis;
+    }
+
+    public void setAlugueis(List<Aluguel> alugueis) {
+        this.alugueis = alugueis;
     }
 
     public void atualizar(

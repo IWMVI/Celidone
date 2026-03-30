@@ -55,7 +55,7 @@ public class MedidaController {
     // READ - por ID
     // ===============================
     @GetMapping("/{id}")
-    public ResponseEntity<Object> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Object> buscarPorId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(medidaService.buscarPorId(id));
     }
 
@@ -64,8 +64,8 @@ public class MedidaController {
     // ===============================
     @GetMapping
     public ResponseEntity<List<Object>> buscar(
-            @RequestParam(required = false) Long clienteId,
-            @RequestParam(required = false) SexoEnum sexo) {
+            @RequestParam(name = "clienteId", required = false) Long clienteId,
+            @RequestParam(name = "sexo", required = false) SexoEnum sexo) {
 
         return ResponseEntity.ok(medidaService.buscar(clienteId, sexo));
     }
@@ -75,7 +75,7 @@ public class MedidaController {
     // ===============================
     @PutMapping("/feminina/{id}")
     public ResponseEntity<MedidaFemininaResponse> atualizarFeminina(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody MedidaFemininaUpdateRequest dto) {
 
         return ResponseEntity.ok(medidaService.atualizarFeminina(id, dto));
@@ -83,7 +83,7 @@ public class MedidaController {
 
     @PutMapping("/masculina/{id}")
     public ResponseEntity<MedidaMasculinaResponse> atualizarMasculina(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody MedidaMasculinaUpdateRequest dto) {
 
         return ResponseEntity.ok(medidaService.atualizarMasculina(id, dto));
@@ -93,7 +93,7 @@ public class MedidaController {
     // DELETE - por ID
     // ===============================
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
         medidaService.deletar(id);
         return ResponseEntity.noContent().build();
     }

@@ -2,6 +2,10 @@ package br.edu.fateczl.tcc.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import br.edu.fateczl.tcc.domain.Cliente;
@@ -24,9 +28,24 @@ public class ClienteService {
     @Transactional
     public Cliente criar(Cliente cliente) {
         validar(cliente);
-        validarCpfUnico(cliente.getCpfCnpj());
 
-        return repository.save(cliente);
+        try {
+            validarCpfUnico(cliente.getCpfCnpj());
+            validarEmailUnico(cliente.getEmail());
+            return repository.save(cliente);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Fallback para caso de race condition no banco
+            if (e.getCause() != null && e.getCause().getMessage() != null) {
+                String msg = e.getCause().getMessage().toLowerCase();
+                if (msg.contains("cpf") || msg.contains("cnpj")) {
+                    throw new BusinessException("CPF ou CNPJ já cadastrado");
+                }
+                if (msg.contains("email")) {
+                    throw new BusinessException("Email já cadastrado");
+                }
+            }
+            throw new BusinessException("Erro ao salvar cliente. Violação de integridade de dados.");
+        }
     }
 
     // ===============================
@@ -37,7 +56,19 @@ public class ClienteService {
     }
 
     // ===============================
-    // READ - BUSCAR COM FILTRO
+    // READ - BUSCAR COM FILTRO E PAGINAÇÃO
+    // ===============================
+    public Page<Cliente> buscarComFiltroPaginado(String busca, int pagina, int tamanho) {
+        Pageable pageable = PageRequest.of(pagina, tamanho);
+
+        if (busca == null || busca.isBlank()) {
+            return repository.findAll(pageable);
+        }
+        return repository.buscarPorTermoPaginado(busca.trim(), pageable);
+    }
+
+    // ===============================
+    // READ - BUSCAR COM FILTRO (SEM PAGINAÇÃO - LEGACY)
     // ===============================
     public List<Cliente> buscarComFiltro(String busca) {
         if (busca == null || busca.isBlank()) {
@@ -66,6 +97,10 @@ public class ClienteService {
             validarCpfUnico(novosDados.getCpfCnpj());
         }
 
+        if (!cliente.getEmail().equals(novosDados.getEmail())) {
+            validarEmailUnico(novosDados.getEmail());
+        }
+
         cliente.atualizar(novosDados.getNome(), novosDados.getCpfCnpj(), novosDados.getEmail(), novosDados.getCelular(),
                 novosDados.getSexo(), novosDados.getEndereco());
 
@@ -77,8 +112,17 @@ public class ClienteService {
     // ===============================
     @Transactional
     public void deletar(Long id) {
-        Cliente cliente = buscarPorId(id);
-        repository.delete(cliente);
+        // Verifica se o cliente existe
+        if (!repository.existsById(id)) {
+            throw new BusinessException("Cliente não encontrado");
+        }
+        
+        // Deleta dependências primeiro para evitar violação de chave estrangeira
+        repository.deletarMedidasPorCliente(id);
+        repository.deletarAlugueisPorCliente(id);
+        
+        // Deleta o cliente
+        repository.deleteById(id);
     }
 
     // ===============================
@@ -110,6 +154,12 @@ public class ClienteService {
     private void validarCpfUnico(String cpf) {
         repository.findByCpfCnpj(cpf).ifPresent(c -> {
             throw new BusinessException("CPF ou CNPJ já cadastrado");
+        });
+    }
+
+    private void validarEmailUnico(String email) {
+        repository.findByEmail(email).ifPresent(c -> {
+            throw new BusinessException("Email já cadastrado");
         });
     }
 }

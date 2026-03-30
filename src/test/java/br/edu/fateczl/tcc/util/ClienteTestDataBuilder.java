@@ -5,6 +5,7 @@ import br.edu.fateczl.tcc.domain.Endereco;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.enums.SiglaEstados;
+import br.edu.fateczl.tcc.enums.SexoEnum;
 
 public class ClienteTestDataBuilder {
 
@@ -115,6 +116,7 @@ public class ClienteTestDataBuilder {
                 .cpfCnpj("12345678901")
                 .email("joao@email.com")
                 .celular("11999999999")
+                .sexo(SexoEnum.MASCULINO)
                 .endereco(criarEnderecoEntityValido())
                 .build();
     }
@@ -126,6 +128,7 @@ public class ClienteTestDataBuilder {
                 .cpfCnpj("12345678901")
                 .email("joao@email.com")
                 .celular("11999999999")
+                .sexo(SexoEnum.MASCULINO)
                 .endereco(criarEnderecoEntityValido())
                 .build();
     }
@@ -137,6 +140,7 @@ public class ClienteTestDataBuilder {
                 .cpfCnpj("12345678901")
                 .email("cliente.atualizado@email.com")
                 .celular("11977777777")
+                .sexo(SexoEnum.FEMININO)
                 .endereco(criarEnderecoEntityAtualizado())
                 .build();
     }
