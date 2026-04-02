@@ -2,6 +2,7 @@ package br.edu.fateczl.tcc.mapper;
 
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Endereco;
+import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
@@ -19,14 +20,14 @@ public class ClienteMapper {
             sexo = SexoEnum.valueOf(dto.sexo().toUpperCase());
         }
 
-        return Cliente.builder()
-                .nome(dto.nome())
-                .cpfCnpj(dto.cpfCnpj())
-                .email(dto.email())
-                .celular(dto.celular())
-                .sexo(sexo)
-                .endereco(toEnderecoEntity(dto.endereco()))
-                .build();
+        return ClienteFactory.criar()
+                .comNome(dto.nome())
+                .comCpfCnpj(dto.cpfCnpj())
+                .comEmail(dto.email())
+                .comCelular(dto.celular())
+                .comSexo(sexo)
+                .comEndereco(toEnderecoEntity(dto.endereco()))
+                .construir();
     }
 
     private static Endereco toEnderecoEntity(EnderecoRequest dto) {

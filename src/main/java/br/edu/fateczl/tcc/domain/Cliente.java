@@ -52,6 +52,9 @@ public class Cliente {
     @CreationTimestamp
     private LocalDate dataCadastro;
 
+    @Column(nullable = false)
+    private Boolean ativo = true;
+
     @JsonIgnore
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Medida> medidas;
@@ -140,6 +143,14 @@ public class Cliente {
         this.dataCadastro = dataCadastro;
     }
 
+    public Boolean getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
+    }
+
     public List<Medida> getMedidas() {
         return medidas;
     }
@@ -170,74 +181,6 @@ public class Cliente {
         this.celular = celular;
         this.sexo = sexo;
         this.endereco = endereco;
-    }
-
-    public static ClienteBuilder builder() {
-        return new ClienteBuilder();
-    }
-
-    public static class ClienteBuilder {
-        private Long id;
-        private String nome;
-        private String cpfCnpj;
-        private String email;
-        private String celular;
-        private SexoEnum sexo;
-        private Endereco endereco;
-        private LocalDate dataCadastro;
-
-        public ClienteBuilder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public ClienteBuilder nome(String nome) {
-            this.nome = nome;
-            return this;
-        }
-
-        public ClienteBuilder cpfCnpj(String cpfCnpj) {
-            this.cpfCnpj = cpfCnpj;
-            return this;
-        }
-
-        public ClienteBuilder email(String email) {
-            this.email = email;
-            return this;
-        }
-
-        public ClienteBuilder celular(String celular) {
-            this.celular = celular;
-            return this;
-        }
-
-        public ClienteBuilder sexo(SexoEnum sexo) {
-            this.sexo = sexo;
-            return this;
-        }
-
-        public ClienteBuilder endereco(Endereco endereco) {
-            this.endereco = endereco;
-            return this;
-        }
-
-        public ClienteBuilder dataCadastro(LocalDate dataCadastro) {
-            this.dataCadastro = dataCadastro;
-            return this;
-        }
-
-        public Cliente build() {
-            Cliente cliente = new Cliente();
-            cliente.id = this.id;
-            cliente.nome = this.nome;
-            cliente.cpfCnpj = this.cpfCnpj;
-            cliente.email = this.email;
-            cliente.celular = this.celular;
-            cliente.sexo = this.sexo;
-            cliente.endereco = this.endereco;
-            cliente.dataCadastro = this.dataCadastro;
-            return cliente;
-        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package br.edu.fateczl.tcc.mapper;
 
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Endereco;
+import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
@@ -71,15 +72,15 @@ class ClienteMapperTest {
                     .estado(SiglaEstados.SP)
                     .complemento("Sala 1")
                     .build();
-            Cliente entity = Cliente.builder()
-                    .id(1L)
-                    .nome("João")
-                    .cpfCnpj("12345678901")
-                    .email("joao@email.com")
-                    .celular("11999999999")
-                    .endereco(endereco)
-                    .dataCadastro(LocalDate.now())
-                    .build();
+            Cliente entity = ClienteFactory.criar()
+                    .comId(1L)
+                    .comNome("João")
+                    .comCpfCnpj("12345678901")
+                    .comEmail("joao@email.com")
+                    .comCelular("11999999999")
+                    .comEndereco(endereco)
+                    .comDataCadastro(LocalDate.now())
+                    .construir();
 
             ClienteResponse response = ClienteMapper.toResponse(entity);
 
@@ -93,14 +94,14 @@ class ClienteMapperTest {
 
         @Test
         void deveConverter_entity_para_response_com_endereco_nulo() {
-            Cliente entity = Cliente.builder()
-                    .id(1L)
-                    .nome("João")
-                    .cpfCnpj("12345678901")
-                    .email("joao@email.com")
-                    .celular("11999999999")
-                    .endereco(null)
-                    .build();
+            Cliente entity = ClienteFactory.criar()
+                    .comId(1L)
+                    .comNome("João")
+                    .comCpfCnpj("12345678901")
+                    .comEmail("joao@email.com")
+                    .comCelular("11999999999")
+                    .comEndereco(null)
+                    .construir();
 
             ClienteResponse response = ClienteMapper.toResponse(entity);
 
