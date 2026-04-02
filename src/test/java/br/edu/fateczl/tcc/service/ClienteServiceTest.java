@@ -471,6 +471,89 @@ class ClienteServiceTest {
             assertTrue(ex.getMessage().contains("Cliente não encontrado"));
         }
     }
+
+    @Nested
+    @DisplayName("Listar Clientes Excluídos")
+    class ListarClientesExcluidos {
+
+        @Test
+        @DisplayName("Deve retornar lista vazia quando não existirem clientes excluídos")
+        void deve_retornar_lista_vazia_quando_nao_existirem_clientes_excluidos() {
+            when(repository.findAllExcluidos()).thenReturn(List.of());
+
+            List<Cliente> resultado = service.listarExcluidos();
+
+            assertTrue(resultado.isEmpty());
+            verify(repository, times(1)).findAllExcluidos();
+        }
+
+        @Test
+        @DisplayName("Deve retornar todos os clientes excluídos quando existirem registros")
+        void deve_retornar_todos_os_clientes_excluidos_quando_existirem_registros() {
+            Cliente cliente1 = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            cliente1.setAtivo(false);
+            Cliente cliente2 = ClienteTestDataBuilder.criarClienteValidoComId(2L);
+            cliente2.setAtivo(false);
+            List<Cliente> clientes = List.of(cliente1, cliente2);
+            
+            when(repository.findAllExcluidos()).thenReturn(clientes);
+
+            List<Cliente> resultado = service.listarExcluidos();
+
+            assertEquals(2, resultado.size());
+            verify(repository, times(1)).findAllExcluidos();
+        }
+    }
+
+    @Nested
+    @DisplayName("Listar Clientes Excluídos Paginado")
+    class ListarClientesExcluidosPaginado {
+
+        @Test
+        @DisplayName("Deve retornar página de clientes excluídos")
+        void deve_retornar_pagina_de_clientes_excluidos() {
+            org.springframework.data.domain.Page<Cliente> pageMock = org.mockito.Mockito.mock(org.springframework.data.domain.Page.class);
+            when(repository.findAllExcluidos(any(org.springframework.data.domain.Pageable.class)))
+                    .thenReturn(pageMock);
+
+            org.springframework.data.domain.Page<Cliente> resultado = service.listarExcluidosPaginado(0, 10);
+
+            assertNotNull(resultado);
+            verify(repository, times(1)).findAllExcluidos(any(org.springframework.data.domain.Pageable.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("Recuperar Cliente Excluído")
+    class RecuperarClienteExcluido {
+
+        @Test
+        @DisplayName("Deve recuperar cliente excluído com sucesso")
+        void deve_recuperar_cliente_excluido_com_sucesso() {
+            Cliente clienteExcluido = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+            clienteExcluido.setAtivo(false);
+            
+            when(repository.findExcluidoById(1L)).thenReturn(Optional.of(clienteExcluido));
+            doNothing().when(repository).recuperarCliente(1L);
+
+            Cliente resultado = service.recuperar(1L);
+
+            assertNotNull(resultado);
+            assertTrue(resultado.getAtivo());
+            verify(repository, times(1)).findExcluidoById(1L);
+            verify(repository, times(1)).recuperarCliente(1L);
+        }
+
+        @Test
+        @DisplayName("Deve retornar erro ao tentar recuperar cliente inexistente")
+        void deve_retornar_erro_ao_tentar_recuperar_cliente_inexistente() {
+            when(repository.findExcluidoById(999L)).thenReturn(Optional.empty());
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.recuperar(999L));
+            assertTrue(ex.getMessage().contains("Cliente excluído não encontrado"));
+            verify(repository, never()).recuperarCliente(anyLong());
+        }
+    }
 }
 
 class ClienteTestDataBuilder {
