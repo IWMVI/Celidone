@@ -51,8 +51,9 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     // ===============================
     // CLIENTES EXCLUÍDOS (SOFT DELETED)
     // ===============================
-    @Query("SELECT c FROM Cliente c WHERE c.ativo = false ORDER BY c.dataCadastro DESC")
-    List<Cliente> findAllExcluidos();
+       default List<Cliente> findAllExcluidos() {
+              return findAllExcluidos(Pageable.unpaged()).getContent();
+       }
 
     @Query("SELECT c FROM Cliente c WHERE c.ativo = false ORDER BY c.dataCadastro DESC")
     Page<Cliente> findAllExcluidos(Pageable pageable);
@@ -61,6 +62,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     Optional<Cliente> findExcluidoById(@Param("clienteId") Long clienteId);
 
     @Modifying
-    @Query("UPDATE Cliente c SET c.ativo = true WHERE c.id = :clienteId")
+       @Query("UPDATE Cliente c SET c.ativo = true WHERE c.id = :clienteId AND c.ativo = false")
     void recuperarCliente(@Param("clienteId") Long clienteId);
 }
