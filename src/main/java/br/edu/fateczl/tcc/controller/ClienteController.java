@@ -88,4 +88,30 @@ public class ClienteController {
     public void deletar(@PathVariable("id") Long id) {
         service.deletar(id);
     }
+
+    // ===============================
+    // READ - LISTAR EXCLUÍDOS
+    // ===============================
+    @GetMapping("/excluidos/todos")
+    public List<ClienteResponse> listarExcluidos() {
+        var clientes = service.listarExcluidos();
+        return clientes.stream().map(ClienteMapper::toResponse).toList();
+    }
+
+    @GetMapping("/excluidos")
+    public Page<ClienteResponse> listarExcluidosPaginado(
+            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(value = "tamanho", defaultValue = "10") int tamanho) {
+        var clientesPage = service.listarExcluidosPaginado(pagina, tamanho);
+        return clientesPage.map(ClienteMapper::toResponse);
+    }
+
+    // ===============================
+    // RECUPERAR CLIENTE EXCLUÍDO
+    // ===============================
+    @PutMapping("/{id}/recuperar")
+    public ClienteResponse recuperar(@PathVariable("id") Long id) {
+        var cliente = service.recuperar(id);
+        return ClienteMapper.toResponse(cliente);
+    }
 }
