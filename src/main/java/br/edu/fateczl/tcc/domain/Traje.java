@@ -93,6 +93,110 @@ public class Traje {
         this.condicao = condicao;
     }
 
+
+    public static TrajeBuilder builder() {
+        return new TrajeBuilder();
+    }
+
+    public static class TrajeBuilder {
+        private Long id;
+        private String descricao;
+        private TamanhoTraje tamanho;
+        private CorTraje cor;
+        private TipoTraje tipo;
+        private SexoEnum genero;
+        private BigDecimal valorItem;
+        private StatusTraje status;
+        private String nome;
+        private TecidoTraje tecido;
+        private EstampaTraje estampa;
+        private TexturaTraje textura;
+        private CondicaoTraje condicao;
+
+        public TrajeBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public TrajeBuilder descricao(String descricao) {
+            this.descricao = descricao;
+            return this;
+        }
+
+        public TrajeBuilder tamanho(TamanhoTraje tamanho) {
+            this.tamanho = tamanho;
+            return this;
+        }
+
+        public TrajeBuilder cor(CorTraje cor) {
+            this.cor = cor;
+            return this;
+        }
+
+        public TrajeBuilder tipo(TipoTraje tipo) {
+            this.tipo = tipo;
+            return this;
+        }
+
+        public TrajeBuilder genero(SexoEnum genero) {
+            this.genero = genero;
+            return this;
+        }
+
+        public TrajeBuilder valorItem(BigDecimal valorItem) {
+            this.valorItem = valorItem;
+            return this;
+        }
+
+        public TrajeBuilder status(StatusTraje status) {
+            this.status = status;
+            return this;
+        }
+
+        public TrajeBuilder nome(String nome) {
+            this.nome = nome;
+            return this;
+        }
+
+        public TrajeBuilder tecido(TecidoTraje tecido) {
+            this.tecido = tecido;
+            return this;
+        }
+
+        public TrajeBuilder estampa(EstampaTraje estampa) {
+            this.estampa = estampa;
+            return this;
+        }
+
+        public TrajeBuilder textura(TexturaTraje textura) {
+            this.textura = textura;
+            return this;
+        }
+
+        public TrajeBuilder condicao(CondicaoTraje condicao) {
+            this.condicao = condicao;
+            return this;
+        }
+
+        public Traje build() {
+            Traje traje = new Traje();
+            traje.setId(this.id);
+            traje.setDescricao(this.descricao);
+            traje.setTamanho(this.tamanho);
+            traje.setCor(this.cor);
+            traje.setTipo(this.tipo);
+            traje.setGenero(this.genero);
+            traje.setValorItem(this.valorItem);
+            traje.setStatus(this.status);
+            traje.setNome(this.nome);
+            traje.setTecido(this.tecido);
+            traje.setEstampa(this.estampa);
+            traje.setTextura(this.textura);
+            traje.setCondicao(this.condicao);
+            return traje;
+        }
+    }
+
     public Long getId() {
         return id;
     }
