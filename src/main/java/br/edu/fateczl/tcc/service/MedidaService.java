@@ -15,7 +15,9 @@ import br.edu.fateczl.tcc.mapper.MedidaFemininaMapper;
 import br.edu.fateczl.tcc.mapper.MedidaMasculinaMapper;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
 import br.edu.fateczl.tcc.repository.MedidaRepository;
+import br.edu.fateczl.tcc.specification.MedidaSpecification;
 import br.edu.fateczl.tcc.strategy.MedidaStrategy;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -94,19 +96,11 @@ public class MedidaService {
     // ===============================
     public List<Object> buscar(Long clienteId, SexoEnum sexo) {
 
-        List<Medida> medidas;
+        Specification<Medida> spec = Specification
+                .where(MedidaSpecification.comClienteId(clienteId))
+                .and(MedidaSpecification.comSexo(sexo));
 
-        if (clienteId != null && sexo != null) {
-            medidas = medidaRepository.findByClienteIdAndSexo(clienteId, sexo);
-        } else if (clienteId != null) {
-            medidas = medidaRepository.findByClienteId(clienteId);
-        } else if (sexo != null) {
-            medidas = medidaRepository.findBySexo(sexo);
-        } else {
-            medidas = medidaRepository.findAll();
-        }
-
-        return medidas.stream()
+        return medidaRepository.findAll(spec).stream()
                 .map(this::toResponse)
                 .toList();
     }
