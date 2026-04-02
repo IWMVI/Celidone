@@ -151,9 +151,10 @@ public class ClienteService {
     public Cliente recuperar(Long id) {
         Cliente cliente = repository.findExcluidoById(id)
                 .orElseThrow(() -> new BusinessException("Cliente excluído não encontrado"));
-        
+
+        repository.recuperarCliente(id);
         cliente.setAtivo(true);
-        return repository.save(cliente);
+        return cliente;
     }
 
     // ===============================
