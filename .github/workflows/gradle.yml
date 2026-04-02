@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      issues: write
+      pull-requests: write
 
     strategy:
       fail-fast: false          # continua as outras versões mesmo se uma falhar
