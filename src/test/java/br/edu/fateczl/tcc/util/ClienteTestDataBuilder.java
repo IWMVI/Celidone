@@ -2,6 +2,7 @@ package br.edu.fateczl.tcc.util;
 
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Endereco;
+import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.enums.SiglaEstados;
@@ -111,37 +112,37 @@ public class ClienteTestDataBuilder {
     // =========================================================
 
     public static Cliente criarClienteValido() {
-        return Cliente.builder()
-                .nome("João da Silva")
-                .cpfCnpj("12345678901")
-                .email("joao@email.com")
-                .celular("11999999999")
-                .sexo(SexoEnum.MASCULINO)
-                .endereco(criarEnderecoEntityValido())
-                .build();
+        return ClienteFactory.criar()
+                .comNome("João da Silva")
+                .comCpfCnpj("12345678901")
+                .comEmail("joao@email.com")
+                .comCelular("11999999999")
+                .comSexo(SexoEnum.MASCULINO)
+                .comEndereco(criarEnderecoEntityValido())
+                .construir();
     }
 
     public static Cliente criarClienteValidoComId(Long id) {
-        return Cliente.builder()
-                .id(id)
-                .nome("João da Silva")
-                .cpfCnpj("12345678901")
-                .email("joao@email.com")
-                .celular("11999999999")
-                .sexo(SexoEnum.MASCULINO)
-                .endereco(criarEnderecoEntityValido())
-                .build();
+        return ClienteFactory.criar()
+                .comId(id)
+                .comNome("João da Silva")
+                .comCpfCnpj("12345678901")
+                .comEmail("joao@email.com")
+                .comCelular("11999999999")
+                .comSexo(SexoEnum.MASCULINO)
+                .comEndereco(criarEnderecoEntityValido())
+                .construir();
     }
 
     public static Cliente criarClienteAtualizadoComId(Long id) {
-        return Cliente.builder()
-                .id(id)
-                .nome("Cliente Atualizado")
-                .cpfCnpj("12345678901")
-                .email("cliente.atualizado@email.com")
-                .celular("11977777777")
-                .sexo(SexoEnum.FEMININO)
-                .endereco(criarEnderecoEntityAtualizado())
-                .build();
+        return ClienteFactory.criar()
+                .comId(id)
+                .comNome("Cliente Atualizado")
+                .comCpfCnpj("12345678901")
+                .comEmail("cliente.atualizado@email.com")
+                .comCelular("11977777777")
+                .comSexo(SexoEnum.FEMININO)
+                .comEndereco(criarEnderecoEntityAtualizado())
+                .construir();
     }
 }

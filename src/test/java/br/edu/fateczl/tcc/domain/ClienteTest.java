@@ -1,5 +1,6 @@
 package br.edu.fateczl.tcc.domain;
 
+import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
 import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.enums.SexoEnum;
 import org.junit.jupiter.api.DisplayName;
@@ -62,8 +63,8 @@ class ClienteTest {
         
         @Test
         void deve_ser_igual_quando_id_e_cpf_iguais() {
-            Cliente c1 = Cliente.builder().id(1L).cpfCnpj("12345678901").nome("João").build();
-            Cliente c2 = Cliente.builder().id(1L).cpfCnpj("12345678901").nome("Maria").build();
+            Cliente c1 = ClienteFactory.criar().comId(1L).comCpfCnpj("12345678901").comNome("João").construir();
+            Cliente c2 = ClienteFactory.criar().comId(1L).comCpfCnpj("12345678901").comNome("Maria").construir();
 
             assertEquals(c1, c2);
             assertEquals(c1.hashCode(), c2.hashCode());
@@ -71,16 +72,16 @@ class ClienteTest {
 
         @Test
         void deve_ser_diferente_quando_id_diferente() {
-            Cliente c1 = Cliente.builder().id(1L).cpfCnpj("12345678901").build();
-            Cliente c2 = Cliente.builder().id(2L).cpfCnpj("12345678901").build();
+            Cliente c1 = ClienteFactory.criar().comId(1L).comCpfCnpj("12345678901").construir();
+            Cliente c2 = ClienteFactory.criar().comId(2L).comCpfCnpj("12345678901").construir();
 
             assertNotEquals(c1, c2);
         }
 
         @Test
         void deve_ser_diferente_quando_cpf_diferente() {
-            Cliente c1 = Cliente.builder().id(1L).cpfCnpj("12345678901").build();
-            Cliente c2 = Cliente.builder().id(1L).cpfCnpj("11111111111").build();
+            Cliente c1 = ClienteFactory.criar().comId(1L).comCpfCnpj("12345678901").construir();
+            Cliente c2 = ClienteFactory.criar().comId(1L).comCpfCnpj("11111111111").construir();
 
             assertNotEquals(c1, c2);
         }
@@ -92,13 +93,13 @@ class ClienteTest {
         
         @Test
         void deve_gerar_to_string() {
-            Cliente cliente = Cliente.builder()
-                    .id(1L)
-                    .nome("João")
-                    .cpfCnpj("12345678901")
-                    .email("joao@email.com")
-                    .celular("11999999999")
-                    .build();
+            Cliente cliente = ClienteFactory.criar()
+                    .comId(1L)
+                    .comNome("João")
+                    .comCpfCnpj("12345678901")
+                    .comEmail("joao@email.com")
+                    .comCelular("11999999999")
+                    .construir();
 
             String result = cliente.toString();
 
@@ -108,18 +109,18 @@ class ClienteTest {
     }
 
     @Nested
-    @DisplayName("Builder")
-    class BuilderTest {
+    @DisplayName("Factory")
+    class FactoryTest {
         
         @Test
-        void deve_criar_cliente_com_builder() {
-            Cliente cliente = Cliente.builder()
-                    .id(1L)
-                    .nome("João")
-                    .cpfCnpj("12345678901")
-                    .email("joao@email.com")
-                    .celular("11999999999")
-                    .build();
+        void deve_criar_cliente_com_factory() {
+            Cliente cliente = ClienteFactory.criar()
+                    .comId(1L)
+                    .comNome("João")
+                    .comCpfCnpj("12345678901")
+                    .comEmail("joao@email.com")
+                    .comCelular("11999999999")
+                    .construir();
 
             assertEquals(1L, cliente.getId());
             assertEquals("João", cliente.getNome());

@@ -81,7 +81,15 @@ public class ClienteService {
     // READ - POR ID
     // ===============================
     public Cliente buscarPorId(Long id) {
-        return repository.findById(id).orElseThrow(() -> new BusinessException("Cliente não encontrado"));
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado"));
+        
+        // Valida se está ativo
+        if (!cliente.getAtivo()) {
+            throw new BusinessException("Cliente não encontrado");
+        }
+        
+        return cliente;
     }
 
     // ===============================
@@ -108,21 +116,20 @@ public class ClienteService {
     }
 
     // ===============================
-    // DELETE
+    // DELETE (SOFT DELETE)
     // ===============================
     @Transactional
     public void deletar(Long id) {
-        // Verifica se o cliente existe
-        if (!repository.existsById(id)) {
-            throw new BusinessException("Cliente não encontrado");
+        // Verifica se o cliente existe e está ativo
+        Cliente cliente = buscarPorId(id);
+        
+        if (!cliente.getAtivo()) {
+            throw new BusinessException("Cliente já foi deletado");
         }
         
-        // Deleta dependências primeiro para evitar violação de chave estrangeira
-        repository.deletarMedidasPorCliente(id);
-        repository.deletarAlugueisPorCliente(id);
-        
-        // Deleta o cliente
-        repository.deleteById(id);
+        // Soft delete: marca o cliente como inativo
+        cliente.setAtivo(false);
+        repository.save(cliente);
     }
 
     // ===============================

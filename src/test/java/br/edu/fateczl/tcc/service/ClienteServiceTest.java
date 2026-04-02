@@ -2,6 +2,7 @@ package br.edu.fateczl.tcc.service;
 
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Endereco;
+import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
 import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
@@ -387,21 +388,21 @@ class ClienteServiceTest {
         @DisplayName("Deve retornar erro quando novo CPF já pertencer a outro cliente")
         void deve_retornar_erro_quando_novo_cpf_ja_pertencer_a_outro_cliente() {
             Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            Cliente outroCliente = Cliente.builder()
-                    .id(2L)
-                    .nome("Outro Cliente")
-                    .cpfCnpj("99999999999")
-                    .email("outro@email.com")
-                    .celular("11988888888")
-                    .endereco(ClienteTestDataBuilder.criarEnderecoValido())
-                    .build();
-            Cliente novosDados = Cliente.builder()
-                    .nome("Teste")
-                    .cpfCnpj("99999999999")
-                    .email("teste@email.com")
-                    .celular("11999999999")
-                    .endereco(ClienteTestDataBuilder.criarEnderecoValido())
-                    .build();
+            Cliente outroCliente = ClienteFactory.criar()
+                    .comId(2L)
+                    .comNome("Outro Cliente")
+                    .comCpfCnpj("99999999999")
+                    .comEmail("outro@email.com")
+                    .comCelular("11988888888")
+                    .comEndereco(ClienteTestDataBuilder.criarEnderecoValido())
+                    .construir();
+            Cliente novosDados = ClienteFactory.criar()
+                    .comNome("Teste")
+                    .comCpfCnpj("99999999999")
+                    .comEmail("teste@email.com")
+                    .comCelular("11999999999")
+                    .comEndereco(ClienteTestDataBuilder.criarEnderecoValido())
+                    .construir();
 
             when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
             when(repository.findByCpfCnpj("99999999999")).thenReturn(Optional.of(outroCliente));
@@ -433,94 +434,76 @@ class ClienteServiceTest {
     class DeletarCliente {
 
         @Test
-        @DisplayName("Deve remover cliente da base de dados quando ID existir")
-        void deve_remover_cliente_da_base_de_dados_quando_id_existir() {
-            when(repository.existsById(1L)).thenReturn(true);
+        @DisplayName("Deve realizar soft delete marcando cliente como inativo")
+        void deve_realizar_soft_delete_marcando_cliente_como_inativo() {
+            Cliente clienteAtivo = new Cliente();
+            clienteAtivo.setId(1L);
+            clienteAtivo.setAtivo(true);
+            
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteAtivo));
+            when(repository.save(any(Cliente.class))).thenReturn(clienteAtivo);
 
-            assertDoesNotThrow(() -> service.deletar(1L));
+            service.deletar(1L);
 
-            verify(repository, times(1)).existsById(1L);
-            verify(repository, times(1)).deletarMedidasPorCliente(1L);
-            verify(repository, times(1)).deletarAlugueisPorCliente(1L);
-            verify(repository, times(1)).deleteById(1L);
+            assertFalse(clienteAtivo.getAtivo());
+            verify(repository).save(any(Cliente.class));
         }
 
         @Test
         @DisplayName("Deve retornar erro ao tentar deletar cliente inexistente")
         void deve_retornar_erro_ao_tentar_deletar_cliente_inexistente() {
-            when(repository.existsById(999L)).thenReturn(false);
+            when(repository.findById(999L)).thenReturn(Optional.empty());
 
             BusinessException ex = assertThrows(BusinessException.class, () -> service.deletar(999L));
             assertTrue(ex.getMessage().contains("Cliente não encontrado"));
-            
-            verify(repository, never()).deletarMedidasPorCliente(anyLong());
-            verify(repository, never()).deletarAlugueisPorCliente(anyLong());
-            verify(repository, never()).deleteById(anyLong());
         }
 
         @Test
-        @DisplayName("Não deve permitir exclusão quando ocorrer erro de integridade")
-        void nao_deve_permitir_exclusao_quando_ocorrer_erro_de_integridade() {
-            when(repository.existsById(1L)).thenReturn(true);
-            doThrow(new RuntimeException("Erro de integridade"))
-                    .when(repository).deleteById(1L);
-
-            assertThrows(RuntimeException.class, () -> service.deletar(1L));
+        @DisplayName("Deve retornar erro ao tentar deletar cliente já inativo")
+        void deve_retornar_erro_ao_tentar_deletar_cliente_ja_inativo() {
+            Cliente clienteInativo = new Cliente();
+            clienteInativo.setId(1L);
+            clienteInativo.setAtivo(false);
             
-            verify(repository, times(1)).existsById(1L);
-            verify(repository, times(1)).deletarMedidasPorCliente(1L);
-            verify(repository, times(1)).deletarAlugueisPorCliente(1L);
-        }
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteInativo));
 
-        @Test
-        @DisplayName("Deve garantir que dependências sejam removidas antes do cliente")
-        void deve_garantir_que_dependencias_sejam_removidas_antes_do_cliente() {
-            Long clienteId = 1L;
-            when(repository.existsById(clienteId)).thenReturn(true);
-
-            service.deletar(clienteId);
-
-            // Verificar ordem das chamadas
-            InOrder inOrder = inOrder(repository);
-            inOrder.verify(repository).existsById(clienteId);
-            inOrder.verify(repository).deletarMedidasPorCliente(clienteId);
-            inOrder.verify(repository).deletarAlugueisPorCliente(clienteId);
-            inOrder.verify(repository).deleteById(clienteId);
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.deletar(1L));
+            assertTrue(ex.getMessage().contains("Cliente não encontrado"));
         }
     }
 }
 
 class ClienteTestDataBuilder {
     static Cliente criarClienteValido() {
-        return Cliente.builder()
-                .nome("João da Silva")
-                .cpfCnpj("12345678901")
-                .email("joao@email.com")
-                .celular("11999999999")
-                .endereco(criarEnderecoValido())
-                .build();
+        return ClienteFactory.criar()
+                .comNome("João da Silva")
+                .comCpfCnpj("12345678901")
+                .comEmail("joao@email.com")
+                .comCelular("11999999999")
+                .comEndereco(criarEnderecoValido())
+                .construir();
     }
 
     static Cliente criarClienteValidoComId(Long id) {
-        return Cliente.builder()
-                .id(id)
-                .nome("João da Silva")
-                .cpfCnpj("12345678901")
-                .email("joao@email.com")
-                .celular("11999999999")
-                .endereco(criarEnderecoValido())
-                .build();
+        return ClienteFactory.criar()
+                .comId(id)
+                .comNome("João da Silva")
+                .comCpfCnpj("12345678901")
+                .comEmail("joao@email.com")
+                .comCelular("11999999999")
+                .comEndereco(criarEnderecoValido())
+                .construir();
     }
 
     static Cliente criarClienteAtualizadoComId(Long id) {
-        return Cliente.builder()
-                .id(id)
-                .nome("Cliente Atualizado")
-                .cpfCnpj("12345678901")
-                .email("cliente.atualizado@email.com")
-                .celular("11977777777")
-                .endereco(criarEnderecoAtualizado())
-                .build();
+        return ClienteFactory.criar()
+                .comId(id)
+                .comNome("Cliente Atualizado")
+                .comCpfCnpj("12345678901")
+                .comEmail("cliente.atualizado@email.com")
+                .comCelular("11977777777")
+                .comEndereco(criarEnderecoAtualizado())
+                .construir();
     }
 
     static Endereco criarEnderecoValido() {
