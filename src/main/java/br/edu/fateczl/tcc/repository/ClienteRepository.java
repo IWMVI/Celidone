@@ -47,4 +47,20 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     @Modifying
     @Query("DELETE FROM aluguel a WHERE a.cliente.id = :clienteId")
     void deletarAlugueisPorCliente(@Param("clienteId") Long clienteId);
+
+    // ===============================
+    // CLIENTES EXCLUÍDOS (SOFT DELETED)
+    // ===============================
+    @Query("SELECT c FROM Cliente c WHERE c.ativo = false ORDER BY c.dataCadastro DESC")
+    List<Cliente> findAllExcluidos();
+
+    @Query("SELECT c FROM Cliente c WHERE c.ativo = false ORDER BY c.dataCadastro DESC")
+    Page<Cliente> findAllExcluidos(Pageable pageable);
+
+    @Query("SELECT c FROM Cliente c WHERE c.id = :clienteId AND c.ativo = false")
+    Optional<Cliente> findExcluidoById(@Param("clienteId") Long clienteId);
+
+    @Modifying
+    @Query("UPDATE Cliente c SET c.ativo = true WHERE c.id = :clienteId")
+    void recuperarCliente(@Param("clienteId") Long clienteId);
 }
