@@ -133,6 +133,30 @@ public class ClienteService {
     }
 
     // ===============================
+    // READ - LISTAR EXCLUÍDOS
+    // ===============================
+    public List<Cliente> listarExcluidos() {
+        return repository.findAllExcluidos();
+    }
+
+    public Page<Cliente> listarExcluidosPaginado(int pagina, int tamanho) {
+        Pageable pageable = PageRequest.of(pagina, tamanho);
+        return repository.findAllExcluidos(pageable);
+    }
+
+    // ===============================
+    // RECUPERAR CLIENTE EXCLUÍDO
+    // ===============================
+    @Transactional
+    public Cliente recuperar(Long id) {
+        Cliente cliente = repository.findExcluidoById(id)
+                .orElseThrow(() -> new BusinessException("Cliente excluído não encontrado"));
+        
+        cliente.setAtivo(true);
+        return repository.save(cliente);
+    }
+
+    // ===============================
     // REGRAS DE NEGÓCIO
     // ===============================
     private void validar(Cliente cliente) {
