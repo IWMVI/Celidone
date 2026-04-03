@@ -3,6 +3,7 @@ package br.edu.fateczl.tcc.controller;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
+import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.service.ClienteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,7 +51,7 @@ class ClienteControllerUnitTest {
     void setUp() {
         EnderecoRequest endereco = new EnderecoRequest(
                 "01001000", "Praça da Sé", "100",
-                "São Paulo", "Sé", "SP", null
+                "São Paulo", "Sé", SiglaEstados.SP, null
         );
 
         requestValido = new ClienteRequest(

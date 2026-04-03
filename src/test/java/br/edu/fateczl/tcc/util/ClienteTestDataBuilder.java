@@ -62,7 +62,7 @@ public class ClienteTestDataBuilder {
                 "100",
                 "São Paulo",
                 "Sé",
-                "SP",
+                SiglaEstados.SP,
                 "Sala 101"
         );
     }
@@ -74,7 +74,7 @@ public class ClienteTestDataBuilder {
                 "200",
                 "Rio de Janeiro",
                 "Centro",
-                "RJ",
+                SiglaEstados.RJ,
                 "Apto 502"
         );
     }

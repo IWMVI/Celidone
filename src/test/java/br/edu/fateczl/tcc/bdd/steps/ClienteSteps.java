@@ -2,6 +2,7 @@ package br.edu.fateczl.tcc.bdd.steps;
 
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
+import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,13 +53,15 @@ public class ClienteSteps {
         
         EnderecoRequest endereco = null;
         if (temEndereco) {
+            String estadoStr = dados.get("estado");
+            SiglaEstados estado = estadoStr != null && !estadoStr.trim().isEmpty() ? SiglaEstados.valueOf(estadoStr) : null;
             endereco = new EnderecoRequest(
                     getOrDefault(dados, "cep"),
                     getOrDefault(dados, "logradouro"),
                     getOrDefault(dados, "numero"),
                     getOrDefault(dados, "cidade"),
                     getOrDefault(dados, "bairro"),
-                    dados.get("estado"),
+                    estado,
                     dados.get("complemento"));
         }
 
@@ -101,7 +104,7 @@ public class ClienteSteps {
     public void que_ja_existe_um_cliente_cadastrado_com_cpf(String cpfCnpj) throws Exception {
 
         EnderecoRequest endereco = new EnderecoRequest(
-                "01001000", "Rua Exemplo", "100", "Sao Paulo", "Centro", "SP", "Sala 101");
+                "01001000", "Rua Exemplo", "100", "Sao Paulo", "Centro", SiglaEstados.SP, "Sala 101");
 
         ClienteRequest request = new ClienteRequest(
                 "Cliente Teste",

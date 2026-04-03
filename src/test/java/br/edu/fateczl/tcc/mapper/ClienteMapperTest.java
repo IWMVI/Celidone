@@ -25,7 +25,7 @@ class ClienteMapperTest {
         
         @Test
         void deveConverter_request_para_entity() {
-            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", enderecoRequest, "MASCULINO");
 
             Cliente entity = ClienteMapper.toEntity(request);
@@ -48,7 +48,7 @@ class ClienteMapperTest {
 
         @Test
         void deve_definir_sexo_neutro_quando_sexo_for_nulo() {
-            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, null);
 
             Cliente entity = ClienteMapper.toEntity(request);
@@ -58,7 +58,7 @@ class ClienteMapperTest {
 
         @Test
         void deve_definir_sexo_neutro_quando_sexo_for_vazio() {
-            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, "");
 
             Cliente entity = ClienteMapper.toEntity(request);
@@ -68,7 +68,7 @@ class ClienteMapperTest {
 
         @Test
         void deve_definir_sexo_neutro_quando_sexo_for_espacos() {
-            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, "   ");
 
             Cliente entity = ClienteMapper.toEntity(request);

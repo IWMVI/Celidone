@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class ClienteService {
@@ -27,6 +28,7 @@ public class ClienteService {
     @Transactional
     public ClienteResponse criar(ClienteRequest request) {
         Cliente cliente = ClienteMapper.toEntity(request);
+        cliente.setEmail(cliente.getEmail().toLowerCase(Locale.ROOT));
 
         try {
             validarCpfUnico(cliente.getCpfCnpj());
@@ -78,7 +80,9 @@ public class ClienteService {
         }
 
         if (!cliente.getEmail().equalsIgnoreCase(novosDados.getEmail())) {
-            validarEmailUnico(novosDados.getEmail());
+            String emailNormalizado = novosDados.getEmail().toLowerCase(Locale.ROOT);
+            validarEmailUnico(emailNormalizado);
+            cliente.setEmail(emailNormalizado);
         }
 
         cliente.atualizar(
@@ -101,10 +105,6 @@ public class ClienteService {
     public void deletar(Long id) {
         Cliente cliente = buscarAtivoPorId(id);
 
-        if (!cliente.getAtivo()) {
-            throw new BusinessException("Cliente já foi deletado");
-        }
-
         cliente.setAtivo(false);
         repository.save(cliente);
     }
@@ -125,9 +125,10 @@ public class ClienteService {
         Cliente cliente = repository.findExcluidoById(id)
                 .orElseThrow(() -> new BusinessException("Cliente excluído não encontrado"));
 
-        repository.recuperarCliente(id);
         cliente.setAtivo(true);
-        return ClienteMapper.toResponse(cliente);
+        Cliente clienteSalvo = repository.save(cliente);
+
+        return ClienteMapper.toResponse(clienteSalvo);
     }
 
     private Cliente buscarAtivoPorId(Long id) {
