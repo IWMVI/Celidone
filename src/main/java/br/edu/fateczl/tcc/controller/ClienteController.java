@@ -2,7 +2,6 @@ package br.edu.fateczl.tcc.controller;
 
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
-import br.edu.fateczl.tcc.mapper.ClienteMapper;
 import br.edu.fateczl.tcc.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -21,97 +20,59 @@ public class ClienteController {
         this.service = service;
     }
 
-    // ===============================
-    // CREATE
-    // ===============================
     @PostMapping
     public ClienteResponse criar(@RequestBody @Valid ClienteRequest request) {
-        var cliente = ClienteMapper.toEntity(request);
-        var salvo = service.criar(cliente);
-        return ClienteMapper.toResponse(salvo);
+        return service.criar(request);
     }
 
-    // ===============================
-    // READ - LISTAR COM PAGINAÇÃO
-    // ===============================
     @GetMapping
     public Page<ClienteResponse> listar(
             @RequestParam(value = "busca", required = false) String busca,
             @RequestParam(value = "pagina", defaultValue = "0") int pagina,
             @RequestParam(value = "tamanho", defaultValue = "10") int tamanho) {
-        var clientesPage = service.buscarComFiltroPaginado(busca, pagina, tamanho);
-        return clientesPage.map(ClienteMapper::toResponse);
+        return service.buscarComFiltroPaginado(busca, pagina, tamanho);
     }
 
-    // ===============================
-    // READ - LISTAR TODOS (SEM PAGINAÇÃO)
-    // ===============================
     @GetMapping("/todos")
     public List<ClienteResponse> listarTodos() {
-        var clientes = service.listar();
-        return clientes.stream().map(ClienteMapper::toResponse).toList();
+        return service.listar();
     }
 
-    // ===============================
-    // READ - BUSCAR COM FILTRO (SEM PAGINAÇÃO)
-    // ===============================
     @GetMapping("/buscar")
     public List<ClienteResponse> buscar(@RequestParam(value = "busca", required = false) String busca) {
-        var clientes = service.buscarComFiltro(busca);
-        return clientes.stream().map(ClienteMapper::toResponse).toList();
+        return service.buscarComFiltro(busca);
     }
 
-    // ===============================
-    // READ - POR ID
-    // ===============================
     @GetMapping("/{id}")
     public ClienteResponse buscarPorId(@PathVariable("id") Long id) {
-        var cliente = service.buscarPorId(id);
-        return ClienteMapper.toResponse(cliente);
+        return service.buscarPorId(id);
     }
 
-    // ===============================
-    // UPDATE
-    // ===============================
     @PutMapping("/{id}")
     public ClienteResponse atualizar(@PathVariable("id") Long id, @RequestBody @Valid ClienteRequest request) {
-        var cliente = ClienteMapper.toEntity(request);
-        var atualizado = service.atualizar(id, cliente);
-        return ClienteMapper.toResponse(atualizado);
+        return service.atualizar(id, request);
     }
 
-    // ===============================
-    // 📌 DELETE
-    // ===============================
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable("id") Long id) {
         service.deletar(id);
     }
 
-    // ===============================
-    // READ - LISTAR EXCLUÍDOS
-    // ===============================
     @GetMapping("/excluidos/todos")
     public List<ClienteResponse> listarExcluidos() {
-        var clientes = service.listarExcluidos();
-        return clientes.stream().map(ClienteMapper::toResponse).toList();
+        return service.listarExcluidos();
     }
 
     @GetMapping("/excluidos")
     public Page<ClienteResponse> listarExcluidosPaginado(
             @RequestParam(value = "pagina", defaultValue = "0") int pagina,
             @RequestParam(value = "tamanho", defaultValue = "10") int tamanho) {
-        var clientesPage = service.listarExcluidosPaginado(pagina, tamanho);
-        return clientesPage.map(ClienteMapper::toResponse);
+        return service.listarExcluidosPaginado(pagina, tamanho);
     }
 
-    // ===============================
-    // RECUPERAR CLIENTE EXCLUÍDO
-    // ===============================
     @PutMapping("/{id}/recuperar")
     public ClienteResponse recuperar(@PathVariable("id") Long id) {
-        var cliente = service.recuperar(id);
-        return ClienteMapper.toResponse(cliente);
+        return service.recuperar(id);
     }
 }

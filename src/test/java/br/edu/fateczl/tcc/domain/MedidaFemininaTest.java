@@ -191,4 +191,59 @@ class MedidaFemininaTest {
             assertTrue(resultado.contains("id=1"));
         }
     }
+
+    @Nested
+    @DisplayName("Equals e HashCode")
+    class EqualsHashCode {
+
+        @Test
+        @DisplayName("Deve ser igual quando ids sao iguais")
+        void deve_ser_igual_quando_ids_sao_iguais() {
+            MedidaFeminina m1 = new MedidaFeminina();
+            m1.setId(1L);
+            MedidaFeminina m2 = new MedidaFeminina();
+            m2.setId(1L);
+
+            assertEquals(m1, m2);
+            assertEquals(m1.hashCode(), m2.hashCode());
+        }
+
+        @Test
+        @DisplayName("Nao deve ser igual quando ids sao diferentes")
+        void nao_deve_ser_igual_quando_ids_sao_diferentes() {
+            MedidaFeminina m1 = new MedidaFeminina();
+            m1.setId(1L);
+            MedidaFeminina m2 = new MedidaFeminina();
+            m2.setId(2L);
+
+            assertNotEquals(m1, m2);
+        }
+
+        @Test
+        @DisplayName("Nao deve ser igual a null")
+        void nao_deve_ser_igual_a_null() {
+            MedidaFeminina medida = new MedidaFeminina();
+            medida.setId(1L);
+
+            assertNotEquals(null, medida);
+        }
+
+        @Test
+        @DisplayName("Nao deve ser igual a objeto de classe diferente")
+        void nao_deve_ser_igual_a_classe_diferente() {
+            MedidaFeminina medida = new MedidaFeminina();
+            medida.setId(1L);
+
+            assertNotEquals("string", medida);
+        }
+
+        @Test
+        @DisplayName("Deve ser igual a si mesmo")
+        void deve_ser_igual_a_si_mesmo() {
+            MedidaFeminina medida = new MedidaFeminina();
+            medida.setId(1L);
+
+            assertEquals(medida, medida);
+        }
+    }
 }

@@ -1,13 +1,11 @@
 package br.edu.fateczl.tcc.domain;
 
 import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
-import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.enums.SiglaEstados;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,6 +82,32 @@ class ClienteTest {
             Cliente c2 = ClienteFactory.criar().comId(1L).comCpfCnpj("11111111111").construir();
 
             assertNotEquals(c1, c2);
+        }
+
+        @Test
+        void deve_ser_falso_quando_comparado_com_null() {
+            Cliente cliente = ClienteFactory.criar().comId(1L).construir();
+            assertNotEquals(null, cliente);
+        }
+
+        @Test
+        void deve_ser_falso_quando_comparado_com_classe_diferente() {
+            Cliente cliente = ClienteFactory.criar().comId(1L).construir();
+            assertNotEquals("string", cliente);
+        }
+
+        @Test
+        void deve_ser_igual_a_si_mesmo() {
+            Cliente cliente = ClienteFactory.criar().comId(1L).construir();
+            assertEquals(cliente, cliente);
+        }
+
+        @Test
+        void deve_ser_igual_quando_ids_nulos() {
+            Cliente c1 = new Cliente();
+            Cliente c2 = new Cliente();
+
+            assertEquals(c1, c2);
         }
     }
 

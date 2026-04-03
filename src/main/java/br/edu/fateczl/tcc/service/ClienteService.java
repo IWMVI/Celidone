@@ -1,17 +1,19 @@
 package br.edu.fateczl.tcc.service;
 
-import java.util.List;
-
+import br.edu.fateczl.tcc.domain.Cliente;
+import br.edu.fateczl.tcc.dto.ClienteRequest;
+import br.edu.fateczl.tcc.dto.ClienteResponse;
+import br.edu.fateczl.tcc.exception.BusinessException;
+import br.edu.fateczl.tcc.mapper.ClienteMapper;
+import br.edu.fateczl.tcc.repository.ClienteRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
-import br.edu.fateczl.tcc.domain.Cliente;
-import br.edu.fateczl.tcc.exception.BusinessException;
-import br.edu.fateczl.tcc.repository.ClienteRepository;
-import jakarta.transaction.Transactional;
+import java.util.List;
 
 @Service
 public class ClienteService {
@@ -22,176 +24,146 @@ public class ClienteService {
         this.repository = repository;
     }
 
-    // ===============================
-    // CREATE
-    // ===============================
     @Transactional
-    public Cliente criar(Cliente cliente) {
-        validar(cliente);
+    public ClienteResponse criar(ClienteRequest request) {
+        Cliente cliente = ClienteMapper.toEntity(request);
 
         try {
             validarCpfUnico(cliente.getCpfCnpj());
             validarEmailUnico(cliente.getEmail());
-            return repository.save(cliente);
-        } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            // Fallback para caso de race condition no banco
-            if (e.getCause() != null && e.getCause().getMessage() != null) {
-                String msg = e.getCause().getMessage().toLowerCase();
-                if (msg.contains("cpf") || msg.contains("cnpj")) {
-                    throw new BusinessException("CPF ou CNPJ já cadastrado");
-                }
-                if (msg.contains("email")) {
-                    throw new BusinessException("Email já cadastrado");
-                }
-            }
-            throw new BusinessException("Erro ao salvar cliente. Violação de integridade de dados.");
+            return ClienteMapper.toResponse(repository.save(cliente));
+        } catch (DataIntegrityViolationException e) {
+            throw traduzirErroIntegridade(e);
         }
     }
 
-    // ===============================
-    // READ - LISTAR
-    // ===============================
-    public List<Cliente> listar() {
-        return repository.findAll();
+    public List<ClienteResponse> listar() {
+        return repository.findAll().stream()
+                .map(ClienteMapper::toResponse)
+                .toList();
     }
 
-    // ===============================
-    // READ - BUSCAR COM FILTRO E PAGINAÇÃO
-    // ===============================
-    public Page<Cliente> buscarComFiltroPaginado(String busca, int pagina, int tamanho) {
+    public Page<ClienteResponse> buscarComFiltroPaginado(String busca, int pagina, int tamanho) {
         Pageable pageable = PageRequest.of(pagina, tamanho);
 
         if (busca == null || busca.isBlank()) {
-            return repository.findAll(pageable);
+            return repository.findAll(pageable).map(ClienteMapper::toResponse);
         }
-        return repository.buscarPorTermoPaginado(busca.trim(), pageable);
+
+        return repository.buscarPorTermoPaginado(busca.trim(), pageable)
+                .map(ClienteMapper::toResponse);
     }
 
-    // ===============================
-    // READ - BUSCAR COM FILTRO (SEM PAGINAÇÃO - LEGACY)
-    // ===============================
-    public List<Cliente> buscarComFiltro(String busca) {
+    public List<ClienteResponse> buscarComFiltro(String busca) {
         if (busca == null || busca.isBlank()) {
-            return repository.findAll();
+            return listar();
         }
-        return repository.buscarPorTermo(busca.trim());
+
+        return repository.buscarPorTermo(busca.trim()).stream()
+                .map(ClienteMapper::toResponse)
+                .toList();
     }
 
-    // ===============================
-    // READ - POR ID
-    // ===============================
-    public Cliente buscarPorId(Long id) {
-        Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new BusinessException("Cliente não encontrado"));
-        
-        // Valida se está ativo
-        if (!cliente.getAtivo()) {
-            throw new BusinessException("Cliente não encontrado");
-        }
-        
-        return cliente;
+    public ClienteResponse buscarPorId(Long id) {
+        return ClienteMapper.toResponse(buscarAtivoPorId(id));
     }
 
-    // ===============================
-    // UPDATE
-    // ===============================
     @Transactional
-    public Cliente atualizar(Long id, Cliente novosDados) {
+    public ClienteResponse atualizar(Long id, ClienteRequest request) {
+        Cliente cliente = buscarAtivoPorId(id);
+        Cliente novosDados = ClienteMapper.toEntity(request);
 
-        Cliente cliente = buscarPorId(id);
-
-        // Se CPF mudou, valida duplicidade
         if (!cliente.getCpfCnpj().equals(novosDados.getCpfCnpj())) {
             validarCpfUnico(novosDados.getCpfCnpj());
         }
 
-        if (!cliente.getEmail().equals(novosDados.getEmail())) {
+        if (!cliente.getEmail().equalsIgnoreCase(novosDados.getEmail())) {
             validarEmailUnico(novosDados.getEmail());
         }
 
-        cliente.atualizar(novosDados.getNome(), novosDados.getCpfCnpj(), novosDados.getEmail(), novosDados.getCelular(),
-                novosDados.getSexo(), novosDados.getEndereco());
+        cliente.atualizar(
+                novosDados.getNome(),
+                novosDados.getCpfCnpj(),
+                novosDados.getEmail(),
+                novosDados.getCelular(),
+                novosDados.getSexo(),
+                novosDados.getEndereco()
+        );
 
-        return repository.save(cliente);
+        try {
+            return ClienteMapper.toResponse(repository.save(cliente));
+        } catch (DataIntegrityViolationException e) {
+            throw traduzirErroIntegridade(e);
+        }
     }
 
-    // ===============================
-    // DELETE (SOFT DELETE)
-    // ===============================
     @Transactional
     public void deletar(Long id) {
-        // Verifica se o cliente existe e está ativo
-        Cliente cliente = buscarPorId(id);
-        
+        Cliente cliente = buscarAtivoPorId(id);
+
         if (!cliente.getAtivo()) {
             throw new BusinessException("Cliente já foi deletado");
         }
-        
-        // Soft delete: marca o cliente como inativo
+
         cliente.setAtivo(false);
         repository.save(cliente);
     }
 
-    // ===============================
-    // READ - LISTAR EXCLUÍDOS
-    // ===============================
-    public List<Cliente> listarExcluidos() {
-        return repository.findAllExcluidos();
+    public List<ClienteResponse> listarExcluidos() {
+        return repository.findAllExcluidos().stream()
+                .map(ClienteMapper::toResponse)
+                .toList();
     }
 
-    public Page<Cliente> listarExcluidosPaginado(int pagina, int tamanho) {
+    public Page<ClienteResponse> listarExcluidosPaginado(int pagina, int tamanho) {
         Pageable pageable = PageRequest.of(pagina, tamanho);
-        return repository.findAllExcluidos(pageable);
+        return repository.findAllExcluidos(pageable).map(ClienteMapper::toResponse);
     }
 
-    // ===============================
-    // RECUPERAR CLIENTE EXCLUÍDO
-    // ===============================
     @Transactional
-    public Cliente recuperar(Long id) {
+    public ClienteResponse recuperar(Long id) {
         Cliente cliente = repository.findExcluidoById(id)
                 .orElseThrow(() -> new BusinessException("Cliente excluído não encontrado"));
 
         repository.recuperarCliente(id);
         cliente.setAtivo(true);
+        return ClienteMapper.toResponse(cliente);
+    }
+
+    private Cliente buscarAtivoPorId(Long id) {
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado"));
+
+        if (!cliente.getAtivo()) {
+            throw new BusinessException("Cliente não encontrado");
+        }
+
         return cliente;
     }
 
-    // ===============================
-    // REGRAS DE NEGÓCIO
-    // ===============================
-    private void validar(Cliente cliente) {
-
-        if (cliente.getNome() == null || cliente.getNome().isBlank()) {
-            throw new BusinessException("Nome é obrigatório");
-        }
-
-        if (cliente.getCpfCnpj() == null || cliente.getCpfCnpj().isBlank()) {
-            throw new BusinessException("CPF é obrigatório");
-        }
-
-        if (cliente.getEmail() == null || cliente.getEmail().isBlank()) {
-            throw new BusinessException("Email é obrigatório");
-        }
-
-        if (cliente.getCelular() == null || cliente.getCelular().isBlank()) {
-            throw new BusinessException("Telefone é obrigatório");
-        }
-
-        if (cliente.getEndereco() == null) {
-            throw new BusinessException("Endereço é obrigatório");
-        }
-    }
-
-    private void validarCpfUnico(String cpf) {
-        repository.findByCpfCnpj(cpf).ifPresent(c -> {
+    private void validarCpfUnico(String cpfCnpj) {
+        repository.findByCpfCnpj(cpfCnpj).ifPresent(cliente -> {
             throw new BusinessException("CPF ou CNPJ já cadastrado");
         });
     }
 
     private void validarEmailUnico(String email) {
-        repository.findByEmail(email).ifPresent(c -> {
+        repository.findByEmail(email).ifPresent(cliente -> {
             throw new BusinessException("Email já cadastrado");
         });
+    }
+
+    private BusinessException traduzirErroIntegridade(DataIntegrityViolationException e) {
+        if (e.getCause() != null && e.getCause().getMessage() != null) {
+            String message = e.getCause().getMessage().toLowerCase();
+            if (message.contains("cpf") || message.contains("cnpj")) {
+                return new BusinessException("CPF ou CNPJ já cadastrado");
+            }
+            if (message.contains("email")) {
+                return new BusinessException("Email já cadastrado");
+            }
+        }
+
+        return new BusinessException("Erro ao salvar cliente. Violação de integridade de dados.");
     }
 }
