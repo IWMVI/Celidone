@@ -1,28 +1,7 @@
 package br.edu.fateczl.tcc.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import br.edu.fateczl.tcc.domain.Cliente;
+import br.edu.fateczl.tcc.domain.Medida;
 import br.edu.fateczl.tcc.domain.MedidaFeminina;
 import br.edu.fateczl.tcc.domain.MedidaMasculina;
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaRequest;
@@ -37,6 +16,21 @@ import br.edu.fateczl.tcc.repository.MedidaRepository;
 import br.edu.fateczl.tcc.strategy.MedidaFemininaStrategy;
 import br.edu.fateczl.tcc.strategy.MedidaMasculinaStrategy;
 import br.edu.fateczl.tcc.strategy.MedidaStrategy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes de Serviço de Medidas")
@@ -436,6 +430,25 @@ class MedidaServiceTest {
             assertEquals(1, resultado.size());
             verify(medidaRepository).findBySexo(SexoEnum.MASCULINO);
         }
+
+        @Test
+        @DisplayName("Deve buscar medidas por cliente e sexo quando ambos informados")
+        void deve_buscarMedidasPorClienteESexo_quando_ambosInformados() {
+            // Arrange
+            MedidaFeminina medida = new MedidaFeminina();
+            medida.setId(1L);
+            medida.setCliente(clienteValido);
+
+            when(medidaRepository.findByClienteIdAndSexo(1L, SexoEnum.FEMININO)).thenReturn(List.of(medida));
+
+            // Act
+            List<Object> resultado = service.buscar(1L, SexoEnum.FEMININO);
+
+            // Assert
+            assertNotNull(resultado);
+            assertEquals(1, resultado.size());
+            verify(medidaRepository).findByClienteIdAndSexo(1L, SexoEnum.FEMININO);
+        }
     }
 
     @Nested
@@ -473,6 +486,86 @@ class MedidaServiceTest {
 
             assertTrue(exception.getMessage().contains("Medida não encontrada"));
             verify(medidaRepository, never()).delete(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Caminhos excepcionais")
+    class CaminhosExcepcionais {
+
+        @Test
+        @DisplayName("Deve lancar excecao quando medida for de tipo desconhecido")
+        void deve_lancarExcecao_quando_medidaForTipoDesconhecido() {
+            Medida medidaDesconhecida = mock(Medida.class);
+
+            when(medidaRepository.findByIdWithCliente(1L)).thenReturn(Optional.of(medidaDesconhecida));
+
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class,
+                    () -> service.buscarPorId(1L)
+            );
+
+            assertTrue(exception.getMessage().contains("Tipo de medida desconhecido"));
+        }
+
+        @Test
+        @DisplayName("Deve lancar excecao quando medida desconhecida na busca geral")
+        void deve_lancarExcecao_quando_medidaForTipoDesconhecidoNaBusca() {
+            Medida medidaDesconhecida = mock(Medida.class);
+
+            when(medidaRepository.findAll()).thenReturn(List.of(medidaDesconhecida));
+
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class,
+                    () -> service.buscar(null, null)
+            );
+
+            assertTrue(exception.getMessage().contains("Tipo de medida desconhecido"));
+        }
+
+        @Test
+        @DisplayName("Deve lancar excecao quando strategy nao estiver registrada")
+        void deve_lancarExcecao_quando_strategyNaoRegistrada() {
+            MedidaService serviceSemStrategy = new MedidaService(
+                    clienteRepository, medidaRepository, List.of()
+            );
+
+            MedidaFemininaRequest request = new MedidaFemininaRequest(
+                    1L, BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50), BigDecimal.valueOf(0.30),
+                    BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.40), BigDecimal.valueOf(0.35),
+                    BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.90), BigDecimal.valueOf(1.20)
+            );
+
+            when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteValido));
+
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class,
+                    () -> serviceSemStrategy.criarFeminina(request)
+            );
+
+            assertTrue(exception.getMessage().contains("Strategy"));
+        }
+
+        @Test
+        @DisplayName("Deve lancar excecao quando cliente retornar ID nulo")
+        void deve_lancarExcecao_quando_clienteRetornarIdNulo() {
+            Cliente clienteSemId = new Cliente();
+            clienteSemId.setNome("Cliente sem ID");
+
+            when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteSemId));
+
+            MedidaFemininaRequest request = new MedidaFemininaRequest(
+                    1L, BigDecimal.valueOf(0.80), BigDecimal.valueOf(0.50), BigDecimal.valueOf(0.30),
+                    BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.40), BigDecimal.valueOf(0.35),
+                    BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.90), BigDecimal.valueOf(1.20)
+            );
+
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> service.criarFeminina(request)
+            );
+
+            assertTrue(exception.getMessage().contains("Cliente retornou ID nulo"));
         }
     }
 }
