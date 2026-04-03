@@ -320,11 +320,50 @@ java -jar build/libs/tcc-0.0.1-SNAPSHOT.jar
 Os testes utilizam **H2 em memória** (configurado em `application-test.yaml`), isolados do banco de produção (MySQL).
 
 ```bash
-# Todos os testes
+# Todos os testes (com resumo de resultados e cobertura)
 ./gradlew test
 
-# Com relatório de cobertura
-./gradlew test jacocoTestReport
+# Forçar reexecução de todos os testes (ignora cache)
+./gradlew test --rerun-tasks
+
+# Gerar relatório HTML de cobertura (JaCoCo)
+./gradlew jacocoTestReport
+
+# Verificar se cobertura atinge os mínimos configurados
+./gradlew jacocoTestCoverageVerification
+
+# Executar testes e verificar cobertura em um único comando
+./gradlew test jacocoTestReport jacocoTestCoverageVerification
+```
+
+#### Saída dos Testes
+
+Ao executar `./gradlew test`, o console exibe um resário ao final:
+
+```
+============================================================
+RESUMO DOS TESTES
+============================================================
+Total:     364
+Passados:  354
+Falhados:  0
+Pulados:   10
+============================================================
+
+============================================================
+COBERTURA DE CODIGO (JaCoCo)
+============================================================
+Linhas:    89,5% (1155/1290)
+Branches:  68,2% (116/170)
+============================================================
+```
+
+#### Relatório HTML de Cobertura
+
+Após executar `./gradlew jacocoTestReport`, abra o relatório no navegador:
+
+```
+build/reports/jacoco/test/html/index.html
 ```
 
 #### Configuração de Teste
