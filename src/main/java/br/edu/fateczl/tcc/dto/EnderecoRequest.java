@@ -1,8 +1,8 @@
 package br.edu.fateczl.tcc.dto;
 
 import br.edu.fateczl.tcc.enums.SiglaEstados;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record EnderecoRequest(
         @NotBlank(message = "CEP é obrigatório")
@@ -15,11 +15,7 @@ public record EnderecoRequest(
         String cidade,
         @NotBlank(message = "Bairro é obrigatório")
         String bairro,
-        @NotBlank(message = "Estado é obrigatório")
-        String estado,
+        @NotNull(message = "Estado é obrigatório")
+        SiglaEstados estado,
         String complemento) {
-    @JsonIgnore
-    public SiglaEstados getEstadoEnum() {
-        return SiglaEstados.valueOf(estado);
-    }
 }

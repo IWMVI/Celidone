@@ -60,8 +60,4 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     @Query("SELECT c FROM Cliente c WHERE c.id = :clienteId AND c.ativo = false")
     Optional<Cliente> findExcluidoById(@Param("clienteId") Long clienteId);
-
-    @Modifying
-       @Query("UPDATE Cliente c SET c.ativo = true WHERE c.id = :clienteId AND c.ativo = false")
-    void recuperarCliente(@Param("clienteId") Long clienteId);
 }

@@ -52,7 +52,7 @@ class ClienteServiceTest {
     void setUp() {
         enderecoRequest = new EnderecoRequest(
                 "01001000", "Praça da Sé", "100",
-                "São Paulo", "Sé", "SP", "Sala 101"
+                "São Paulo", "Sé", SiglaEstados.SP, "Sala 101"
         );
 
         enderecoEntity = new Endereco(
@@ -373,7 +373,7 @@ class ClienteServiceTest {
         void setUp() {
             EnderecoRequest enderecoAtualizado = new EnderecoRequest(
                     "20040002", "Rua da Assembleia", "200",
-                    "Rio de Janeiro", "Centro", "RJ", "Apto 502"
+                    "Rio de Janeiro", "Centro", SiglaEstados.RJ, "Apto 502"
             );
 
             requestAtualizado = new ClienteRequest(
@@ -620,11 +620,12 @@ class ClienteServiceTest {
         @Test
         void deveRecuperarClienteComSucesso() {
             when(repository.findExcluidoById(1L)).thenReturn(Optional.of(clienteValido));
+            when(repository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             ClienteResponse response = service.recuperar(1L);
 
             assertNotNull(response);
-            verify(repository).recuperarCliente(1L);
+            verify(repository).save(any(Cliente.class));
         }
 
         @Test
