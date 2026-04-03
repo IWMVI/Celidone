@@ -1,36 +1,5 @@
 package br.edu.fateczl.tcc.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaRequest;
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaResponse;
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaUpdateRequest;
@@ -39,6 +8,28 @@ import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaResponse;
 import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaUpdateRequest;
 import br.edu.fateczl.tcc.enums.SexoEnum;
 import br.edu.fateczl.tcc.service.MedidaService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MedidaController.class)
 @DisplayName("Testes de comportamento do MedidaController")
@@ -50,7 +41,7 @@ class MedidaControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private MedidaService medidaService;
 
     @Nested
@@ -282,6 +273,20 @@ class MedidaControllerTest {
                     .andExpect(status().isOk());
 
             verify(medidaService).buscar(null, SexoEnum.MASCULINO);
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("Deve retornar 200 ao buscar medidas por cliente ID e sexo")
+        void deve_retornar_200_ao_buscar_medidas_por_cliente_id_e_sexo() throws Exception {
+            when(medidaService.buscar(eq(1L), eq(SexoEnum.FEMININO))).thenReturn(List.of());
+
+            mockMvc.perform(get("/medidas")
+                            .param("clienteId", "1")
+                            .param("sexo", "FEMININO"))
+                    .andExpect(status().isOk());
+
+            verify(medidaService).buscar(eq(1L), eq(SexoEnum.FEMININO));
         }
     }
 

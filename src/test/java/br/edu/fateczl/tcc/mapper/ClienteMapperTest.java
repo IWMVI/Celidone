@@ -6,8 +6,8 @@ import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
-import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.enums.SiglaEstados;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class ClienteMapperTest {
         
         @Test
         void deveConverter_request_para_entity() {
-            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", enderecoRequest, "MASCULINO");
 
             Cliente entity = ClienteMapper.toEntity(request);
@@ -48,8 +48,28 @@ class ClienteMapperTest {
 
         @Test
         void deve_definir_sexo_neutro_quando_sexo_for_nulo() {
-            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, null);
+
+            Cliente entity = ClienteMapper.toEntity(request);
+
+            assertEquals(SexoEnum.NEUTRO, entity.getSexo());
+        }
+
+        @Test
+        void deve_definir_sexo_neutro_quando_sexo_for_vazio() {
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
+            ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, "");
+
+            Cliente entity = ClienteMapper.toEntity(request);
+
+            assertEquals(SexoEnum.NEUTRO, entity.getSexo());
+        }
+
+        @Test
+        void deve_definir_sexo_neutro_quando_sexo_for_espacos() {
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
+            ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, "   ");
 
             Cliente entity = ClienteMapper.toEntity(request);
 
