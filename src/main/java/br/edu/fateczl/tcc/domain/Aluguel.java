@@ -2,6 +2,7 @@ package br.edu.fateczl.tcc.domain;
 
 import br.edu.fateczl.tcc.enums.StatusAluguel;
 import br.edu.fateczl.tcc.enums.TipoOcasiao;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,10 +13,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity(name = "aluguel")
@@ -58,6 +62,9 @@ public class Aluguel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
+
+    @OneToMany(mappedBy = "aluguel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemAluguel> itens = new ArrayList<>();
 
     public Aluguel() {
     }
@@ -164,6 +171,14 @@ public class Aluguel {
         this.cliente = cliente;
     }
 
+    public List<ItemAluguel> getItens() {
+        return itens;
+    }
+
+    public void setItens(List<ItemAluguel> itens) {
+        this.itens = itens;
+    }
+
     public void atualizar(LocalDate dataRetirada, LocalDate dataDevolucao, LocalDate dataEvento, BigDecimal valorTotal, BigDecimal valorDesconto, String observacoes, StatusAluguel status, TipoOcasiao ocasiao, Cliente cliente) {
         this.dataRetirada = dataRetirada;
         this.dataDevolucao = dataDevolucao;
@@ -204,5 +219,94 @@ public class Aluguel {
                 ", ocasiao=" + ocasiao +
                 ", cliente=" + cliente +
                 '}';
+    }
+
+    public static AluguelBuilder builder() {
+        return new AluguelBuilder();
+    }
+
+    public static class AluguelBuilder {
+        private Long id;
+        private LocalDate dataAluguel;
+        private LocalDate dataRetirada;
+        private LocalDate dataDevolucao;
+        private LocalDate dataEvento;
+        private BigDecimal valorTotal;
+        private BigDecimal valorDesconto;
+        private String observacoes;
+        private StatusAluguel status;
+        private TipoOcasiao ocasiao;
+        private Cliente cliente;
+
+        public AluguelBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public AluguelBuilder dataAluguel(LocalDate dataAluguel) {
+            this.dataAluguel = dataAluguel;
+            return this;
+        }
+
+        public AluguelBuilder dataRetirada(LocalDate dataRetirada) {
+            this.dataRetirada = dataRetirada;
+            return this;
+        }
+
+        public AluguelBuilder dataDevolucao(LocalDate dataDevolucao) {
+            this.dataDevolucao = dataDevolucao;
+            return this;
+        }
+
+        public AluguelBuilder dataEvento(LocalDate dataEvento) {
+            this.dataEvento = dataEvento;
+            return this;
+        }
+
+        public AluguelBuilder valorTotal(BigDecimal valorTotal) {
+            this.valorTotal = valorTotal;
+            return this;
+        }
+
+        public AluguelBuilder valorDesconto(BigDecimal valorDesconto) {
+            this.valorDesconto = valorDesconto;
+            return this;
+        }
+
+        public AluguelBuilder observacoes(String observacoes) {
+            this.observacoes = observacoes;
+            return this;
+        }
+
+        public AluguelBuilder status(StatusAluguel status) {
+            this.status = status;
+            return this;
+        }
+
+        public AluguelBuilder ocasiao(TipoOcasiao ocasiao) {
+            this.ocasiao = ocasiao;
+            return this;
+        }
+
+        public AluguelBuilder cliente(Cliente cliente) {
+            this.cliente = cliente;
+            return this;
+        }
+
+        public Aluguel build() {
+            Aluguel aluguel = new Aluguel();
+            aluguel.id = this.id;
+            aluguel.dataAluguel = this.dataAluguel;
+            aluguel.dataRetirada = this.dataRetirada;
+            aluguel.dataDevolucao = this.dataDevolucao;
+            aluguel.dataEvento = this.dataEvento;
+            aluguel.valorTotal = this.valorTotal;
+            aluguel.valorDesconto = this.valorDesconto;
+            aluguel.observacoes = this.observacoes;
+            aluguel.status = this.status;
+            aluguel.ocasiao = this.ocasiao;
+            aluguel.cliente = this.cliente;
+            return aluguel;
+        }
     }
 }

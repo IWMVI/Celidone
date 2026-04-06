@@ -116,4 +116,51 @@ public class ItemAluguel {
                 ", traje=" + traje +
                 '}';
     }
+
+    public static ItemAluguelBuilder builder() {
+        return new ItemAluguelBuilder();
+    }
+
+    public static class ItemAluguelBuilder {
+        private Long id;
+        private int quantidade;
+        private BigDecimal subtotal;
+        private Aluguel aluguel;
+        private Traje traje;
+
+        public ItemAluguelBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public ItemAluguelBuilder quantidade(int quantidade) {
+            this.quantidade = quantidade;
+            return this;
+        }
+
+        public ItemAluguelBuilder subtotal(BigDecimal subtotal) {
+            this.subtotal = subtotal;
+            return this;
+        }
+
+        public ItemAluguelBuilder aluguel(Aluguel aluguel) {
+            this.aluguel = aluguel;
+            return this;
+        }
+
+        public ItemAluguelBuilder traje(Traje traje) {
+            this.traje = traje;
+            return this;
+        }
+
+        public ItemAluguel build() {
+            ItemAluguel item = new ItemAluguel();
+            item.id = this.id;
+            item.quantidade = this.quantidade;
+            item.subtotal = this.subtotal;
+            item.aluguel = this.aluguel;
+            item.traje = this.traje;
+            return item;
+        }
+    }
 }
