@@ -16,8 +16,9 @@ import br.edu.fateczl.tcc.mapper.AluguelMapper;
 import br.edu.fateczl.tcc.mapper.ItemAluguelMapper;
 import br.edu.fateczl.tcc.repository.AluguelRepository;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
+import br.edu.fateczl.tcc.repository.ItemAluguelRepository;
 import br.edu.fateczl.tcc.repository.TrajeRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -30,25 +31,30 @@ public class AluguelService {
     private final AluguelRepository aluguelRepository;
     private final ClienteRepository clienteRepository;
     private final TrajeRepository trajeRepository;
+    private final ItemAluguelRepository itemAluguelRepository;
 
     private static final String RESOURCE_ALUGUEL = "Aluguel";
     private static final String RESOURCE_CLIENTE = "Cliente";
+    private static final String RESOURCE_TRAJE = "Traje";
 
     public AluguelService(AluguelRepository aluguelRepository,
                           ClienteRepository clienteRepository,
-                          TrajeRepository trajeRepository) {
+                          TrajeRepository trajeRepository,
+                          ItemAluguelRepository itemAluguelRepository) {
         this.aluguelRepository = aluguelRepository;
         this.clienteRepository = clienteRepository;
         this.trajeRepository = trajeRepository;
+        this.itemAluguelRepository = itemAluguelRepository;
     }
 
 
     // ===============================
     // CREATE
     // ===============================
+    @Transactional
     public AluguelResponse criar(AluguelRequest dto) {
         Cliente cliente = buscarClienteOuFalhar(dto.clienteId());
-        validarDatas(dto);
+        validarDatas(dto.dataRetirada(), dto.dataDevolucao());
 
         // Criar aluguel (sem itens ainda)
         Aluguel aluguel = AluguelMapper.toEntity(dto, cliente);
@@ -76,17 +82,26 @@ public class AluguelService {
     // ===============================
     @Transactional
     public AluguelResponse atualizar(Long id, AluguelUpdateRequest dto) {
-        Aluguel aluguel = buscarOuFalhar(id);
 
-        // Regra: só pode alterar se estiver ATIVO
+        Aluguel aluguel = buscarAluguelOuFalhar(id);
+
+        // Só pode alterar se estiver ATIVO
         if (!aluguel.getStatus().equals(StatusAluguel.ATIVO)) {
             throw new BusinessException("Só é possível alterar alugueis ATIVOS");
         }
 
-        // Validar datas
         validarDatas(dto.dataRetirada(), dto.dataDevolucao());
 
-        // Atualizar campos permitidos via mapper
+        // Validar conflito com outros alugueis
+        for (ItemAluguel item : aluguel.getItens()) {
+            validarDisponibilidadePeriodo(
+                    item.getTraje().getId(),
+                    dto.dataRetirada(),
+                    dto.dataDevolucao(),
+                    aluguel.getId() // id = update
+            );
+        }
+
         AluguelMapper.updateEntity(aluguel, dto);
 
         aluguelRepository.save(aluguel);
@@ -97,16 +112,16 @@ public class AluguelService {
     // ===============================
     // READ - por ID
     // ===============================
-    @Transactional
+    @Transactional(readOnly = true)
     public AluguelResponse buscarPorId(Long id) {
-        return AluguelMapper.toResponse(buscarOuFalhar(id));
+        return AluguelMapper.toResponse(buscarAluguelOuFalhar(id));
     }
 
 
     // ===============================
     // READ - todos
     // ===============================
-    @Transactional
+    @Transactional(readOnly = true)
     public List<AluguelResponse> listarTodos() {
         return aluguelRepository.findAll().stream()
                 .map(AluguelMapper::toResponse)
@@ -117,15 +132,16 @@ public class AluguelService {
     // ===============================
     // DELETE
     // ===============================
+    @Transactional
     public void deletar(Long id) {
-        aluguelRepository.delete(buscarOuFalhar(id));
+        aluguelRepository.delete(buscarAluguelOuFalhar(id));
     }
 
 
     // ===============================
     // HELPERS
     // ===============================
-    private Aluguel buscarOuFalhar(Long id) {
+    private Aluguel buscarAluguelOuFalhar(Long id) {
         return aluguelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_ALUGUEL, id));
     }
@@ -135,36 +151,49 @@ public class AluguelService {
                 .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_CLIENTE, id));
     }
 
+    private Traje buscarTrajeOuFalhar(Long id) {
+        return trajeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_TRAJE, id));
+    }
+
     private ItemAluguel criarItem(ItemAluguelRequest dto, Aluguel aluguel) {
+        // Buscar traje
+        Traje traje = buscarTrajeOuFalhar(dto.trajeId());
 
-        // 1. Buscar traje
-        Traje traje = trajeRepository.findById(dto.trajeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Traje", dto.trajeId()));
-
-        // 2. Validações de negócio
+        // Validações
         validarTrajeDisponivel(traje);
         validarEstoque(traje, dto.quantidade());
 
-        // 3. Criar item (mapper)
+        // Validação de conflito de período
+        validarDisponibilidadePeriodo(
+                dto.trajeId(),
+                aluguel.getDataRetirada(),
+                aluguel.getDataDevolucao(),
+                null // null = create
+        );
+
         return ItemAluguelMapper.toEntity(dto, traje, aluguel);
     }
 
-    private void validarDatas(AluguelRequest dto) {
+    private void validarDisponibilidadePeriodo(Long trajeId,
+                                               LocalDate retirada,
+                                               LocalDate devolucao,
+                                               Long aluguelId) {
 
-        if (dto.dataDevolucao().isBefore(dto.dataRetirada())) {
-            throw new BusinessException("A data de devolução deve ser após a data de retirada");
-        }
+        boolean indisponivel = itemAluguelRepository
+                .trajeIndisponivelNoPeriodo(trajeId, retirada, devolucao, aluguelId);
 
-        if (dto.dataRetirada().isBefore(LocalDate.now())) {
-            throw new BusinessException("A data de retirada não pode ser no passado");
+        if (indisponivel) {
+            throw new BusinessException("Traje já está alugado nesse período");
         }
     }
 
-    private void validarDatas(LocalDate dataRetirada, LocalDate dataDevolucao) {
-        if (dataDevolucao.isBefore(dataRetirada)) {
+    private void validarDatas(LocalDate retirada, LocalDate devolucao) {
+        if (devolucao.isBefore(retirada)) {
             throw new BusinessException("A data de devolução deve ser após a data de retirada");
         }
-        if (dataRetirada.isBefore(LocalDate.now())) {
+
+        if (retirada.isBefore(LocalDate.now())) {
             throw new BusinessException("A data de retirada não pode ser no passado");
         }
     }
