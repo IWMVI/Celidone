@@ -122,6 +122,16 @@ tasks.named('jacocoTestReport') {
 		html.required = true
 		csv.required = false
 	}
+	// Excluir classes de infraestrutura da cobertura (entidades, DTOs, enums, configs)
+	classDirectories.setFrom(files(classDirectories.files.collect {
+		fileTree(dir: it, exclude: [
+			'br/edu/fateczl/tcc/domain/**',
+			'br/edu/fateczl/tcc/dto/**',
+			'br/edu/fateczl/tcc/enums/**',
+			'br/edu/fateczl/tcc/config/**',
+			'br/edu/fateczl/tcc/TccApplication*'
+		])
+	}))
     doLast {
         def xmlReport = file("${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml")
         if (xmlReport.exists()) {
