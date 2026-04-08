@@ -1,5 +1,34 @@
 package br.edu.fateczl.tcc.service;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Endereco;
 import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
@@ -10,28 +39,6 @@ import br.edu.fateczl.tcc.enums.SexoEnum;
 import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes do ClienteService")
@@ -83,7 +90,7 @@ class ClienteServiceTest {
     class CriarClienteTest {
 
         @Test
-        void deveCriarClienteComSucesso() {
+        void deve_criarCliente_quando_dadosValidos() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
             when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
             when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
@@ -98,7 +105,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoCpfCnpjJaExistir() {
+        void deve_lancarExcecao_quando_cpfJaCadastrado() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.of(clienteValido));
 
             BusinessException exception = assertThrows(
@@ -111,7 +118,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoEmailJaExistir() {
+        void deve_lancarExcecao_quando_emailJaCadastrado() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
             when(repository.findByEmail(anyString())).thenReturn(Optional.of(clienteValido));
 
@@ -125,7 +132,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveTraduzirErroDeIntegridadeParaCpfCnpj() {
+        void deve_traduzirErroIntegridade_quando_cpfDuplicadoNoBanco() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
             when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -145,7 +152,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveTraduzirErroDeIntegridadeParaEmail() {
+        void deve_traduzirErroIntegridade_quando_emailDuplicadoNoBanco() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
             when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -165,7 +172,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveTraduzirErroDeIntegridadeGenerico() {
+        void deve_traduzirErroIntegridade_quando_constraintDesconhecida() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
             when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -185,7 +192,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveTraduzirErroDeIntegridadeSemCausa() {
+        void deve_traduzirErroIntegridade_quando_semCausaDefinida() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
             when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -203,7 +210,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveTraduzirErroDeIntegridadeQuandoCausaTiverMensagemNula() {
+        void deve_traduzirErroIntegridade_quando_mensagemCausaNula() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
             when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -228,7 +235,7 @@ class ClienteServiceTest {
     class ListarClientesTest {
 
         @Test
-        void deveListarTodosClientesAtivos() {
+        void deve_retornarLista_quando_clientesExistem() {
             when(repository.findAll()).thenReturn(List.of(clienteValido));
 
             List<ClienteResponse> responses = service.listar();
@@ -238,7 +245,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveRetornarListaVaziaQuandoNaoHouverClientes() {
+        void deve_retornarListaVazia_quando_nenhumClienteCadastrado() {
             when(repository.findAll()).thenReturn(List.of());
 
             List<ClienteResponse> responses = service.listar();
@@ -252,7 +259,7 @@ class ClienteServiceTest {
     class BuscarComFiltroTest {
 
         @Test
-        void deveBuscarPorTermoQuandoInformado() {
+        void deve_filtrarPorTermo_quando_termoInformado() {
             when(repository.buscarPorTermo("joao")).thenReturn(List.of(clienteValido));
 
             List<ClienteResponse> responses = service.buscarComFiltro("joao");
@@ -262,7 +269,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveListarTodosQuandoBuscaForVazio() {
+        void deve_retornarTodos_quando_buscaVazia() {
             when(repository.findAll()).thenReturn(List.of(clienteValido));
 
             List<ClienteResponse> responses = service.buscarComFiltro("");
@@ -272,7 +279,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveListarTodosQuandoBuscaForNull() {
+        void deve_retornarTodos_quando_buscaNula() {
             when(repository.findAll()).thenReturn(List.of(clienteValido));
 
             List<ClienteResponse> responses = service.buscarComFiltro(null);
@@ -281,7 +288,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveBuscarComFiltroPaginadoQuandoTermoInformado() {
+        void deve_retornarPaginado_quando_termoInformado() {
             Page<Cliente> page = new PageImpl<>(List.of(clienteValido));
             when(repository.buscarPorTermoPaginado(eq("joao"), any(PageRequest.class))).thenReturn(page);
 
@@ -292,7 +299,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveListarTodosPaginadoQuandoBuscaForVazio() {
+        void deve_retornarTodosPaginado_quando_buscaVazia() {
             Page<Cliente> page = new PageImpl<>(List.of(clienteValido));
             when(repository.findAll(any(PageRequest.class))).thenReturn(page);
 
@@ -303,7 +310,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveListarTodosPaginadoQuandoBuscaForNull() {
+        void deve_retornarTodosPaginado_quando_buscaNula() {
             Page<Cliente> page = new PageImpl<>(List.of(clienteValido));
             when(repository.findAll(any(PageRequest.class))).thenReturn(page);
 
@@ -318,7 +325,7 @@ class ClienteServiceTest {
     class BuscarPorIdTest {
 
         @Test
-        void deveBuscarClientePorIdComSucesso() {
+        void deve_retornarCliente_quando_idExiste() {
             when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
 
             ClienteResponse response = service.buscarPorId(1L);
@@ -328,7 +335,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoClienteNaoExistir() {
+        void deve_lancarExcecao_quando_clienteNaoEncontrado() {
             when(repository.findById(99L)).thenReturn(Optional.empty());
 
             BusinessException exception = assertThrows(
@@ -340,7 +347,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoClienteEstiverInativo() {
+        void deve_lancarExcecao_quando_clienteInativo() {
             Cliente clienteInativo = ClienteFactory.criar()
                     .comId(1L)
                     .comNome("João")
@@ -384,7 +391,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveAtualizarClienteComSucesso() {
+        void deve_atualizarCliente_quando_dadosValidos() {
             when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
             when(repository.findByEmail("joao.novo@email.com")).thenReturn(Optional.empty());
             when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
@@ -396,7 +403,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoClienteNaoExistirParaAtualizacao() {
+        void deve_lancarExcecao_quando_clienteNaoEncontradoParaAtualizar() {
             when(repository.findById(99L)).thenReturn(Optional.empty());
 
             BusinessException exception = assertThrows(
@@ -408,7 +415,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoTentarAtualizarComCpfCnpjDeOutroCliente() {
+        void deve_lancarExcecao_quando_cpfPertenceAOutroCliente() {
             Cliente outroCliente = ClienteFactory.criar()
                     .comId(2L)
                     .comNome("Maria")
@@ -437,7 +444,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoTentarAtualizarComEmailDeOutroCliente() {
+        void deve_lancarExcecao_quando_emailPertenceAOutroCliente() {
             Cliente outroCliente = ClienteFactory.criar()
                     .comId(2L)
                     .comNome("Maria")
@@ -460,7 +467,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void devePermitirAtualizarComMesmoCpfCnpj() {
+        void deve_permitirAtualizar_quando_mesmoCpfMantido() {
             when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
             when(repository.findByEmail("joao.novo@email.com")).thenReturn(Optional.empty());
             when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
@@ -471,7 +478,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void devePermitirAtualizarComMesmoEmail() {
+        void deve_permitirAtualizar_quando_mesmoEmailMantido() {
             ClienteRequest mesmoEmail = new ClienteRequest(
                     "João Atualizado", "12345678901",
                     "joao@email.com", "11988888888",
@@ -487,7 +494,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveTraduzirErroDeIntegridadeNaAtualizacao() {
+        void deve_traduzirErroIntegridade_quando_emailDuplicadoNaAtualizacao() {
             when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
             when(repository.findByEmail("joao.novo@email.com")).thenReturn(Optional.empty());
 
@@ -512,7 +519,7 @@ class ClienteServiceTest {
     class DeletarClienteTest {
 
         @Test
-        void deveDesativarClienteComSucesso() {
+        void deve_desativarCliente_quando_clienteAtivo() {
             when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
 
             service.deletar(1L);
@@ -522,7 +529,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoTentarDeletarClienteInativo() {
+        void deve_lancarExcecao_quando_tentarDeletarClienteInativo() {
             Cliente clienteInativo = ClienteFactory.criar()
                     .comId(1L)
                     .comNome("João")
@@ -545,7 +552,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoClienteNaoExistirParaDelecao() {
+        void deve_lancarExcecao_quando_clienteNaoEncontradoParaDeletar() {
             when(repository.findById(99L)).thenReturn(Optional.empty());
 
             BusinessException exception = assertThrows(
@@ -562,7 +569,7 @@ class ClienteServiceTest {
     class ListarExcluidosTest {
 
         @Test
-        void deveListarClientesExcluidos() {
+        void deve_retornarExcluidos_quando_existemClientesExcluidos() {
             Cliente excluido = ClienteFactory.criar()
                     .comId(2L)
                     .comNome("Maria")
@@ -583,7 +590,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveRetornarListaVaziaQuandoNaoHouverExcluidos() {
+        void deve_retornarListaVazia_quando_nenhumClienteExcluido() {
             when(repository.findAllExcluidos()).thenReturn(List.of());
 
             List<ClienteResponse> responses = service.listarExcluidos();
@@ -592,7 +599,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveListarExcluidosPaginado() {
+        void deve_retornarExcluidosPaginado_quando_solicitado() {
             Cliente excluido = ClienteFactory.criar()
                     .comId(2L)
                     .comNome("Maria")
@@ -618,7 +625,7 @@ class ClienteServiceTest {
     class RecuperarClienteTest {
 
         @Test
-        void deveRecuperarClienteComSucesso() {
+        void deve_recuperarCliente_quando_clienteExcluido() {
             when(repository.findExcluidoById(1L)).thenReturn(Optional.of(clienteValido));
             when(repository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -629,7 +636,7 @@ class ClienteServiceTest {
         }
 
         @Test
-        void deveLancarErroQuandoClienteExcluidoNaoExistir() {
+        void deve_lancarExcecao_quando_clienteExcluidoNaoEncontrado() {
             when(repository.findExcluidoById(99L)).thenReturn(Optional.empty());
 
             BusinessException exception = assertThrows(
