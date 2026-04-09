@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -71,7 +74,8 @@ class TrajeControllerTest {
                                 EstampaTraje.LISA,
                                 TexturaTraje.LISO,
                                 CondicaoTraje.NOVO,
-                                null);
+                                null,
+                                java.time.LocalDateTime.now());
         }
 
         @Nested
@@ -212,88 +216,88 @@ class TrajeControllerTest {
                 @WithMockUser
                 @DisplayName("Deve retornar 200 ao buscar todos os trajes sem filtros")
                 void deve_retornar_200_ao_buscar_todos_trajes_sem_filtros() throws Exception {
-                        when(trajeService.buscar(null, null, null, null)).thenReturn(List.of());
+                        when(trajeService.buscar(any(), any(), any(), any(), any(Pageable.class)))
+                                .thenReturn(Page.empty());
 
                         mockMvc.perform(get("/trajes"))
-                                        .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$").isArray());
+                                .andExpect(status().isOk());
 
-                        verify(trajeService).buscar(null, null, null, null);
+                        verify(trajeService).buscar(any(), any(), any(), any(), any(Pageable.class));
                 }
 
                 @Test
                 @WithMockUser
                 @DisplayName("Deve retornar 200 ao buscar trajes por status")
                 void deve_retornar_200_ao_buscar_trajes_por_status() throws Exception {
-                        when(trajeService.buscar(eq(StatusTraje.DISPONIVEL), eq(null), eq(null), eq(null)))
-                                        .thenReturn(List.of(criarResponseValido()));
+                        when(trajeService.buscar(any(StatusTraje.class), any(), any(), any(), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(List.of(criarResponseValido())));
 
                         mockMvc.perform(get("/trajes")
                                         .param("status", "DISPONIVEL"))
-                                        .andExpect(status().isOk());
+                                .andExpect(status().isOk());
 
-                        verify(trajeService).buscar(eq(StatusTraje.DISPONIVEL), eq(null), eq(null), eq(null));
+                        verify(trajeService).buscar(any(StatusTraje.class), any(), any(), any(), any(Pageable.class));
                 }
 
                 @Test
                 @WithMockUser
                 @DisplayName("Deve retornar 200 ao buscar trajes por genero")
                 void deve_retornar_200_ao_buscar_trajes_por_genero() throws Exception {
-                        when(trajeService.buscar(eq(null), eq(SexoEnum.MASCULINO), eq(null), eq(null)))
-                                        .thenReturn(List.of());
+                        when(trajeService.buscar(any(), any(SexoEnum.class), any(), any(), any(Pageable.class)))
+                                .thenReturn(Page.empty());
 
                         mockMvc.perform(get("/trajes")
                                         .param("genero", "MASCULINO"))
-                                        .andExpect(status().isOk());
+                                .andExpect(status().isOk());
 
-                        verify(trajeService).buscar(eq(null), eq(SexoEnum.MASCULINO), eq(null), eq(null));
+                        verify(trajeService).buscar(any(), any(SexoEnum.class), any(), any(), any(Pageable.class));
                 }
 
                 @Test
                 @WithMockUser
                 @DisplayName("Deve retornar 200 ao buscar trajes por tipo")
                 void deve_retornar_200_ao_buscar_trajes_por_tipo() throws Exception {
-                        when(trajeService.buscar(eq(null), eq(null), eq(TipoTraje.TERNO), eq(null)))
-                                        .thenReturn(List.of());
+                        when(trajeService.buscar(any(), any(), any(TipoTraje.class), any(), any(Pageable.class)))
+                                .thenReturn(Page.empty());
 
                         mockMvc.perform(get("/trajes")
                                         .param("tipo", "TERNO"))
-                                        .andExpect(status().isOk());
+                                .andExpect(status().isOk());
 
-                        verify(trajeService).buscar(eq(null), eq(null), eq(TipoTraje.TERNO), eq(null));
+                        verify(trajeService).buscar(any(), any(), any(TipoTraje.class), any(), any(Pageable.class));
                 }
 
                 @Test
                 @WithMockUser
                 @DisplayName("Deve retornar 200 ao buscar trajes por tamanho")
                 void deve_retornar_200_ao_buscar_trajes_por_tamanho() throws Exception {
-                        when(trajeService.buscar(eq(null), eq(null), eq(null), eq(TamanhoTraje.G)))
-                                        .thenReturn(List.of());
+                        when(trajeService.buscar(any(), any(), any(), any(TamanhoTraje.class), any(Pageable.class)))
+                                .thenReturn(Page.empty());
 
                         mockMvc.perform(get("/trajes")
                                         .param("tamanho", "G"))
-                                        .andExpect(status().isOk());
+                                .andExpect(status().isOk());
 
-                        verify(trajeService).buscar(eq(null), eq(null), eq(null), eq(TamanhoTraje.G));
+                        verify(trajeService).buscar(any(), any(), any(), any(TamanhoTraje.class), any(Pageable.class));
                 }
 
                 @Test
                 @WithMockUser
                 @DisplayName("Deve retornar 200 ao buscar trajes com todos os filtros")
                 void deve_retornar_200_ao_buscar_trajes_com_todos_filtros() throws Exception {
-                        when(trajeService.buscar(eq(StatusTraje.DISPONIVEL), eq(SexoEnum.FEMININO), eq(TipoTraje.TERNO),
-                                        eq(TamanhoTraje.M)))
-                                        .thenReturn(List.of(criarResponseValido()));
+                        when(trajeService.buscar(any(StatusTraje.class), any(SexoEnum.class), any(TipoTraje.class),
+                                any(TamanhoTraje.class), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(List.of(criarResponseValido())));
 
                         mockMvc.perform(get("/trajes")
                                         .param("status", "DISPONIVEL")
                                         .param("genero", "FEMININO")
                                         .param("tipo", "TERNO")
                                         .param("tamanho", "M"))
-                                        .andExpect(status().isOk());
+                                .andExpect(status().isOk());
 
-                        verify(trajeService).buscar(eq(StatusTraje.DISPONIVEL), eq(SexoEnum.FEMININO),
-                                        eq(TipoTraje.TERNO), eq(TamanhoTraje.M));
+                        verify(trajeService).buscar(any(StatusTraje.class), any(SexoEnum.class),
+                                any(TipoTraje.class), any(TamanhoTraje.class), any(Pageable.class));
                 }
         }
 

@@ -11,6 +11,7 @@ import br.edu.fateczl.tcc.enums.TexturaTraje;
 import br.edu.fateczl.tcc.enums.TipoTraje;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public record TrajeResponse(
 
@@ -27,7 +28,8 @@ public record TrajeResponse(
                 EstampaTraje estampa,
                 TexturaTraje textura,
                 CondicaoTraje condicao,
-                String imagemUrl
+                String imagemUrl,
+                LocalDateTime dataCadastro
 
 ) {
 }

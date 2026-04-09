@@ -1,6 +1,7 @@
 package br.edu.fateczl.tcc.util;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import br.edu.fateczl.tcc.domain.Traje;
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
@@ -109,7 +110,8 @@ public class TrajeTestFactory {
                 EstampaTraje.LISA,
                 TexturaTraje.LISO,
                 CondicaoTraje.NOVO,
-                "https://exemplo.com/imagem.jpg");
+                "https://exemplo.com/imagem.jpg",
+                LocalDateTime.now());
     }
 
     // =========================================================

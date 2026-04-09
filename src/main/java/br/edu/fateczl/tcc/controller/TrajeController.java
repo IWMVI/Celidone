@@ -2,9 +2,15 @@ package br.edu.fateczl.tcc.controller;
 
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
+import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.enums.StatusTraje;
+import br.edu.fateczl.tcc.enums.TamanhoTraje;
+import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.service.TrajeService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,14 +57,25 @@ public class TrajeController {
     }
 
     // ===============================
-    // READ - listagem com paginação
+    // READ - listagem com paginação e filtros
     // ===============================
     @GetMapping
     public Page<TrajeResponse> listar(
             @RequestParam(value = "pagina", defaultValue = "0") int pagina,
-            @RequestParam(value = "tamanho", defaultValue = "10") int tamanho) {
+            @RequestParam(value = "tamanhoPagina", defaultValue = "10") int tamanhoPagina,
+            @RequestParam(value = "busca", required = false) String busca,
+            @RequestParam(value = "status", required = false) StatusTraje status,
+            @RequestParam(value = "genero", required = false) SexoEnum genero,
+            @RequestParam(value = "tipo", required = false) TipoTraje tipo,
+            @RequestParam(value = "tamanho", required = false) TamanhoTraje tamanhoTraje) {
 
-        return trajeService.listarPaginado(pagina, tamanho);
+        Pageable pageable = PageRequest.of(pagina, tamanhoPagina);
+        
+        if (busca != null && !busca.isEmpty()) {
+            return trajeService.buscar(status, genero, tipo, tamanhoTraje, busca, pageable);
+        }
+        
+        return trajeService.buscar(status, genero, tipo, tamanhoTraje, pageable);
     }
 
     // ===============================

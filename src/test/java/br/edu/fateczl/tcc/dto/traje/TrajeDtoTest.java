@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -110,7 +111,8 @@ class TrajeDtoTest {
                     1L, "Terno preto clássico", TamanhoTraje.M, CorTraje.PRETO,
                     TipoTraje.TERNO, SexoEnum.MASCULINO, new BigDecimal("299.90"),
                     StatusTraje.DISPONIVEL, "Terno Executivo", TecidoTraje.LA,
-                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null);
+                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null,
+                    LocalDateTime.now());
 
             assertEquals(1L, response.id());
             assertEquals("Terno preto clássico", response.descricao());
@@ -125,12 +127,14 @@ class TrajeDtoTest {
             assertEquals(EstampaTraje.LISA, response.estampa());
             assertEquals(TexturaTraje.LISO, response.textura());
             assertEquals(CondicaoTraje.NOVO, response.condicao());
+            assertNotNull(response.dataCadastro());
         }
 
         @Test
         void deveCriarTrajeResponseComCamposNulos() {
             TrajeResponse response = new TrajeResponse(
-                    null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                    null);
 
             assertNull(response.id());
             assertNull(response.descricao());

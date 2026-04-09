@@ -59,6 +59,7 @@ public class TrajeMapper {
                 entity.getEstampa(),
                 entity.getTextura(),
                 entity.getCondicao(),
-                entity.getImagemUrl());
+                entity.getImagemUrl(),
+                entity.getDataCadastro());
     }
 }

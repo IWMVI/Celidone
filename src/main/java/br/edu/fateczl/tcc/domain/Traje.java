@@ -16,9 +16,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity(name = "traje")
@@ -76,6 +78,14 @@ public class Traje {
 
     @Column(columnDefinition = "LONGTEXT")
     private String imagemUrl;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime dataCadastro;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dataCadastro = LocalDateTime.now();
+    }
 
     public Traje() {
     }
@@ -319,6 +329,14 @@ public class Traje {
 
     public void setImagemUrl(String imagemUrl) {
         this.imagemUrl = imagemUrl;
+    }
+
+    public LocalDateTime getDataCadastro() {
+        return dataCadastro;
+    }
+
+    public void setDataCadastro(LocalDateTime dataCadastro) {
+        this.dataCadastro = dataCadastro;
     }
 
     public void atualizar(String descricao, TamanhoTraje tamanho, CorTraje cor, TipoTraje tipo, SexoEnum genero,

@@ -24,7 +24,7 @@ public class EnumController {
                 "tamanho", getValores(TamanhoTraje.class),
                 "textura", getValores(TexturaTraje.class),
                 "status", getValores(StatusTraje.class),
-                "sexo", getValores(SexoEnum.class),
+                "genero", getValores(SexoEnum.class),
                 "condicao", getValores(CondicaoTraje.class)
         ));
     }
