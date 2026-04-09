@@ -52,8 +52,8 @@ class TrajeTest {
                     TecidoTraje.SEDA,
                     EstampaTraje.LISA,
                     TexturaTraje.LISO,
-                    CondicaoTraje.NOVO
-            );
+                    CondicaoTraje.NOVO,
+                    null);
 
             assertEquals(1L, traje.getId());
             assertEquals("Traje executivo azul", traje.getDescricao());
@@ -200,8 +200,8 @@ class TrajeTest {
                     TecidoTraje.ALGODAO,
                     EstampaTraje.FLORAL,
                     TexturaTraje.CREPADO,
-                    CondicaoTraje.SEMINOVO
-            );
+                    CondicaoTraje.SEMINOVO,
+                    null);
 
             assertEquals("Descrição atualizada", traje.getDescricao());
             assertEquals(TamanhoTraje.P, traje.getTamanho());
@@ -286,8 +286,8 @@ class TrajeTest {
                     TecidoTraje.SEDA,
                     EstampaTraje.LISA,
                     TexturaTraje.LISO,
-                    CondicaoTraje.NOVO
-            );
+                    CondicaoTraje.NOVO,
+                    null);
 
             String resultado = traje.toString();
 

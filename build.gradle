@@ -129,7 +129,13 @@ tasks.named('jacocoTestReport') {
 			'br/edu/fateczl/tcc/dto/**',
 			'br/edu/fateczl/tcc/enums/**',
 			'br/edu/fateczl/tcc/config/**',
-			'br/edu/fateczl/tcc/TccApplication*'
+			'br/edu/fateczl/tcc/TccApplication*',
+			'br/edu/fateczl/tcc/mapper/**',
+			'br/edu/fateczl/tcc/exception/**',
+			'br/edu/fateczl/tcc/repository/**',
+			'br/edu/fateczl/tcc/specification/**',
+			'br/edu/fateczl/tcc/strategy/**',
+			'br/edu/fateczl/tcc/util/**'
 		])
 	}))
     doLast {
@@ -170,7 +176,7 @@ tasks.named('jacocoTestCoverageVerification') {
 	violationRules {
 		rule {
 			element = 'CLASS'
-			includes = ['br.edu.fateczl.tcc.service.*']
+			includes = ['br.edu.fateczl.tcc.service.*', 'br.edu.fateczl.tcc.controller.*']
 			limit {
 				counter = 'LINE'
 				value = 'COVEREDRATIO'

@@ -11,21 +11,25 @@ import br.edu.fateczl.tcc.enums.TexturaTraje;
 import br.edu.fateczl.tcc.enums.TipoTraje;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public record TrajeResponse(
 
-        Long id,
-        String descricao,
-        TamanhoTraje tamanho,
-        CorTraje cor,
-        TipoTraje tipo,
-        SexoEnum genero,
-        BigDecimal valorItem,
-        StatusTraje status,
-        String nome,
-        TecidoTraje tecido,
-        EstampaTraje estampa,
-        TexturaTraje textura,
-        CondicaoTraje condicao
+                Long id,
+                String descricao,
+                TamanhoTraje tamanho,
+                CorTraje cor,
+                TipoTraje tipo,
+                SexoEnum genero,
+                BigDecimal valorItem,
+                StatusTraje status,
+                String nome,
+                TecidoTraje tecido,
+                EstampaTraje estampa,
+                TexturaTraje textura,
+                CondicaoTraje condicao,
+                String imagemUrl,
+                LocalDateTime dataCadastro
 
-) { }
+) {
+}

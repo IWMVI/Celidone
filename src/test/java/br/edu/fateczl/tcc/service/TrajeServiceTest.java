@@ -18,6 +18,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -29,6 +32,9 @@ class TrajeServiceTest {
 
     @Mock
     private TrajeRepository trajeRepository;
+
+    @Mock
+    private ImagemService imagemService;
 
     @InjectMocks
     private TrajeService trajeService;
@@ -46,8 +52,8 @@ class TrajeServiceTest {
                 TecidoTraje.LA,
                 EstampaTraje.LISA,
                 TexturaTraje.LISO,
-                CondicaoTraje.NOVO
-        );
+                CondicaoTraje.NOVO,
+                null);
     }
 
     private Traje criarTrajeValido() {
@@ -327,6 +333,60 @@ class TrajeServiceTest {
             when(trajeRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThrows(ResourceNotFoundException.class, () -> trajeService.deletar(999L));
+        }
+    }
+
+    @Nested
+    @DisplayName("Listar paginado")
+    class ListarPaginado {
+
+        @Test
+        @DisplayName("Deve retornar pagina de trajes")
+        void deve_retornar_pagina_de_trajes() {
+            Traje traje = criarTrajeValido();
+
+            when(trajeRepository.findAll(any(Pageable.class)))
+                    .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(traje)));
+
+            var result = trajeService.listarPaginado(0, 10);
+
+            assertNotNull(result);
+            assertEquals(1, result.getTotalElements());
+        }
+    }
+
+    @Nested
+    @DisplayName("Buscar com pageable")
+    class BuscarComPageable {
+
+        @Test
+        @DisplayName("Deve retornar pagina com filtros")
+        void deve_retornar_pagina_com_filtros() {
+            Traje traje = criarTrajeValido();
+
+            when(trajeRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+                    .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(traje)));
+
+            var result = trajeService.buscar(StatusTraje.DISPONIVEL, null, null, null,
+                    Pageable.ofSize(10));
+
+            assertNotNull(result);
+            assertEquals(1, result.getTotalElements());
+        }
+
+        @Test
+        @DisplayName("Deve retornar pagina com filtros e busca")
+        void deve_retornar_pagina_com_filtros_e_busca() {
+            Traje traje = criarTrajeValido();
+
+            when(trajeRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+                    .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(traje)));
+
+            var result = trajeService.buscar(StatusTraje.DISPONIVEL, SexoEnum.MASCULINO, TipoTraje.TERNO,
+                    TamanhoTraje.M, "terno", Pageable.ofSize(10));
+
+            assertNotNull(result);
+            assertEquals(1, result.getTotalElements());
         }
     }
 }

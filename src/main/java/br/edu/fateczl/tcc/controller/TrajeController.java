@@ -8,6 +8,9 @@ import br.edu.fateczl.tcc.enums.TamanhoTraje;
 import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.service.TrajeService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,23 +52,35 @@ public class TrajeController {
     // READ - por ID
     // ===============================
     @GetMapping("/{id}")
-    public ResponseEntity<TrajeResponse> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<TrajeResponse> buscarPorId(@PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(trajeService.buscarPorId(id));
+    }
+
+    // ===============================
+    // READ - listagem com paginação e filtros
+    // ===============================
+    @GetMapping
+    public Page<TrajeResponse> listar(
+            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(value = "tamanhoPagina", defaultValue = "10") int tamanhoPagina,
+            @RequestParam(value = "busca", required = false) String busca,
+            @RequestParam(value = "status", required = false) StatusTraje status,
+            @RequestParam(value = "genero", required = false) SexoEnum genero,
+            @RequestParam(value = "tipo", required = false) TipoTraje tipo,
+            @RequestParam(value = "tamanho", required = false) TamanhoTraje tamanhoTraje) {
+
+        Pageable pageable = PageRequest.of(pagina, tamanhoPagina);
+        
+        if (busca != null && !busca.isEmpty()) {
+            return trajeService.buscar(status, genero, tipo, tamanhoTraje, busca, pageable);
+        }
+        
+        return trajeService.buscar(status, genero, tipo, tamanhoTraje, pageable);
     }
 
     // ===============================
     // READ - filtros
     // ===============================
-    @GetMapping
-    public ResponseEntity<List<TrajeResponse>> buscar(
-            @RequestParam(required = false) StatusTraje status,
-            @RequestParam(required = false) SexoEnum genero,
-            @RequestParam(required = false) TipoTraje tipo,
-            @RequestParam(required = false) TamanhoTraje tamanho) {
-
-        return ResponseEntity.ok(trajeService.buscar(status, genero, tipo, tamanho));
-    }
-
     @GetMapping("/buscar")
     public ResponseEntity<List<TrajeResponse>> buscarPorTermo(
             @RequestParam String termo) {
@@ -86,7 +101,7 @@ public class TrajeController {
     // ===============================
     @PutMapping("/{id}")
     public ResponseEntity<TrajeResponse> atualizar(
-            @PathVariable Long id,
+            @PathVariable(value = "id") Long id,
             @Valid @RequestBody TrajeRequest dto) {
 
         return ResponseEntity.ok(trajeService.atualizar(id, dto));
@@ -96,7 +111,7 @@ public class TrajeController {
     // DELETE
     // ===============================
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable(value = "id") Long id) {
         trajeService.deletar(id);
         return ResponseEntity.noContent().build();
     }

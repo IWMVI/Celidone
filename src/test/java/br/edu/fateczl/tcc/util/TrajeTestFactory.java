@@ -1,6 +1,7 @@
 package br.edu.fateczl.tcc.util;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import br.edu.fateczl.tcc.domain.Traje;
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
@@ -22,8 +23,8 @@ import br.edu.fateczl.tcc.enums.TipoTraje;
  * facilitando a manutenção quando a estrutura da entidade mudar.
  *
  * Uso:
- *   TrajeRequest request = TrajeTestFactory.requestValido();
- *   Traje entidade = TrajeTestFactory.entidadeValida();
+ * TrajeRequest request = TrajeTestFactory.requestValido();
+ * Traje entidade = TrajeTestFactory.entidadeValida();
  */
 public class TrajeTestFactory {
 
@@ -49,8 +50,8 @@ public class TrajeTestFactory {
                 TecidoTraje.POLIESTER,
                 EstampaTraje.LISA,
                 TexturaTraje.LISO,
-                CondicaoTraje.NOVO
-        );
+                CondicaoTraje.NOVO,
+                null);
     }
 
     /** Retorna um TrajeRequest com status customizado. */
@@ -67,8 +68,8 @@ public class TrajeTestFactory {
                 TecidoTraje.POLIESTER,
                 EstampaTraje.LISA,
                 TexturaTraje.LISO,
-                CondicaoTraje.NOVO
-        );
+                CondicaoTraje.NOVO,
+                null);
     }
 
     /** Retorna um TrajeRequest sem descrição (inválido — para testar validação). */
@@ -85,8 +86,8 @@ public class TrajeTestFactory {
                 TecidoTraje.POLIESTER,
                 EstampaTraje.LISA,
                 TexturaTraje.LISO,
-                CondicaoTraje.NOVO
-        );
+                CondicaoTraje.NOVO,
+                null);
     }
 
     // =========================================================
@@ -108,15 +109,18 @@ public class TrajeTestFactory {
                 TecidoTraje.POLIESTER,
                 EstampaTraje.LISA,
                 TexturaTraje.LISO,
-                CondicaoTraje.NOVO
-        );
+                CondicaoTraje.NOVO,
+                "https://exemplo.com/imagem.jpg",
+                LocalDateTime.now());
     }
 
     // =========================================================
     // Entidade Traje
     // =========================================================
 
-    /** Retorna uma entidade Traje com dados válidos (sem ID — para persistência). */
+    /**
+     * Retorna uma entidade Traje com dados válidos (sem ID — para persistência).
+     */
     public static Traje entidadeValida() {
         return Traje.builder()
                 .descricao("Terno clássico preto slim fit")
@@ -134,7 +138,10 @@ public class TrajeTestFactory {
                 .build();
     }
 
-    /** Retorna uma entidade Traje com ID definido (para simular entidade já persistida). */
+    /**
+     * Retorna uma entidade Traje com ID definido (para simular entidade já
+     * persistida).
+     */
     public static Traje entidadeComId(Long id) {
         return Traje.builder()
                 .id(id)

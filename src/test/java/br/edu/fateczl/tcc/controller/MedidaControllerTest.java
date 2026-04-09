@@ -81,7 +81,7 @@ class MedidaControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").value(1))
-                    .andExpect(jsonPath("$.sexo").value("MASCULINO"));
+                    .andExpect(jsonPath("$.sexo").value("Masculino"));
 
             verify(medidaService).criarMasculina(any());
         }
@@ -176,7 +176,7 @@ class MedidaControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").value(1))
-                    .andExpect(jsonPath("$.sexo").value("FEMININO"));
+                    .andExpect(jsonPath("$.sexo").value("Feminino"));
 
             verify(medidaService).criarFeminina(any());
         }
