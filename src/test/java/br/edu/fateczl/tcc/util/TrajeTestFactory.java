@@ -97,7 +97,6 @@ public class TrajeTestFactory {
     public static TrajeResponse responseValido() {
         return new TrajeResponse(
                 1L,
-                "1",
                 "Terno clássico preto slim fit",
                 TamanhoTraje.M,
                 CorTraje.PRETO,

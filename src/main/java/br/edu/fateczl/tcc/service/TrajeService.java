@@ -3,15 +3,11 @@ package br.edu.fateczl.tcc.service;
 import br.edu.fateczl.tcc.domain.Traje;
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
-import br.edu.fateczl.tcc.enums.SexoEnum;
-import br.edu.fateczl.tcc.enums.StatusTraje;
-import br.edu.fateczl.tcc.enums.TamanhoTraje;
-import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.mapper.TrajeMapper;
 import br.edu.fateczl.tcc.repository.TrajeRepository;
-import br.edu.fateczl.tcc.specification.TrajeSpecification;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -46,24 +42,16 @@ public class TrajeService {
     }
 
     // ===============================
-    // READ - filtros
+    // READ - listagem com paginação
     // ===============================
-    public List<TrajeResponse> buscar(StatusTraje status,
-            SexoEnum genero,
-            TipoTraje tipo,
-            TamanhoTraje tamanho) {
-
-        Specification<Traje> spec = Specification
-                .where(TrajeSpecification.comStatus(status))
-                .and(TrajeSpecification.comGenero(genero))
-                .and(TrajeSpecification.comTipo(tipo))
-                .and(TrajeSpecification.comTamanho(tamanho));
-
-        return trajeRepository.findAll(spec).stream()
-                .map(TrajeMapper::toResponse)
-                .toList();
+    public Page<TrajeResponse> listarPaginado(int pagina, int tamanho) {
+        Pageable pageable = Pageable.ofSize(tamanho).withPage(pagina);
+        return trajeRepository.findAll(pageable).map(TrajeMapper::toResponse);
     }
 
+    // ===============================
+    // READ - filtros
+    // ===============================
     public List<TrajeResponse> buscarPorNomeOuDescricao(String termo) {
         return trajeRepository.buscarPorNomeOuDescricao(termo).stream()
                 .map(TrajeMapper::toResponse)

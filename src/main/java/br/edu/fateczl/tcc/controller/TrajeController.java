@@ -2,12 +2,9 @@ package br.edu.fateczl.tcc.controller;
 
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
-import br.edu.fateczl.tcc.enums.SexoEnum;
-import br.edu.fateczl.tcc.enums.StatusTraje;
-import br.edu.fateczl.tcc.enums.TamanhoTraje;
-import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.service.TrajeService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,23 +46,24 @@ public class TrajeController {
     // READ - por ID
     // ===============================
     @GetMapping("/{id}")
-    public ResponseEntity<TrajeResponse> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<TrajeResponse> buscarPorId(@PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(trajeService.buscarPorId(id));
+    }
+
+    // ===============================
+    // READ - listagem com paginação
+    // ===============================
+    @GetMapping
+    public Page<TrajeResponse> listar(
+            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(value = "tamanho", defaultValue = "10") int tamanho) {
+
+        return trajeService.listarPaginado(pagina, tamanho);
     }
 
     // ===============================
     // READ - filtros
     // ===============================
-    @GetMapping
-    public ResponseEntity<List<TrajeResponse>> buscar(
-            @RequestParam(required = false) StatusTraje status,
-            @RequestParam(required = false) SexoEnum genero,
-            @RequestParam(required = false) TipoTraje tipo,
-            @RequestParam(required = false) TamanhoTraje tamanho) {
-
-        return ResponseEntity.ok(trajeService.buscar(status, genero, tipo, tamanho));
-    }
-
     @GetMapping("/buscar")
     public ResponseEntity<List<TrajeResponse>> buscarPorTermo(
             @RequestParam String termo) {
@@ -86,7 +84,7 @@ public class TrajeController {
     // ===============================
     @PutMapping("/{id}")
     public ResponseEntity<TrajeResponse> atualizar(
-            @PathVariable Long id,
+            @PathVariable(value = "id") Long id,
             @Valid @RequestBody TrajeRequest dto) {
 
         return ResponseEntity.ok(trajeService.atualizar(id, dto));
@@ -96,7 +94,7 @@ public class TrajeController {
     // DELETE
     // ===============================
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable(value = "id") Long id) {
         trajeService.deletar(id);
         return ResponseEntity.noContent().build();
     }
