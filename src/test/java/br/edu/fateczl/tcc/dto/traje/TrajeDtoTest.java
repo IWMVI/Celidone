@@ -37,8 +37,7 @@ class TrajeDtoTest {
                     "Terno preto clássico", TamanhoTraje.M, CorTraje.PRETO,
                     TipoTraje.TERNO, SexoEnum.MASCULINO, new BigDecimal("299.90"),
                     StatusTraje.DISPONIVEL, "Terno Executivo", TecidoTraje.LA,
-                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO
-            );
+                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null);
 
             Set<ConstraintViolation<TrajeRequest>> violations = validator.validate(request);
             assertTrue(violations.isEmpty());
@@ -53,8 +52,7 @@ class TrajeDtoTest {
                     "", TamanhoTraje.M, CorTraje.PRETO,
                     TipoTraje.TERNO, SexoEnum.MASCULINO, new BigDecimal("299.90"),
                     StatusTraje.DISPONIVEL, "Terno", TecidoTraje.LA,
-                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO
-            );
+                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null);
 
             Set<ConstraintViolation<TrajeRequest>> violations = validator.validate(request);
             assertFalse(violations.isEmpty());
@@ -67,8 +65,7 @@ class TrajeDtoTest {
                     "Descricao", TamanhoTraje.M, CorTraje.PRETO,
                     TipoTraje.TERNO, SexoEnum.MASCULINO, new BigDecimal("299.90"),
                     StatusTraje.DISPONIVEL, "", TecidoTraje.LA,
-                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO
-            );
+                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null);
 
             Set<ConstraintViolation<TrajeRequest>> violations = validator.validate(request);
             assertFalse(violations.isEmpty());
@@ -81,8 +78,7 @@ class TrajeDtoTest {
                     "Descricao", TamanhoTraje.M, CorTraje.PRETO,
                     TipoTraje.TERNO, SexoEnum.MASCULINO, new BigDecimal("-10.00"),
                     StatusTraje.DISPONIVEL, "Terno", TecidoTraje.LA,
-                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO
-            );
+                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null);
 
             Set<ConstraintViolation<TrajeRequest>> violations = validator.validate(request);
             assertFalse(violations.isEmpty());
@@ -96,8 +92,7 @@ class TrajeDtoTest {
                     descricaoLonga, TamanhoTraje.M, CorTraje.PRETO,
                     TipoTraje.TERNO, SexoEnum.MASCULINO, new BigDecimal("299.90"),
                     StatusTraje.DISPONIVEL, "Terno", TecidoTraje.LA,
-                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO
-            );
+                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null);
 
             Set<ConstraintViolation<TrajeRequest>> violations = validator.validate(request);
             assertFalse(violations.isEmpty());
@@ -115,8 +110,7 @@ class TrajeDtoTest {
                     1L, "Terno preto clássico", TamanhoTraje.M, CorTraje.PRETO,
                     TipoTraje.TERNO, SexoEnum.MASCULINO, new BigDecimal("299.90"),
                     StatusTraje.DISPONIVEL, "Terno Executivo", TecidoTraje.LA,
-                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO
-            );
+                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null);
 
             assertEquals(1L, response.id());
             assertEquals("Terno preto clássico", response.descricao());
@@ -136,8 +130,7 @@ class TrajeDtoTest {
         @Test
         void deveCriarTrajeResponseComCamposNulos() {
             TrajeResponse response = new TrajeResponse(
-                    null, null, null, null, null, null, null, null, null, null, null, null, null
-            );
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
             assertNull(response.id());
             assertNull(response.descricao());

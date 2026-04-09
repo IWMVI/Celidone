@@ -46,8 +46,8 @@ class TrajeServiceTest {
                 TecidoTraje.LA,
                 EstampaTraje.LISA,
                 TexturaTraje.LISO,
-                CondicaoTraje.NOVO
-        );
+                CondicaoTraje.NOVO,
+                null);
     }
 
     private Traje criarTrajeValido() {
