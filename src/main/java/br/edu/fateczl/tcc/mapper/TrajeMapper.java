@@ -6,7 +6,8 @@ import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
 
 public class TrajeMapper {
 
-    private TrajeMapper() { }
+    private TrajeMapper() {
+    }
 
     public static Traje toEntity(TrajeRequest dto) {
         return Traje.builder()
@@ -22,6 +23,7 @@ public class TrajeMapper {
                 .estampa(dto.estampa())
                 .textura(dto.textura())
                 .condicao(dto.condicao())
+                .imagemUrl(dto.imagemUrl())
                 .build();
     }
 
@@ -38,8 +40,8 @@ public class TrajeMapper {
                 dto.tecido(),
                 dto.estampa(),
                 dto.textura(),
-                dto.condicao()
-        );
+                dto.condicao(),
+                dto.imagemUrl());
     }
 
     public static TrajeResponse toResponse(Traje entity) {
@@ -56,7 +58,7 @@ public class TrajeMapper {
                 entity.getTecido(),
                 entity.getEstampa(),
                 entity.getTextura(),
-                entity.getCondicao()
-        );
+                entity.getCondicao(),
+                entity.getImagemUrl());
     }
 }

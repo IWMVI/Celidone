@@ -21,12 +21,13 @@ import java.util.List;
 public class TrajeService {
 
     private final TrajeRepository trajeRepository;
+    private final ImagemService imagemService;
     private static final String RESOURCE = "Traje";
 
-    public TrajeService(TrajeRepository trajeRepository) {
+    public TrajeService(TrajeRepository trajeRepository, ImagemService imagemService) {
         this.trajeRepository = trajeRepository;
+        this.imagemService = imagemService;
     }
-
 
     // ===============================
     // CREATE
@@ -48,9 +49,9 @@ public class TrajeService {
     // READ - filtros
     // ===============================
     public List<TrajeResponse> buscar(StatusTraje status,
-                                      SexoEnum genero,
-                                      TipoTraje tipo,
-                                      TamanhoTraje tamanho) {
+            SexoEnum genero,
+            TipoTraje tipo,
+            TamanhoTraje tamanho) {
 
         Specification<Traje> spec = Specification
                 .where(TrajeSpecification.comStatus(status))
@@ -91,7 +92,6 @@ public class TrajeService {
     public void deletar(Long id) {
         trajeRepository.delete(buscarOuFalhar(id));
     }
-
 
     // ===============================
     // HELPERS
