@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/enums")
@@ -30,15 +29,9 @@ public class EnumController {
         ));
     }
 
-    private <T extends Enum<T>> List<String> getValores(Class<T> enumClass) {
+    private <T extends Enum<T> & DisplayEnum> List<String> getValores(Class<T> enumClass) {
         return Arrays.stream(enumClass.getEnumConstants())
-                .map(e -> {
-                    try {
-                        return e.getClass().getMethod("getNomeExibicao").invoke(e).toString();
-                    } catch (Exception ex) {
-                        return e.name();
-                    }
-                })
-                .collect(Collectors.toList());
+                .map(DisplayEnum::getNomeExibicao)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

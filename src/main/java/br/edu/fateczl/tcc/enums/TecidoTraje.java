@@ -2,10 +2,8 @@ package br.edu.fateczl.tcc.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Map;
-import java.util.HashMap;
 
-public enum TecidoTraje {
+public enum TecidoTraje implements DisplayEnum {
     ALGODAO("Algodão"),
     LA("Lã"),
     SEDA("Seda"),
@@ -18,19 +16,12 @@ public enum TecidoTraje {
     GABARDINE("Gabardine");
 
     private final String nomeExibicao;
-    private static final Map<String, TecidoTraje> lookup = new HashMap<>();
-
-    static {
-        for (TecidoTraje t : TecidoTraje.values()) {
-            lookup.put(t.nomeExibicao.toLowerCase(), t);
-            lookup.put(t.name().toLowerCase(), t);
-        }
-    }
 
     TecidoTraje(String nomeExibicao) {
         this.nomeExibicao = nomeExibicao;
     }
 
+    @Override
     @JsonValue
     public String getNomeExibicao() {
         return nomeExibicao;
@@ -38,15 +29,6 @@ public enum TecidoTraje {
 
     @JsonCreator
     public static TecidoTraje fromValue(String value) {
-        if (value == null) {
-            return null;
-        }
-        TecidoTraje result = lookup.get(value.toLowerCase());
-        if (result == null) {
-            throw new IllegalArgumentException(
-                "Valor inválido: " + value + ". Valores válidos: Algodão, Lã, Seda, Linho, Poliester, Viscose, Veludo, Cetim, Microfibra, Gabardine"
-            );
-        }
-        return result;
+        return EnumUtils.fromValue(TecidoTraje.class, value);
     }
 }

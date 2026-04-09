@@ -14,44 +14,22 @@ public class ImagemService {
     private static final int MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final String[] ALLOWED_FORMATS = { "image/jpeg", "image/png", "image/webp", "image/gif" };
 
-    /**
-     * Valida uma imagem em base64.
-     *
-     * @param imagemBase64 String com a imagem codificada em base64
-     * @return true se a imagem é válida, false caso contrário
-     */
     public boolean validarImagem(String imagemBase64) {
         if (imagemBase64 == null || imagemBase64.isBlank()) {
-            return true; // Imagem é opcional
+            return true;
         }
 
-        try {
-            // Remove o prefixo data:image/...;base64, se existir
-            String base64 = removerPrefixoDataUrl(imagemBase64);
-
-            // Decodifica de base64 para validar
-            byte[] decodedBytes = Base64.getDecoder().decode(base64);
-
-            // Valida tamanho
-            if (decodedBytes.length > MAX_IMAGE_SIZE) {
-                return false;
-            }
-
-            return true;
-        } catch (IllegalArgumentException e) {
+        String tipoMime = extrairTipoMime(imagemBase64);
+        if (!isFormatoPermitido(tipoMime)) {
             return false;
         }
+
+        byte[] decodedBytes = decodificarBase64(imagemBase64);
+        return decodedBytes != null && decodedBytes.length <= MAX_IMAGE_SIZE;
     }
 
-    /**
-     * Remove o prefixo data URL de uma imagem em base64.
-     *
-     * @param imagemBase64 String com a imagem codificada em base64
-     * @return String com a imagem sem o prefixo
-     */
     public String removerPrefixoDataUrl(String imagemBase64) {
         if (imagemBase64 != null && imagemBase64.startsWith("data:")) {
-            // Remove "data:image/...;base64,"
             int commaIndex = imagemBase64.indexOf(',');
             if (commaIndex > 0) {
                 return imagemBase64.substring(commaIndex + 1);
@@ -60,58 +38,56 @@ public class ImagemService {
         return imagemBase64;
     }
 
-    /**
-     * Obtém o tipo MIME de uma imagem em base64.
-     *
-     * @param imagemBase64 String com a imagem codificada em base64
-     * @return String com o tipo MIME (ex: image/png)
-     */
     public String extrairTipoMime(String imagemBase64) {
         if (imagemBase64 != null && imagemBase64.startsWith("data:")) {
-            int separador = imagemBase64.indexOf(';');
-            String tipo = imagemBase64.substring(5, separador > 0 ? separador : imagemBase64.indexOf(','));
-            return tipo;
+            int semicolonIndex = imagemBase64.indexOf(';');
+            int commaIndex = imagemBase64.indexOf(',');
+
+            if (semicolonIndex > 5) {
+                return imagemBase64.substring(5, semicolonIndex);
+            } else if (commaIndex > 5) {
+                return imagemBase64.substring(5, commaIndex);
+            }
         }
         return "application/octet-stream";
     }
 
-    /**
-     * Valida o tamanho de uma imagem decodificada.
-     *
-     * @param imagemBase64 String com a imagem codificada em base64
-     * @return true se o tamanho é válido, false caso contrário
-     */
     public boolean validarTamanho(String imagemBase64) {
         if (imagemBase64 == null || imagemBase64.isBlank()) {
             return true;
         }
 
-        try {
-            String base64 = removerPrefixoDataUrl(imagemBase64);
-            byte[] decodedBytes = Base64.getDecoder().decode(base64);
-            return decodedBytes.length <= MAX_IMAGE_SIZE;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+        byte[] decodedBytes = decodificarBase64(imagemBase64);
+        return decodedBytes != null && decodedBytes.length <= MAX_IMAGE_SIZE;
     }
 
-    /**
-     * Obtém o tamanho da imagem em bytes.
-     *
-     * @param imagemBase64 String com a imagem codificada em base64
-     * @return tamanho em bytes
-     */
     public long obterTamanho(String imagemBase64) {
         if (imagemBase64 == null || imagemBase64.isBlank()) {
             return 0;
         }
 
+        byte[] decodedBytes = decodificarBase64(imagemBase64);
+        return decodedBytes != null ? decodedBytes.length : 0;
+    }
+
+    private boolean isFormatoPermitido(String mimeType) {
+        if (mimeType == null) {
+            return false;
+        }
+        for (String formatoPermitido : ALLOWED_FORMATS) {
+            if (formatoPermitido.equalsIgnoreCase(mimeType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private byte[] decodificarBase64(String imagemBase64) {
         try {
             String base64 = removerPrefixoDataUrl(imagemBase64);
-            byte[] decodedBytes = Base64.getDecoder().decode(base64);
-            return decodedBytes.length;
+            return Base64.getDecoder().decode(base64);
         } catch (IllegalArgumentException e) {
-            return 0;
+            return null;
         }
     }
 }

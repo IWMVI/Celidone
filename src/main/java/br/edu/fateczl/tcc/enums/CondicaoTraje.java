@@ -2,10 +2,8 @@ package br.edu.fateczl.tcc.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Map;
-import java.util.HashMap;
 
-public enum CondicaoTraje {
+public enum CondicaoTraje implements DisplayEnum {
     NOVO("Novo"),
     SEMINOVO("Seminovo"),
     BOM("Bom"),
@@ -18,19 +16,12 @@ public enum CondicaoTraje {
     HIGIENIZACAO("Higienização");
 
     private final String nomeExibicao;
-    private static final Map<String, CondicaoTraje> lookup = new HashMap<>();
-
-    static {
-        for (CondicaoTraje t : CondicaoTraje.values()) {
-            lookup.put(t.nomeExibicao.toLowerCase(), t);
-            lookup.put(t.name().toLowerCase(), t);
-        }
-    }
 
     CondicaoTraje(String nomeExibicao) {
         this.nomeExibicao = nomeExibicao;
     }
 
+    @Override
     @JsonValue
     public String getNomeExibicao() {
         return nomeExibicao;
@@ -38,13 +29,6 @@ public enum CondicaoTraje {
 
     @JsonCreator
     public static CondicaoTraje fromValue(String value) {
-        if (value == null) {
-            return null;
-        }
-        CondicaoTraje result = lookup.get(value.toLowerCase());
-        if (result == null) {
-            throw new IllegalArgumentException("Valor inválido: " + value);
-        }
-        return result;
+        return EnumUtils.fromValue(CondicaoTraje.class, value);
     }
 }

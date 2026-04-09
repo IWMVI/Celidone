@@ -2,28 +2,19 @@ package br.edu.fateczl.tcc.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Map;
-import java.util.HashMap;
 
-public enum StatusAluguel {
+public enum StatusAluguel implements DisplayEnum {
     ATIVO("Ativo"),
     CONCLUIDO("Concluído"),
     CANCELADO("Cancelado");
 
     private final String nomeExibicao;
-    private static final Map<String, StatusAluguel> lookup = new HashMap<>();
-
-    static {
-        for (StatusAluguel t : StatusAluguel.values()) {
-            lookup.put(t.nomeExibicao.toLowerCase(), t);
-            lookup.put(t.name().toLowerCase(), t);
-        }
-    }
 
     StatusAluguel(String nomeExibicao) {
         this.nomeExibicao = nomeExibicao;
     }
 
+    @Override
     @JsonValue
     public String getNomeExibicao() {
         return nomeExibicao;
@@ -31,13 +22,6 @@ public enum StatusAluguel {
 
     @JsonCreator
     public static StatusAluguel fromValue(String value) {
-        if (value == null) {
-            return null;
-        }
-        StatusAluguel result = lookup.get(value.toLowerCase());
-        if (result == null) {
-            throw new IllegalArgumentException("Valor inválido: " + value);
-        }
-        return result;
+        return EnumUtils.fromValue(StatusAluguel.class, value);
     }
 }

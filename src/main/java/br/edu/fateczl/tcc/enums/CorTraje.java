@@ -2,10 +2,8 @@ package br.edu.fateczl.tcc.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Map;
-import java.util.HashMap;
 
-public enum CorTraje {
+public enum CorTraje implements DisplayEnum {
     BRANCO("Branco"),
     PRETO("Preto"),
     VERMELHO("Vermelho"),
@@ -19,19 +17,12 @@ public enum CorTraje {
     MARROM("Marrom");
 
     private final String nomeExibicao;
-    private static final Map<String, CorTraje> lookup = new HashMap<>();
-
-    static {
-        for (CorTraje t : CorTraje.values()) {
-            lookup.put(t.nomeExibicao.toLowerCase(), t);
-            lookup.put(t.name().toLowerCase(), t);
-        }
-    }
 
     CorTraje(String nomeExibicao) {
         this.nomeExibicao = nomeExibicao;
     }
 
+    @Override
     @JsonValue
     public String getNomeExibicao() {
         return nomeExibicao;
@@ -39,13 +30,6 @@ public enum CorTraje {
 
     @JsonCreator
     public static CorTraje fromValue(String value) {
-        if (value == null) {
-            return null;
-        }
-        CorTraje result = lookup.get(value.toLowerCase());
-        if (result == null) {
-            throw new IllegalArgumentException("Valor inválido: " + value);
-        }
-        return result;
+        return EnumUtils.fromValue(CorTraje.class, value);
     }
 }
