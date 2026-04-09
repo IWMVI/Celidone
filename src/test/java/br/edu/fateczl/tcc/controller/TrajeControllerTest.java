@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -227,6 +228,20 @@ class TrajeControllerTest {
 
                 @Test
                 @WithMockUser
+                @DisplayName("Deve retornar 200 ao buscar trajes com termo de busca")
+                void deve_retornar_200_ao_buscar_trajes_com_termo_de_busca() throws Exception {
+                        when(trajeService.buscar(any(), any(), any(), any(), anyString(), any(Pageable.class)))
+                                .thenReturn(Page.empty());
+
+                        mockMvc.perform(get("/trajes")
+                                        .param("busca", "terno"))
+                                .andExpect(status().isOk());
+
+                        verify(trajeService).buscar(any(), any(), any(), any(), anyString(), any(Pageable.class));
+                }
+
+                @Test
+                @WithMockUser
                 @DisplayName("Deve retornar 200 ao buscar trajes por status")
                 void deve_retornar_200_ao_buscar_trajes_por_status() throws Exception {
                         when(trajeService.buscar(any(StatusTraje.class), any(), any(), any(), any(Pageable.class)))
@@ -298,6 +313,26 @@ class TrajeControllerTest {
 
                         verify(trajeService).buscar(any(StatusTraje.class), any(SexoEnum.class),
                                 any(TipoTraje.class), any(TamanhoTraje.class), any(Pageable.class));
+                }
+
+                @Test
+                @WithMockUser
+                @DisplayName("Deve retornar 200 ao buscar trajes com busca e filtros")
+                void deve_retornar_200_ao_buscar_trajes_com_busca_e_filtros() throws Exception {
+                        when(trajeService.buscar(any(StatusTraje.class), any(SexoEnum.class), any(TipoTraje.class),
+                                any(TamanhoTraje.class), anyString(), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(List.of(criarResponseValido())));
+
+                        mockMvc.perform(get("/trajes")
+                                        .param("busca", "terno")
+                                        .param("status", "DISPONIVEL")
+                                        .param("genero", "MASCULINO")
+                                        .param("tipo", "TERNO")
+                                        .param("tamanho", "M"))
+                                .andExpect(status().isOk());
+
+                        verify(trajeService).buscar(any(StatusTraje.class), any(SexoEnum.class),
+                                any(TipoTraje.class), any(TamanhoTraje.class), anyString(), any(Pageable.class));
                 }
         }
 
