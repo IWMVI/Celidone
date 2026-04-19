@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,11 +19,6 @@ public interface AluguelRepository extends JpaRepository<Aluguel, Long> {
     List<Aluguel> findByClienteIdAndStatus(
             @Param("clienteId") Long clienteId,
             @Param("status") StatusAluguel status);
-
-    @Query("SELECT a FROM aluguel a WHERE a.dataEvento BETWEEN :inicio AND :fim")
-    List<Aluguel> findByDataEventoBetween(
-            @Param("inicio") LocalDate inicio,
-            @Param("fim") LocalDate fim);
 
     @Query("SELECT a FROM aluguel a WHERE a.dataDevolucao < CURRENT_DATE AND a.status = :status")
     List<Aluguel> findAlugueisAtrasados(@Param("status") StatusAluguel status);

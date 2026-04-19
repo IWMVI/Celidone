@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,9 +16,6 @@ public interface ItemAluguelRepository extends JpaRepository<ItemAluguel, Long> 
 
     @Query("SELECT ia FROM item_aluguel ia JOIN FETCH ia.traje WHERE ia.aluguel.id = :aluguelId")
     List<ItemAluguel> findByAluguelIdWithTraje(@Param("aluguelId") Long aluguelId);
-
-    @Query("SELECT SUM(ia.subtotal) FROM item_aluguel ia WHERE ia.aluguel.id = :aluguelId")
-    BigDecimal calcularTotalAluguel(@Param("aluguelId") Long aluguelId);
 
     /**
      * Verifica se um traje está indisponível em um determinado período.

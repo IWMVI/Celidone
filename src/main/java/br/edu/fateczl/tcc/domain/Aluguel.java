@@ -39,9 +39,6 @@ public class Aluguel {
     @Column(nullable = false)
     private LocalDate dataDevolucao;
 
-    @Column(nullable = false)
-    private LocalDate dataEvento;
-
     @Column(precision = 8, scale = 2, nullable = false)
     private BigDecimal valorTotal;
 
@@ -55,7 +52,7 @@ public class Aluguel {
     @Enumerated(EnumType.STRING)
     private StatusAluguel status;
 
-    @Column(length = 18, nullable = false)
+    @Column(length = 18)
     @Enumerated(EnumType.STRING)
     private TipoOcasiao ocasiao;
 
@@ -66,15 +63,15 @@ public class Aluguel {
     @OneToMany(mappedBy = "aluguel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemAluguel> itens = new ArrayList<>();
 
+
     public Aluguel() {
     }
 
-    public Aluguel(Long id, LocalDate dataAluguel, LocalDate dataRetirada, LocalDate dataDevolucao, LocalDate dataEvento, BigDecimal valorTotal, BigDecimal valorDesconto, String observacoes, StatusAluguel status, TipoOcasiao ocasiao, Cliente cliente) {
+    public Aluguel(Long id, LocalDate dataAluguel, LocalDate dataRetirada, LocalDate dataDevolucao, BigDecimal valorTotal, BigDecimal valorDesconto, String observacoes, StatusAluguel status, TipoOcasiao ocasiao, Cliente cliente) {
         this.id = id;
         this.dataAluguel = dataAluguel;
         this.dataRetirada = dataRetirada;
         this.dataDevolucao = dataDevolucao;
-        this.dataEvento = dataEvento;
         this.valorTotal = valorTotal;
         this.valorDesconto = valorDesconto;
         this.observacoes = observacoes;
@@ -113,14 +110,6 @@ public class Aluguel {
 
     public void setDataDevolucao(LocalDate dataDevolucao) {
         this.dataDevolucao = dataDevolucao;
-    }
-
-    public LocalDate getDataEvento() {
-        return dataEvento;
-    }
-
-    public void setDataEvento(LocalDate dataEvento) {
-        this.dataEvento = dataEvento;
     }
 
     public BigDecimal getValorTotal() {
@@ -179,17 +168,6 @@ public class Aluguel {
         this.itens = itens;
     }
 
-    public void atualizar(LocalDate dataRetirada, LocalDate dataDevolucao, LocalDate dataEvento, BigDecimal valorTotal, BigDecimal valorDesconto, String observacoes, StatusAluguel status, TipoOcasiao ocasiao, Cliente cliente) {
-        this.dataRetirada = dataRetirada;
-        this.dataDevolucao = dataDevolucao;
-        this.dataEvento = dataEvento;
-        this.valorTotal = valorTotal;
-        this.valorDesconto = valorDesconto;
-        this.observacoes = observacoes;
-        this.status = status;
-        this.ocasiao = ocasiao;
-        this.cliente = cliente;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -211,7 +189,6 @@ public class Aluguel {
                 ", dataAluguel=" + dataAluguel +
                 ", dataRetirada=" + dataRetirada +
                 ", dataDevolucao=" + dataDevolucao +
-                ", dataEvento=" + dataEvento +
                 ", valorTotal=" + valorTotal +
                 ", valorDesconto=" + valorDesconto +
                 ", observacoes='" + observacoes + '\'' +
@@ -230,7 +207,6 @@ public class Aluguel {
         private LocalDate dataAluguel;
         private LocalDate dataRetirada;
         private LocalDate dataDevolucao;
-        private LocalDate dataEvento;
         private BigDecimal valorTotal;
         private BigDecimal valorDesconto;
         private String observacoes;
@@ -255,11 +231,6 @@ public class Aluguel {
 
         public AluguelBuilder dataDevolucao(LocalDate dataDevolucao) {
             this.dataDevolucao = dataDevolucao;
-            return this;
-        }
-
-        public AluguelBuilder dataEvento(LocalDate dataEvento) {
-            this.dataEvento = dataEvento;
             return this;
         }
 
@@ -299,7 +270,6 @@ public class Aluguel {
             aluguel.dataAluguel = this.dataAluguel;
             aluguel.dataRetirada = this.dataRetirada;
             aluguel.dataDevolucao = this.dataDevolucao;
-            aluguel.dataEvento = this.dataEvento;
             aluguel.valorTotal = this.valorTotal;
             aluguel.valorDesconto = this.valorDesconto;
             aluguel.observacoes = this.observacoes;

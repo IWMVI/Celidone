@@ -16,19 +16,20 @@ public class AluguelMapper {
         return Aluguel.builder()
                 .cliente(cliente)
                 .dataAluguel(LocalDate.now())
-                .dataEvento(dto.dataEvento())
                 .dataRetirada(dto.dataRetirada())
                 .dataDevolucao(dto.dataDevolucao())
+                .valorDesconto(dto.valorDesconto())
                 .observacoes(dto.observacoes())
                 .ocasiao(dto.ocasiao())
                 .build();
     }
 
     public static void updateEntity(Aluguel entity, AluguelUpdateRequest dto) {
-        entity.setDataEvento(dto.dataEvento());
         entity.setDataRetirada(dto.dataRetirada());
         entity.setDataDevolucao(dto.dataDevolucao());
+        entity.setValorDesconto(dto.valorDesconto());
         entity.setObservacoes(dto.observacoes());
+        entity.setStatus(dto.status());
         entity.setOcasiao(dto.ocasiao());
     }
 
@@ -40,7 +41,6 @@ public class AluguelMapper {
                 entity.getDataAluguel(),
                 entity.getDataRetirada(),
                 entity.getDataDevolucao(),
-                entity.getDataEvento(),
                 entity.getValorTotal(),
                 entity.getValorDesconto(),
                 entity.getObservacoes(),

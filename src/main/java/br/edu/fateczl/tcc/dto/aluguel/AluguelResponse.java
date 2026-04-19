@@ -16,7 +16,6 @@ public record AluguelResponse(
         LocalDate dataAluguel,
         LocalDate dataRetirada,
         LocalDate dataDevolucao,
-        LocalDate dataEvento,
 
         BigDecimal valorTotal,
         BigDecimal valorDesconto,

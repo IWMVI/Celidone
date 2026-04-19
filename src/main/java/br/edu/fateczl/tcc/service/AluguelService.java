@@ -61,16 +61,17 @@ public class AluguelService {
         aluguel.setStatus(StatusAluguel.ATIVO);
 
         // Criar itens
-        List<ItemAluguel> itens = dto.itens().stream()
-                .map(itemDto -> criarItem(itemDto, aluguel))
-                .toList();
-        aluguel.setItens(itens);
+        List<ItemAluguel> itens = criarItens(dto.itens(), aluguel, null);
 
-        // Calcular valor total
-        BigDecimal total = itens.stream()
-                .map(ItemAluguel::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        aluguel.setValorTotal(total);
+        // Calcular valor total dos itens
+        BigDecimal total = calcularValorTotal(itens);
+
+        // Subtrair o valor do desconto (se houver)
+        BigDecimal valorComDesconto = total.subtract(dto.valorDesconto());
+        aluguel.setValorTotal(valorComDesconto);
+
+        // Verificar se o valor com desconto é negativo
+        validarValorComDesconto(valorComDesconto);
 
         aluguelRepository.save(aluguel);
         return AluguelMapper.toResponse(aluguel);
@@ -78,11 +79,10 @@ public class AluguelService {
 
 
     // ===============================
-    // UPDATE - NÃO mexendo nos itens
+    // UPDATE
     // ===============================
     @Transactional
     public AluguelResponse atualizar(Long id, AluguelUpdateRequest dto) {
-
         Aluguel aluguel = buscarAluguelOuFalhar(id);
 
         // Só pode alterar se estiver ATIVO
@@ -92,17 +92,37 @@ public class AluguelService {
 
         validarDatas(dto.dataRetirada(), dto.dataDevolucao());
 
-        // Validar conflito com outros alugueis
-        for (ItemAluguel item : aluguel.getItens()) {
+        // Validar conflito com os NOVOS itens do DTO
+        for (ItemAluguelRequest itemDto : dto.itens()) {
             validarDisponibilidadePeriodo(
-                    item.getTraje().getId(),
+                    itemDto.trajeId(),
                     dto.dataRetirada(),
                     dto.dataDevolucao(),
-                    aluguel.getId() // id = update
+                    aluguel.getId()
             );
         }
 
+        // Atualizar dados do aluguel (sem itens, para evitar quebra do orphan removal)
         AluguelMapper.updateEntity(aluguel, dto);
+
+        // Criar novos itens e recalcular o valor total
+        List<ItemAluguel> itensAtualizados = criarItens(dto.itens(), aluguel, aluguel.getId());
+
+        // Atualizar a lista de itens no aluguel, removendo os órfãos
+        aluguel.getItens().clear();  // Limpa os itens antigos
+        aluguel.getItens().addAll(itensAtualizados);  // Adiciona os novos itens
+
+        // Calcular o novo valor total
+        BigDecimal total = calcularValorTotal(itensAtualizados);
+
+        // Subtrair o valor do desconto (se houver)
+        BigDecimal valorComDesconto = total.subtract(dto.valorDesconto());
+
+        // Verificar se o valor com desconto é negativo
+        validarValorComDesconto(valorComDesconto);
+
+        // Atualizar o valor total do aluguel
+        aluguel.setValorTotal(valorComDesconto);
 
         aluguelRepository.save(aluguel);
         return AluguelMapper.toResponse(aluguel);
@@ -156,30 +176,28 @@ public class AluguelService {
                 .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_TRAJE, id));
     }
 
-    private ItemAluguel criarItem(ItemAluguelRequest dto, Aluguel aluguel) {
+    private ItemAluguel criarItem(ItemAluguelRequest dto, Aluguel aluguel, Long aluguelIdParaIgnorar) {
         // Buscar traje
         Traje traje = buscarTrajeOuFalhar(dto.trajeId());
 
         // Validações
         validarTrajeDisponivel(traje);
-        validarEstoque(traje, dto.quantidade());
 
         // Validação de conflito de período
         validarDisponibilidadePeriodo(
                 dto.trajeId(),
                 aluguel.getDataRetirada(),
                 aluguel.getDataDevolucao(),
-                null // null = create
+                aluguelIdParaIgnorar
         );
 
-        return ItemAluguelMapper.toEntity(dto, traje, aluguel);
+        return ItemAluguelMapper.toEntity(traje, aluguel);
     }
 
     private void validarDisponibilidadePeriodo(Long trajeId,
                                                LocalDate retirada,
                                                LocalDate devolucao,
                                                Long aluguelId) {
-
         boolean indisponivel = itemAluguelRepository
                 .trajeIndisponivelNoPeriodo(trajeId, retirada, devolucao, aluguelId);
 
@@ -204,10 +222,21 @@ public class AluguelService {
         }
     }
 
-    private void validarEstoque(Traje traje, Integer quantidade) {
-        // TODO: Evoluir depois (campo estoque)
-        if (quantidade <= 0) {
-            throw new BusinessException("Quantidade inválida");
+    private List<ItemAluguel> criarItens(List<ItemAluguelRequest> itensDto, Aluguel aluguel, Long aluguelIdParaIgnorar) {
+        return itensDto.stream()
+                .map(itemDto -> criarItem(itemDto, aluguel, aluguelIdParaIgnorar))
+                .toList();
+    }
+
+    private BigDecimal calcularValorTotal(List<ItemAluguel> itens) {
+        return itens.stream()
+                .map(item -> item.getTraje().getValorItem())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private void validarValorComDesconto(BigDecimal valorComDesconto) {
+        if (valorComDesconto.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException("O valor com desconto não pode ser negativo");
         }
     }
 }
