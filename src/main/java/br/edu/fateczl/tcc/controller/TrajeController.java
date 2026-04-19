@@ -11,6 +11,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,24 +62,33 @@ public class TrajeController {
     @ApiResponse(responseCode = "200", description = "Traje recuperado com sucesso")
     @ApiResponse(responseCode = "404", description = "Traje não encontrado")
     @GetMapping("/{id}")
-    public ResponseEntity<TrajeResponse> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<TrajeResponse> buscarPorId(@PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(trajeService.buscarPorId(id));
     }
 
     // ===============================
-    // READ - filtros
+    // READ - listagem com paginação e filtros
     // ===============================
     @Operation(summary = "Buscar trajes com filtros")
     @ApiResponse(responseCode = "200", description = "Trajes recuperados com sucesso")
     @ApiResponse(responseCode = "400", description = "Parâmetros inválidos")
     @GetMapping
-    public ResponseEntity<List<TrajeResponse>> buscar(
-            @RequestParam(required = false) StatusTraje status,
-            @RequestParam(required = false) SexoEnum genero,
-            @RequestParam(required = false) TipoTraje tipo,
-            @RequestParam(required = false) TamanhoTraje tamanho) {
+    public Page<TrajeResponse> listar(
+            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(value = "tamanhoPagina", defaultValue = "10") int tamanhoPagina,
+            @RequestParam(value = "busca", required = false) String busca,
+            @RequestParam(value = "status", required = false) StatusTraje status,
+            @RequestParam(value = "genero", required = false) SexoEnum genero,
+            @RequestParam(value = "tipo", required = false) TipoTraje tipo,
+            @RequestParam(value = "tamanho", required = false) TamanhoTraje tamanhoTraje) {
 
-        return ResponseEntity.ok(trajeService.buscar(status, genero, tipo, tamanho));
+        Pageable pageable = PageRequest.of(pagina, tamanhoPagina);
+        
+        if (busca != null && !busca.isEmpty()) {
+            return trajeService.buscar(status, genero, tipo, tamanhoTraje, busca, pageable);
+        }
+        
+        return trajeService.buscar(status, genero, tipo, tamanhoTraje, pageable);
     }
 
     // ===============================
@@ -115,7 +127,7 @@ public class TrajeController {
     @ApiResponse(responseCode = "404", description = "Traje não encontrado")
     @PutMapping("/{id}")
     public ResponseEntity<TrajeResponse> atualizar(
-            @PathVariable Long id,
+            @PathVariable(value = "id") Long id,
             @Valid @RequestBody TrajeRequest dto) {
 
         return ResponseEntity.ok(trajeService.atualizar(id, dto));
@@ -128,7 +140,7 @@ public class TrajeController {
     @ApiResponse(responseCode = "204", description = "Traje removido com sucesso")
     @ApiResponse(responseCode = "404", description = "Traje não encontrado")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable(value = "id") Long id) {
         trajeService.deletar(id);
         return ResponseEntity.noContent().build();
     }

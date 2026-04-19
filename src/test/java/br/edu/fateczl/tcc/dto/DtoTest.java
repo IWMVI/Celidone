@@ -17,7 +17,7 @@ class DtoTest {
         
         @Test
         void deve_criar_cliente_request() {
-            EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", endereco, "MASCULINO");
 
             assertEquals("João", request.nome());
@@ -29,16 +29,16 @@ class DtoTest {
 
         @Test
         void deve_retornar_estado_enum() {
-            EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", null);
+            EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, null);
             
-            assertEquals(SiglaEstados.SP, endereco.getEstadoEnum());
+            assertEquals(SiglaEstados.SP, endereco.estado());
         }
 
         @Test
-        void deve_lancar_exception_para_estado_invalido() {
-            EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "XX", null);
+        void deve_retornar_estado_para_estado_valido() {
+            EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, null);
             
-            assertThrows(IllegalArgumentException.class, endereco::getEstadoEnum);
+            assertEquals(SiglaEstados.SP, endereco.estado());
         }
     }
 
@@ -72,14 +72,14 @@ class DtoTest {
         
         @Test
         void deve_criar_endereco_request() {
-            EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest endereco = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
 
             assertEquals("01001000", endereco.cep());
             assertEquals("Rua Teste", endereco.logradouro());
             assertEquals("100", endereco.numero());
             assertEquals("São Paulo", endereco.cidade());
             assertEquals("Centro", endereco.bairro());
-            assertEquals("SP", endereco.estado());
+            assertEquals(SiglaEstados.SP, endereco.estado());
             assertEquals("Sala 1", endereco.complemento());
         }
     }

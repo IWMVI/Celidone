@@ -69,6 +69,32 @@ class EnderecoTest {
 
             assertNotEquals(e1, e2);
         }
+
+        @Test
+        void deve_ser_falso_quando_comparado_com_null() {
+            Endereco endereco = Endereco.builder().cep("01001000").build();
+            assertNotEquals(null, endereco);
+        }
+
+        @Test
+        void deve_ser_falso_quando_comparado_com_classe_diferente() {
+            Endereco endereco = Endereco.builder().cep("01001000").build();
+            assertNotEquals("string", endereco);
+        }
+
+        @Test
+        void deve_ser_falso_quando_cidade_diferente() {
+            Endereco e1 = Endereco.builder().cep("01001000").cidade("São Paulo").build();
+            Endereco e2 = Endereco.builder().cep("01001000").cidade("Rio de Janeiro").build();
+            assertNotEquals(e1, e2);
+        }
+
+        @Test
+        void deve_ser_falso_quando_estado_diferente() {
+            Endereco e1 = Endereco.builder().cep("01001000").estado(SiglaEstados.SP).build();
+            Endereco e2 = Endereco.builder().cep("01001000").estado(SiglaEstados.RJ).build();
+            assertNotEquals(e1, e2);
+        }
     }
 
     @Nested

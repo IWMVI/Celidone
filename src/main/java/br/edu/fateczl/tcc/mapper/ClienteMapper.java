@@ -37,7 +37,7 @@ public class ClienteMapper {
                 .numero(dto.numero())
                 .cidade(dto.cidade())
                 .bairro(dto.bairro())
-                .estado(dto.getEstadoEnum())
+                .estado(dto.estado())
                 .complemento(dto.complemento())
                 .build();
     }

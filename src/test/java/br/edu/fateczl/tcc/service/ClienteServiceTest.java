@@ -1,31 +1,47 @@
 package br.edu.fateczl.tcc.service;
 
-import br.edu.fateczl.tcc.domain.Cliente;
-import br.edu.fateczl.tcc.domain.Endereco;
-import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
-import br.edu.fateczl.tcc.enums.SiglaEstados;
-import br.edu.fateczl.tcc.exception.BusinessException;
-import br.edu.fateczl.tcc.repository.ClienteRepository;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.List;
-import java.util.Optional;
+import br.edu.fateczl.tcc.domain.Cliente;
+import br.edu.fateczl.tcc.domain.Endereco;
+import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
+import br.edu.fateczl.tcc.dto.ClienteRequest;
+import br.edu.fateczl.tcc.dto.ClienteResponse;
+import br.edu.fateczl.tcc.dto.EnderecoRequest;
+import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.enums.SiglaEstados;
+import br.edu.fateczl.tcc.exception.BusinessException;
+import br.edu.fateczl.tcc.repository.ClienteRepository;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.inOrder;
-import org.mockito.InOrder;
-import static org.mockito.Mockito.*;
-
-@DisplayName("Testes de Comportamento do ClienteService")
+@ExtendWith(MockitoExtension.class)
+@DisplayName("Testes do ClienteService")
 class ClienteServiceTest {
 
     @Mock
@@ -34,582 +50,601 @@ class ClienteServiceTest {
     @InjectMocks
     private ClienteService service;
 
+    private EnderecoRequest enderecoRequest;
+    private Endereco enderecoEntity;
+    private ClienteRequest requestValido;
+    private Cliente clienteValido;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        enderecoRequest = new EnderecoRequest(
+                "01001000", "Praça da Sé", "100",
+                "São Paulo", "Sé", SiglaEstados.SP, "Sala 101"
+        );
+
+        enderecoEntity = new Endereco(
+                "01001000", "Praça da Sé", "100",
+                "São Paulo", "Sé", SiglaEstados.SP, "Sala 101"
+        );
+
+        requestValido = new ClienteRequest(
+                "João da Silva", "12345678901",
+                "joao@email.com", "11999999999",
+                enderecoRequest, "MASCULINO"
+        );
+
+        clienteValido = ClienteFactory.criar()
+                .comId(1L)
+                .comNome("João da Silva")
+                .comCpfCnpj("12345678901")
+                .comEmail("joao@email.com")
+                .comCelular("11999999999")
+                .comSexo(SexoEnum.MASCULINO)
+                .comEndereco(enderecoEntity)
+                .comDataCadastro(LocalDate.now())
+                .construir();
     }
 
     @Nested
-    @DisplayName("Criar Cliente - Caso Feliz")
-    class CriarCliente_CasoFeliz {
+    @DisplayName("Criar Cliente")
+    class CriarClienteTest {
 
         @Test
-        @DisplayName("Deve criar cliente com dados pessoais válidos")
-        void deve_criar_cliente_com_dados_pessoais_validos() {
-            Cliente clienteValido = ClienteTestDataBuilder.criarClienteValido();
-
-            when(repository.findByCpfCnpj(clienteValido.getCpfCnpj())).thenReturn(Optional.empty());
-            when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
-
-            Cliente resultado = service.criar(clienteValido);
-
-            assertNotNull(resultado);
-            assertEquals("João da Silva", resultado.getNome());
-            verify(repository, times(1)).save(any(Cliente.class));
-        }
-
-        @Test
-        @DisplayName("Deve criar cliente quando todos os dados obrigatórios forem válidos")
-        void deve_criar_cliente_quando_todos_os_dados_obrigatorios_forem_validos() {
-            Cliente clienteValido = ClienteTestDataBuilder.criarClienteValido();
-
+        void deve_criarCliente_quando_dadosValidos() {
             when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
             when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
 
-            Cliente resultado = service.criar(clienteValido);
+            ClienteResponse response = service.criar(requestValido);
 
-            assertNotNull(resultado);
-            assertEquals("12345678901", resultado.getCpfCnpj());
-            assertEquals("joao@email.com", resultado.getEmail());
-            assertEquals("11999999999", resultado.getCelular());
-            assertNotNull(resultado.getEndereco());
-        }
-    }
-
-    @Nested
-    @DisplayName("Criar Cliente - Erros de Validação")
-    class CriarCliente_ErrosDeValidacao {
-
-        @Test
-        @DisplayName("Deve retornar erro quando nome for nulo")
-        void deve_retornar_erro_quando_nome_for_nulo() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setNome(null);
-
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("Nome é obrigatório"));
+            assertNotNull(response);
+            assertEquals("João da Silva", response.nome());
+            assertEquals("12345678901", response.cpfCnpj());
+            assertEquals("joao@email.com", response.email());
+            verify(repository).save(any(Cliente.class));
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando nome for vazio")
-        void deve_retornar_erro_quando_nome_for_vazio() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setNome("");
+        void deve_lancarExcecao_quando_cpfJaCadastrado() {
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.of(clienteValido));
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("Nome é obrigatório"));
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.criar(requestValido)
+            );
+
+            assertEquals("CPF ou CNPJ já cadastrado", exception.getMessage());
+            verify(repository, never()).save(any(Cliente.class));
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando nome contiver apenas espaços")
-        void deve_retornar_erro_quando_nome_contiver_apenas_espacos() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setNome("   ");
+        void deve_lancarExcecao_quando_emailJaCadastrado() {
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.findByEmail(anyString())).thenReturn(Optional.of(clienteValido));
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("Nome é obrigatório"));
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.criar(requestValido)
+            );
+
+            assertEquals("Email já cadastrado", exception.getMessage());
+            verify(repository, never()).save(any(Cliente.class));
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando CPF for nulo")
-        void deve_retornar_erro_quando_cpf_for_nulo() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setCpfCnpj(null);
+        void deve_traduzirErroIntegridade_quando_cpfDuplicadoNoBanco() {
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("CPF é obrigatório"));
+            SQLIntegrityConstraintViolationException sqlException =
+                    new SQLIntegrityConstraintViolationException("Duplicate entry for cpf");
+            DataIntegrityViolationException integrityException =
+                    new DataIntegrityViolationException("error", sqlException);
+
+            when(repository.save(any(Cliente.class))).thenThrow(integrityException);
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.criar(requestValido)
+            );
+
+            assertEquals("CPF ou CNPJ já cadastrado", exception.getMessage());
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando CPF for vazio")
-        void deve_retornar_erro_quando_cpf_for_vazio() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setCpfCnpj("");
+        void deve_traduzirErroIntegridade_quando_emailDuplicadoNoBanco() {
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("CPF é obrigatório"));
+            SQLIntegrityConstraintViolationException sqlException =
+                    new SQLIntegrityConstraintViolationException("Duplicate entry for email");
+            DataIntegrityViolationException integrityException =
+                    new DataIntegrityViolationException("error", sqlException);
+
+            when(repository.save(any(Cliente.class))).thenThrow(integrityException);
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.criar(requestValido)
+            );
+
+            assertEquals("Email já cadastrado", exception.getMessage());
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando email for nulo")
-        void deve_retornar_erro_quando_email_for_nulo() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setEmail(null);
+        void deve_traduzirErroIntegridade_quando_constraintDesconhecida() {
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("Email é obrigatório"));
+            SQLIntegrityConstraintViolationException sqlException =
+                    new SQLIntegrityConstraintViolationException("Unknown constraint");
+            DataIntegrityViolationException integrityException =
+                    new DataIntegrityViolationException("error", sqlException);
+
+            when(repository.save(any(Cliente.class))).thenThrow(integrityException);
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.criar(requestValido)
+            );
+
+            assertEquals("Erro ao salvar cliente. Violação de integridade de dados.", exception.getMessage());
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando email for vazio")
-        void deve_retornar_erro_quando_email_for_vazio() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setEmail("");
+        void deve_traduzirErroIntegridade_quando_semCausaDefinida() {
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("Email é obrigatório"));
+            DataIntegrityViolationException integrityException =
+                    new DataIntegrityViolationException("error");
+
+            when(repository.save(any(Cliente.class))).thenThrow(integrityException);
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.criar(requestValido)
+            );
+
+            assertEquals("Erro ao salvar cliente. Violação de integridade de dados.", exception.getMessage());
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando celular for nulo")
-        void deve_retornar_erro_quando_celular_for_nulo() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setCelular(null);
+        void deve_traduzirErroIntegridade_quando_mensagemCausaNula() {
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("Telefone é obrigatório"));
-        }
+            SQLIntegrityConstraintViolationException sqlException =
+                    new SQLIntegrityConstraintViolationException((String) null);
+            DataIntegrityViolationException integrityException =
+                    new DataIntegrityViolationException("error", sqlException);
 
-        @Test
-        @DisplayName("Deve retornar erro quando celular for vazio")
-        void deve_retornar_erro_quando_celular_for_vazio() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setCelular("");
+            when(repository.save(any(Cliente.class))).thenThrow(integrityException);
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("Telefone é obrigatório"));
-        }
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.criar(requestValido)
+            );
 
-        @Test
-        @DisplayName("Deve retornar erro quando endereco for nulo")
-        void deve_retornar_erro_quando_endereco_for_nulo() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValido();
-            cliente.setEndereco(null);
-
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(cliente));
-            assertTrue(ex.getMessage().contains("Endereço é obrigatório"));
-        }
-    }
-
-    @Nested
-    @DisplayName("Criar Cliente - Erros de Duplicidade")
-    class CriarCliente_ErrosDeDuplicidade {
-
-        @Test
-        @DisplayName("Deve retornar erro quando CPF já estiver cadastrado")
-        void deve_retornar_erro_quando_cpf_ja_estiver_cadastrado() {
-            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            Cliente novoCliente = ClienteTestDataBuilder.criarClienteValido();
-
-            when(repository.findByCpfCnpj(novoCliente.getCpfCnpj()))
-                    .thenReturn(Optional.of(clienteExistente));
-
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(novoCliente));
-            assertTrue(ex.getMessage().contains("CPF ou CNPJ já cadastrado"));
-        }
-
-        @Test
-        @DisplayName("Deve retornar erro quando email já estiver cadastrado")
-        void deve_retornar_erro_quando_email_ja_estiver_cadastrado() {
-            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            Cliente novoCliente = ClienteTestDataBuilder.criarClienteValido();
-
-            when(repository.findByCpfCnpj(novoCliente.getCpfCnpj())).thenReturn(Optional.empty());
-            when(repository.findByEmail(novoCliente.getEmail())).thenReturn(Optional.of(clienteExistente));
-
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(novoCliente));
-            assertTrue(ex.getMessage().contains("Email já cadastrado"));
+            assertEquals("Erro ao salvar cliente. Violação de integridade de dados.", exception.getMessage());
         }
     }
 
     @Nested
     @DisplayName("Listar Clientes")
-    class ListarClientes {
+    class ListarClientesTest {
 
         @Test
-        @DisplayName("Deve retornar lista vazia quando não existirem clientes")
-        void deve_retornar_lista_vazia_quando_nao_existirem_clientes() {
-            when(repository.findAll()).thenReturn(List.of());
+        void deve_retornarLista_quando_clientesExistem() {
+            when(repository.findAll()).thenReturn(List.of(clienteValido));
 
-            List<Cliente> resultado = service.listar();
+            List<ClienteResponse> responses = service.listar();
 
-            assertTrue(resultado.isEmpty());
-            verify(repository, times(1)).findAll();
+            assertEquals(1, responses.size());
+            assertEquals("João da Silva", responses.getFirst().nome());
         }
 
         @Test
-        @DisplayName("Deve retornar todos os clientes quando existirem registros")
-        void deve_retornar_todos_os_clientes_quando_existirem_registros() {
-            List<Cliente> clientes = List.of(
-                    ClienteTestDataBuilder.criarClienteValidoComId(1L),
-                    ClienteTestDataBuilder.criarClienteAtualizadoComId(2L)
-            );
-            when(repository.findAll()).thenReturn(clientes);
+        void deve_retornarListaVazia_quando_nenhumClienteCadastrado() {
+            when(repository.findAll()).thenReturn(List.of());
 
-            List<Cliente> resultado = service.listar();
+            List<ClienteResponse> responses = service.listar();
 
-            assertEquals(2, resultado.size());
-            verify(repository, times(1)).findAll();
+            assertTrue(responses.isEmpty());
         }
     }
 
     @Nested
-    @DisplayName("Buscar Com Filtro")
-    class BuscarComFiltro {
+    @DisplayName("Buscar com Filtro")
+    class BuscarComFiltroTest {
 
         @Test
-        @DisplayName("Deve retornar todos os clientes quando filtro for nulo")
-        void deve_retornar_todos_os_clientes_quando_filtro_for_nulo() {
-            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
-            when(repository.findAll()).thenReturn(clientes);
+        void deve_filtrarPorTermo_quando_termoInformado() {
+            when(repository.buscarPorTermo("joao")).thenReturn(List.of(clienteValido));
 
-            List<Cliente> resultado = service.buscarComFiltro(null);
+            List<ClienteResponse> responses = service.buscarComFiltro("joao");
 
-            assertEquals(1, resultado.size());
-            verify(repository, times(1)).findAll();
+            assertEquals(1, responses.size());
+            assertEquals("João da Silva", responses.getFirst().nome());
+        }
+
+        @Test
+        void deve_retornarTodos_quando_buscaVazia() {
+            when(repository.findAll()).thenReturn(List.of(clienteValido));
+
+            List<ClienteResponse> responses = service.buscarComFiltro("");
+
+            assertEquals(1, responses.size());
             verify(repository, never()).buscarPorTermo(anyString());
         }
 
         @Test
-        @DisplayName("Deve retornar todos os clientes quando filtro for vazio")
-        void deve_retornar_todos_os_clientes_quando_filtro_for_vazio() {
-            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
-            when(repository.findAll()).thenReturn(clientes);
+        void deve_retornarTodos_quando_buscaNula() {
+            when(repository.findAll()).thenReturn(List.of(clienteValido));
 
-            List<Cliente> resultado = service.buscarComFiltro("");
+            List<ClienteResponse> responses = service.buscarComFiltro(null);
 
-            assertEquals(1, resultado.size());
+            assertEquals(1, responses.size());
         }
 
         @Test
-        @DisplayName("Deve retornar todos os clientes quando filtro contiver apenas espaços")
-        void deve_retornar_todos_os_clientes_quando_filtro_contiver_apenas_espacos() {
-            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
-            when(repository.findAll()).thenReturn(clientes);
+        void deve_retornarPaginado_quando_termoInformado() {
+            Page<Cliente> page = new PageImpl<>(List.of(clienteValido));
+            when(repository.buscarPorTermoPaginado(eq("joao"), any(PageRequest.class))).thenReturn(page);
 
-            List<Cliente> resultado = service.buscarComFiltro("   ");
+            Page<ClienteResponse> responses = service.buscarComFiltroPaginado("joao", 0, 10);
 
-            assertEquals(1, resultado.size());
+            assertEquals(1, responses.getTotalElements());
+            assertEquals("João da Silva", responses.getContent().getFirst().nome());
         }
 
         @Test
-        @DisplayName("Deve remover espaços em branco do termo de busca")
-        void deve_remover_espacos_em_branco_do_termo_de_busca() {
-            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
-            when(repository.buscarPorTermo("Joao")).thenReturn(clientes);
+        void deve_retornarTodosPaginado_quando_buscaVazia() {
+            Page<Cliente> page = new PageImpl<>(List.of(clienteValido));
+            when(repository.findAll(any(PageRequest.class))).thenReturn(page);
 
-            List<Cliente> resultado = service.buscarComFiltro("  Joao  ");
+            Page<ClienteResponse> responses = service.buscarComFiltroPaginado("", 0, 10);
 
-            assertEquals(1, resultado.size());
-            verify(repository, times(1)).buscarPorTermo("Joao");
+            assertEquals(1, responses.getTotalElements());
+            verify(repository, never()).buscarPorTermoPaginado(anyString(), any(PageRequest.class));
         }
 
         @Test
-        @DisplayName("Deve buscar por termo quando filtro for válido")
-        void deve_buscar_por_termo_quando_filtro_for_valido() {
-            List<Cliente> clientes = List.of(ClienteTestDataBuilder.criarClienteValidoComId(1L));
-            when(repository.buscarPorTermo("Joao")).thenReturn(clientes);
+        void deve_retornarTodosPaginado_quando_buscaNula() {
+            Page<Cliente> page = new PageImpl<>(List.of(clienteValido));
+            when(repository.findAll(any(PageRequest.class))).thenReturn(page);
 
-            List<Cliente> resultado = service.buscarComFiltro("Joao");
+            Page<ClienteResponse> responses = service.buscarComFiltroPaginado(null, 0, 10);
 
-            assertEquals(1, resultado.size());
-            verify(repository, times(1)).buscarPorTermo("Joao");
+            assertEquals(1, responses.getTotalElements());
         }
     }
 
     @Nested
-    @DisplayName("Buscar Cliente por ID")
-    class BuscarPorId {
+    @DisplayName("Buscar por ID")
+    class BuscarPorIdTest {
 
         @Test
-        @DisplayName("Deve retornar cliente quando ID existir")
-        void deve_retornar_cliente_quando_id_existir() {
-            Cliente cliente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            when(repository.findById(1L)).thenReturn(Optional.of(cliente));
+        void deve_retornarCliente_quando_idExiste() {
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
 
-            Cliente resultado = service.buscarPorId(1L);
+            ClienteResponse response = service.buscarPorId(1L);
 
-            assertNotNull(resultado);
-            assertEquals(1L, resultado.getId());
+            assertNotNull(response);
+            assertEquals("João da Silva", response.nome());
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando cliente não for encontrado por ID")
-        void deve_retornar_erro_quando_cliente_nao_for_encontrado_por_id() {
-            when(repository.findById(999L)).thenReturn(Optional.empty());
+        void deve_lancarExcecao_quando_clienteNaoEncontrado() {
+            when(repository.findById(99L)).thenReturn(Optional.empty());
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.buscarPorId(999L));
-            assertTrue(ex.getMessage().contains("Cliente não encontrado"));
-        }
-    }
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.buscarPorId(99L)
+            );
 
-    @Nested
-    @DisplayName("Atualizar Cliente - Caso Feliz")
-    class AtualizarCliente_CasoFeliz {
-
-        @Test
-        @DisplayName("Deve atualizar cliente quando dados forem válidos e CPF não mudar")
-        void deve_atualizar_cliente_quando_dados_forem_validos_e_cpf_nao_mudar() {
-            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            Cliente novosDados = ClienteTestDataBuilder.criarClienteAtualizadoComId(1L);
-
-            when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
-            when(repository.save(any(Cliente.class))).thenReturn(novosDados);
-
-            Cliente resultado = service.atualizar(1L, novosDados);
-
-            assertNotNull(resultado);
-            assertEquals("Cliente Atualizado", resultado.getNome());
+            assertEquals("Cliente não encontrado", exception.getMessage());
         }
 
         @Test
-        @DisplayName("Deve atualizar cliente quando novo CPF for único")
-        void deve_atualizar_cliente_quando_novo_cpf_for_unico() {
-            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            Cliente novosDados = ClienteTestDataBuilder.criarClienteValido();
-            novosDados.setCpfCnpj("00000000001");
+        void deve_lancarExcecao_quando_clienteInativo() {
+            Cliente clienteInativo = ClienteFactory.criar()
+                    .comId(1L)
+                    .comNome("João")
+                    .comCpfCnpj("12345678901")
+                    .comEmail("joao@email.com")
+                    .comCelular("11999999999")
+                    .comSexo(SexoEnum.MASCULINO)
+                    .comEndereco(enderecoEntity)
+                    .ativo(false)
+                    .construir();
 
-            when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
-            when(repository.findByCpfCnpj("00000000001")).thenReturn(Optional.empty());
-            when(repository.save(any(Cliente.class))).thenReturn(novosDados);
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteInativo));
 
-            Cliente resultado = service.atualizar(1L, novosDados);
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.buscarPorId(1L)
+            );
 
-            assertEquals("00000000001", resultado.getCpfCnpj());
+            assertEquals("Cliente não encontrado", exception.getMessage());
         }
     }
 
     @Nested
-    @DisplayName("Atualizar Cliente - Erros")
-    class AtualizarCliente_Erros {
+    @DisplayName("Atualizar Cliente")
+    class AtualizarClienteTest {
 
-        @Test
-        @DisplayName("Deve retornar erro ao tentar atualizar cliente inexistente")
-        void deve_retornar_erro_ao_tentar_atualizar_cliente_inexistente() {
-            Cliente novosDados = ClienteTestDataBuilder.criarClienteValido();
+        private ClienteRequest requestAtualizado;
 
-            when(repository.findById(999L)).thenReturn(Optional.empty());
+        @BeforeEach
+        void setUp() {
+            EnderecoRequest enderecoAtualizado = new EnderecoRequest(
+                    "20040002", "Rua da Assembleia", "200",
+                    "Rio de Janeiro", "Centro", SiglaEstados.RJ, "Apto 502"
+            );
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.atualizar(999L, novosDados));
-            assertTrue(ex.getMessage().contains("Cliente não encontrado"));
+            requestAtualizado = new ClienteRequest(
+                    "João Atualizado", "12345678901",
+                    "joao.novo@email.com", "11988888888",
+                    enderecoAtualizado, "FEMININO"
+            );
         }
 
         @Test
-        @DisplayName("Deve retornar erro quando novo CPF já pertencer a outro cliente")
-        void deve_retornar_erro_quando_novo_cpf_ja_pertencer_a_outro_cliente() {
-            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
+        void deve_atualizarCliente_quando_dadosValidos() {
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
+            when(repository.findByEmail("joao.novo@email.com")).thenReturn(Optional.empty());
+            when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
+
+            ClienteResponse response = service.atualizar(1L, requestAtualizado);
+
+            assertNotNull(response);
+            verify(repository).save(any(Cliente.class));
+        }
+
+        @Test
+        void deve_lancarExcecao_quando_clienteNaoEncontradoParaAtualizar() {
+            when(repository.findById(99L)).thenReturn(Optional.empty());
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.atualizar(99L, requestAtualizado)
+            );
+
+            assertEquals("Cliente não encontrado", exception.getMessage());
+        }
+
+        @Test
+        void deve_lancarExcecao_quando_cpfPertenceAOutroCliente() {
             Cliente outroCliente = ClienteFactory.criar()
                     .comId(2L)
-                    .comNome("Outro Cliente")
-                    .comCpfCnpj("99999999999")
-                    .comEmail("outro@email.com")
-                    .comCelular("11988888888")
-                    .comEndereco(ClienteTestDataBuilder.criarEnderecoValido())
-                    .construir();
-            Cliente novosDados = ClienteFactory.criar()
-                    .comNome("Teste")
-                    .comCpfCnpj("99999999999")
-                    .comEmail("teste@email.com")
-                    .comCelular("11999999999")
-                    .comEndereco(ClienteTestDataBuilder.criarEnderecoValido())
+                    .comNome("Maria")
+                    .comCpfCnpj("98765432100")
+                    .comEmail("maria@email.com")
+                    .comCelular("11977777777")
+                    .comSexo(SexoEnum.FEMININO)
+                    .comEndereco(enderecoEntity)
                     .construir();
 
-            when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
-            when(repository.findByCpfCnpj("99999999999")).thenReturn(Optional.of(outroCliente));
+            ClienteRequest requestComOutroCpf = new ClienteRequest(
+                    "João Atualizado", "98765432100",
+                    "joao.novo@email.com", "11988888888",
+                    enderecoRequest, "MASCULINO"
+            );
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.atualizar(1L, novosDados));
-            assertTrue(ex.getMessage().contains("CPF ou CNPJ já cadastrado"));
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
+            when(repository.findByCpfCnpj("98765432100")).thenReturn(Optional.of(outroCliente));
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.atualizar(1L, requestComOutroCpf)
+            );
+
+            assertEquals("CPF ou CNPJ já cadastrado", exception.getMessage());
         }
 
         @Test
-        @DisplayName("Deve permitir atualizar quando mesmo CPF for mantido")
-        void deve_permitir_atualizar_quando_mesmo_cpf_for_mantido() {
-            Cliente clienteExistente = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            Cliente novosDados = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            novosDados.setNome("Nome Atualizado");
-            novosDados.setEmail("novo.email@email.com");
+        void deve_lancarExcecao_quando_emailPertenceAOutroCliente() {
+            Cliente outroCliente = ClienteFactory.criar()
+                    .comId(2L)
+                    .comNome("Maria")
+                    .comCpfCnpj("98765432100")
+                    .comEmail("joao.novo@email.com")
+                    .comCelular("11977777777")
+                    .comSexo(SexoEnum.FEMININO)
+                    .comEndereco(enderecoEntity)
+                    .construir();
 
-            when(repository.findById(1L)).thenReturn(Optional.of(clienteExistente));
-            when(repository.save(any(Cliente.class))).thenReturn(novosDados);
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
+            when(repository.findByEmail("joao.novo@email.com")).thenReturn(Optional.of(outroCliente));
 
-            Cliente resultado = service.atualizar(1L, novosDados);
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.atualizar(1L, requestAtualizado)
+            );
 
-            assertEquals("Nome Atualizado", resultado.getNome());
-            assertEquals("novo.email@email.com", resultado.getEmail());
+            assertEquals("Email já cadastrado", exception.getMessage());
+        }
+
+        @Test
+        void deve_permitirAtualizar_quando_mesmoCpfMantido() {
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
+            when(repository.findByEmail("joao.novo@email.com")).thenReturn(Optional.empty());
+            when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
+
+            ClienteResponse response = service.atualizar(1L, requestAtualizado);
+
+            assertNotNull(response);
+        }
+
+        @Test
+        void deve_permitirAtualizar_quando_mesmoEmailMantido() {
+            ClienteRequest mesmoEmail = new ClienteRequest(
+                    "João Atualizado", "12345678901",
+                    "joao@email.com", "11988888888",
+                    enderecoRequest, "MASCULINO"
+            );
+
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
+            when(repository.save(any(Cliente.class))).thenReturn(clienteValido);
+
+            ClienteResponse response = service.atualizar(1L, mesmoEmail);
+
+            assertNotNull(response);
+        }
+
+        @Test
+        void deve_traduzirErroIntegridade_quando_emailDuplicadoNaAtualizacao() {
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
+            when(repository.findByEmail("joao.novo@email.com")).thenReturn(Optional.empty());
+
+            SQLIntegrityConstraintViolationException sqlException =
+                    new SQLIntegrityConstraintViolationException("Duplicate entry for email");
+            DataIntegrityViolationException integrityException =
+                    new DataIntegrityViolationException("error", sqlException);
+
+            when(repository.save(any(Cliente.class))).thenThrow(integrityException);
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.atualizar(1L, requestAtualizado)
+            );
+
+            assertEquals("Email já cadastrado", exception.getMessage());
         }
     }
 
     @Nested
     @DisplayName("Deletar Cliente")
-    class DeletarCliente {
+    class DeletarClienteTest {
 
         @Test
-        @DisplayName("Deve realizar soft delete marcando cliente como inativo")
-        void deve_realizar_soft_delete_marcando_cliente_como_inativo() {
-            Cliente clienteAtivo = new Cliente();
-            clienteAtivo.setId(1L);
-            clienteAtivo.setAtivo(true);
-            
-            when(repository.findById(1L)).thenReturn(Optional.of(clienteAtivo));
-            when(repository.save(any(Cliente.class))).thenReturn(clienteAtivo);
+        void deve_desativarCliente_quando_clienteAtivo() {
+            when(repository.findById(1L)).thenReturn(Optional.of(clienteValido));
 
             service.deletar(1L);
 
-            assertFalse(clienteAtivo.getAtivo());
-            verify(repository).save(any(Cliente.class));
+            verify(repository).save(clienteValido);
+            assertFalse(clienteValido.getAtivo());
         }
 
         @Test
-        @DisplayName("Deve retornar erro ao tentar deletar cliente inexistente")
-        void deve_retornar_erro_ao_tentar_deletar_cliente_inexistente() {
-            when(repository.findById(999L)).thenReturn(Optional.empty());
+        void deve_lancarExcecao_quando_tentarDeletarClienteInativo() {
+            Cliente clienteInativo = ClienteFactory.criar()
+                    .comId(1L)
+                    .comNome("João")
+                    .comCpfCnpj("12345678901")
+                    .comEmail("joao@email.com")
+                    .comCelular("11999999999")
+                    .comSexo(SexoEnum.MASCULINO)
+                    .comEndereco(enderecoEntity)
+                    .ativo(false)
+                    .construir();
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.deletar(999L));
-            assertTrue(ex.getMessage().contains("Cliente não encontrado"));
-        }
-
-        @Test
-        @DisplayName("Deve retornar erro ao tentar deletar cliente já inativo")
-        void deve_retornar_erro_ao_tentar_deletar_cliente_ja_inativo() {
-            Cliente clienteInativo = new Cliente();
-            clienteInativo.setId(1L);
-            clienteInativo.setAtivo(false);
-            
             when(repository.findById(1L)).thenReturn(Optional.of(clienteInativo));
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.deletar(1L));
-            assertTrue(ex.getMessage().contains("Cliente não encontrado"));
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.deletar(1L)
+            );
+
+            assertEquals("Cliente não encontrado", exception.getMessage());
+        }
+
+        @Test
+        void deve_lancarExcecao_quando_clienteNaoEncontradoParaDeletar() {
+            when(repository.findById(99L)).thenReturn(Optional.empty());
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.deletar(99L)
+            );
+
+            assertEquals("Cliente não encontrado", exception.getMessage());
         }
     }
 
     @Nested
     @DisplayName("Listar Clientes Excluídos")
-    class ListarClientesExcluidos {
+    class ListarExcluidosTest {
 
         @Test
-        @DisplayName("Deve retornar lista vazia quando não existirem clientes excluídos")
-        void deve_retornar_lista_vazia_quando_nao_existirem_clientes_excluidos() {
+        void deve_retornarExcluidos_quando_existemClientesExcluidos() {
+            Cliente excluido = ClienteFactory.criar()
+                    .comId(2L)
+                    .comNome("Maria")
+                    .comCpfCnpj("98765432100")
+                    .comEmail("maria@email.com")
+                    .comCelular("11977777777")
+                    .comSexo(SexoEnum.FEMININO)
+                    .comEndereco(enderecoEntity)
+                    .ativo(false)
+                    .construir();
+
+            when(repository.findAllExcluidos()).thenReturn(List.of(excluido));
+
+            List<ClienteResponse> responses = service.listarExcluidos();
+
+            assertEquals(1, responses.size());
+            assertEquals("Maria", responses.getFirst().nome());
+        }
+
+        @Test
+        void deve_retornarListaVazia_quando_nenhumClienteExcluido() {
             when(repository.findAllExcluidos()).thenReturn(List.of());
 
-            List<Cliente> resultado = service.listarExcluidos();
+            List<ClienteResponse> responses = service.listarExcluidos();
 
-            assertTrue(resultado.isEmpty());
-            verify(repository, times(1)).findAllExcluidos();
+            assertTrue(responses.isEmpty());
         }
 
         @Test
-        @DisplayName("Deve retornar todos os clientes excluídos quando existirem registros")
-        void deve_retornar_todos_os_clientes_excluidos_quando_existirem_registros() {
-            Cliente cliente1 = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            cliente1.setAtivo(false);
-            Cliente cliente2 = ClienteTestDataBuilder.criarClienteValidoComId(2L);
-            cliente2.setAtivo(false);
-            List<Cliente> clientes = List.of(cliente1, cliente2);
-            
-            when(repository.findAllExcluidos()).thenReturn(clientes);
+        void deve_retornarExcluidosPaginado_quando_solicitado() {
+            Cliente excluido = ClienteFactory.criar()
+                    .comId(2L)
+                    .comNome("Maria")
+                    .comCpfCnpj("98765432100")
+                    .comEmail("maria@email.com")
+                    .comCelular("11977777777")
+                    .comSexo(SexoEnum.FEMININO)
+                    .comEndereco(enderecoEntity)
+                    .ativo(false)
+                    .construir();
 
-            List<Cliente> resultado = service.listarExcluidos();
+            Page<Cliente> page = new PageImpl<>(List.of(excluido));
+            when(repository.findAllExcluidos(any(PageRequest.class))).thenReturn(page);
 
-            assertEquals(2, resultado.size());
-            verify(repository, times(1)).findAllExcluidos();
+            Page<ClienteResponse> responses = service.listarExcluidosPaginado(0, 10);
+
+            assertEquals(1, responses.getTotalElements());
         }
     }
 
     @Nested
-    @DisplayName("Listar Clientes Excluídos Paginado")
-    class ListarClientesExcluidosPaginado {
+    @DisplayName("Recuperar Cliente")
+    class RecuperarClienteTest {
 
         @Test
-        @DisplayName("Deve retornar página de clientes excluídos")
-        void deve_retornar_pagina_de_clientes_excluidos() {
-            org.springframework.data.domain.Page<Cliente> pageMock = org.mockito.Mockito.mock(org.springframework.data.domain.Page.class);
-            when(repository.findAllExcluidos(any(org.springframework.data.domain.Pageable.class)))
-                    .thenReturn(pageMock);
+        void deve_recuperarCliente_quando_clienteExcluido() {
+            when(repository.findExcluidoById(1L)).thenReturn(Optional.of(clienteValido));
+            when(repository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            org.springframework.data.domain.Page<Cliente> resultado = service.listarExcluidosPaginado(0, 10);
+            ClienteResponse response = service.recuperar(1L);
 
-            assertNotNull(resultado);
-            verify(repository, times(1)).findAllExcluidos(any(org.springframework.data.domain.Pageable.class));
-        }
-    }
-
-    @Nested
-    @DisplayName("Recuperar Cliente Excluído")
-    class RecuperarClienteExcluido {
-
-        @Test
-        @DisplayName("Deve recuperar cliente excluído com sucesso")
-        void deve_recuperar_cliente_excluido_com_sucesso() {
-            Cliente clienteExcluido = ClienteTestDataBuilder.criarClienteValidoComId(1L);
-            clienteExcluido.setAtivo(false);
-            
-            when(repository.findExcluidoById(1L)).thenReturn(Optional.of(clienteExcluido));
-            doNothing().when(repository).recuperarCliente(1L);
-
-            Cliente resultado = service.recuperar(1L);
-
-            assertNotNull(resultado);
-            assertTrue(resultado.getAtivo());
-            verify(repository, times(1)).findExcluidoById(1L);
-            verify(repository, times(1)).recuperarCliente(1L);
+            assertNotNull(response);
+            verify(repository).save(any(Cliente.class));
         }
 
         @Test
-        @DisplayName("Deve retornar erro ao tentar recuperar cliente inexistente")
-        void deve_retornar_erro_ao_tentar_recuperar_cliente_inexistente() {
-            when(repository.findExcluidoById(999L)).thenReturn(Optional.empty());
+        void deve_lancarExcecao_quando_clienteExcluidoNaoEncontrado() {
+            when(repository.findExcluidoById(99L)).thenReturn(Optional.empty());
 
-            BusinessException ex = assertThrows(BusinessException.class, () -> service.recuperar(999L));
-            assertTrue(ex.getMessage().contains("Cliente excluído não encontrado"));
-            verify(repository, never()).recuperarCliente(anyLong());
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> service.recuperar(99L)
+            );
+
+            assertEquals("Cliente excluído não encontrado", exception.getMessage());
         }
-    }
-}
-
-class ClienteTestDataBuilder {
-    static Cliente criarClienteValido() {
-        return ClienteFactory.criar()
-                .comNome("João da Silva")
-                .comCpfCnpj("12345678901")
-                .comEmail("joao@email.com")
-                .comCelular("11999999999")
-                .comEndereco(criarEnderecoValido())
-                .construir();
-    }
-
-    static Cliente criarClienteValidoComId(Long id) {
-        return ClienteFactory.criar()
-                .comId(id)
-                .comNome("João da Silva")
-                .comCpfCnpj("12345678901")
-                .comEmail("joao@email.com")
-                .comCelular("11999999999")
-                .comEndereco(criarEnderecoValido())
-                .construir();
-    }
-
-    static Cliente criarClienteAtualizadoComId(Long id) {
-        return ClienteFactory.criar()
-                .comId(id)
-                .comNome("Cliente Atualizado")
-                .comCpfCnpj("12345678901")
-                .comEmail("cliente.atualizado@email.com")
-                .comCelular("11977777777")
-                .comEndereco(criarEnderecoAtualizado())
-                .construir();
-    }
-
-    static Endereco criarEnderecoValido() {
-        return Endereco.builder()
-                .cep("01001000")
-                .logradouro("Praça da Sé")
-                .numero("100")
-                .cidade("São Paulo")
-                .bairro("Sé")
-                .estado(SiglaEstados.SP)
-                .complemento("Sala 101")
-                .build();
-    }
-
-    static Endereco criarEnderecoAtualizado() {
-        return Endereco.builder()
-                .cep("20040002")
-                .logradouro("Rua da Assembleia")
-                .numero("200")
-                .cidade("Rio de Janeiro")
-                .bairro("Centro")
-                .estado(SiglaEstados.RJ)
-                .complemento("Apto 502")
-                .build();
     }
 }

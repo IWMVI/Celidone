@@ -39,22 +39,20 @@ public class ClienteService {
         }
     }
 
-    // ===============================
-    // READ - LISTAR
-    // ===============================
-    public List<Cliente> listar() {
-        return repository.findAll();
+    public List<ClienteResponse> listar() {
+        return repository.findAll().stream()
+                .map(ClienteMapper::toResponse)
+                .toList();
     }
 
-    // ===============================
-    // READ - BUSCAR COM FILTRO E PAGINAÇÃO
-    // ===============================
-    public Page<Cliente> buscarComFiltroPaginado(String busca, int pagina, int tamanho) {
+    public Page<ClienteResponse> buscarComFiltroPaginado(String busca, int pagina, int tamanho) {
         Pageable pageable = PageRequest.of(pagina, tamanho);
         if (isBlank(busca)) {
             return repository.findAll(pageable);
         }
-        return repository.buscarPorTermoPaginado(busca.trim(), pageable);
+
+        return repository.buscarPorTermoPaginado(busca.trim(), pageable)
+                .map(ClienteMapper::toResponse);
     }
 
     // ===============================
@@ -64,7 +62,10 @@ public class ClienteService {
         if (isBlank(busca)) {
             return repository.findAll();
         }
-        return repository.buscarPorTermo(busca.trim());
+
+        return repository.buscarPorTermo(busca.trim()).stream()
+                .map(ClienteMapper::toResponse)
+                .toList();
     }
 
     // ===============================
@@ -78,9 +79,6 @@ public class ClienteService {
         return cliente;
     }
 
-    // ===============================
-    // UPDATE
-    // ===============================
     @Transactional
     public Cliente atualizar(Long id, Cliente novosDados) {
         Cliente cliente = buscarPorId(id);
@@ -91,9 +89,6 @@ public class ClienteService {
         return repository.save(cliente);
     }
 
-    // ===============================
-    // DELETE (SOFT DELETE)
-    // ===============================
     @Transactional
     public void deletar(Long id) {
         // Verifica se o cliente existe e está ativo
@@ -114,20 +109,16 @@ public class ClienteService {
         return repository.findAllExcluidos();
     }
 
-    public Page<Cliente> listarExcluidosPaginado(int pagina, int tamanho) {
+    public Page<ClienteResponse> listarExcluidosPaginado(int pagina, int tamanho) {
         Pageable pageable = PageRequest.of(pagina, tamanho);
-        return repository.findAllExcluidos(pageable);
+        return repository.findAllExcluidos(pageable).map(ClienteMapper::toResponse);
     }
 
-    // ===============================
-    // RECUPERAR CLIENTE EXCLUÍDO
-    // ===============================
     @Transactional
-    public Cliente recuperar(Long id) {
+    public ClienteResponse recuperar(Long id) {
         Cliente cliente = repository.findExcluidoById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente excluído", id));
 
-        repository.recuperarCliente(id);
         cliente.setAtivo(true);
         return cliente;
     }
@@ -195,9 +186,7 @@ public class ClienteService {
             throw new BusinessException("Telefone é obrigatório");
         }
 
-        if (cliente.getEndereco() == null) {
-            throw new BusinessException("Endereço é obrigatório");
-        }
+        return cliente;
     }
 
     private void validarCpfUnico(String cpf) {
@@ -208,5 +197,19 @@ public class ClienteService {
     private void validarEmailUnico(String email) {
         repository.findByEmail(email)
                 .ifPresent(c -> { throw new BusinessException("Email já cadastrado"); });
+    }
+
+    private BusinessException traduzirErroIntegridade(DataIntegrityViolationException e) {
+        if (e.getCause() != null && e.getCause().getMessage() != null) {
+            String message = e.getCause().getMessage().toLowerCase();
+            if (message.contains("cpf") || message.contains("cnpj")) {
+                return new BusinessException("CPF ou CNPJ já cadastrado");
+            }
+            if (message.contains("email")) {
+                return new BusinessException("Email já cadastrado");
+            }
+        }
+
+        return new BusinessException("Erro ao salvar cliente. Violação de integridade de dados.");
     }
 }
