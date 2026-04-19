@@ -42,6 +42,17 @@ public class ClienteMapper {
                 .build();
     }
 
+    public static void updateEntity(Cliente entity, Cliente novosDados) {
+        entity.atualizar(
+                novosDados.getNome(),
+                novosDados.getCpfCnpj(),
+                novosDados.getEmail(),
+                novosDados.getCelular(),
+                novosDados.getSexo(),
+                novosDados.getEndereco()
+        );
+    }
+
     public static ClienteResponse toResponse(Cliente cliente) {
         return new ClienteResponse(
                 cliente.getId(),

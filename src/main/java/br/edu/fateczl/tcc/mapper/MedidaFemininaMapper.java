@@ -4,6 +4,7 @@ import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.MedidaFeminina;
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaRequest;
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaResponse;
+import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaUpdateRequest;
 import br.edu.fateczl.tcc.enums.SexoEnum;
 
 import java.time.LocalDate;
@@ -27,6 +28,23 @@ public class MedidaFemininaMapper {
                 .quadril(dto.quadril())
                 .comprimentoVestido(dto.comprimentoVestido())
                 .build();
+    }
+
+    public static void updateEntity(MedidaFeminina entity, MedidaFemininaUpdateRequest dto) {
+        entity.atualizar(
+                dto.cintura(),
+                dto.manga(),
+                SexoEnum.FEMININO,
+                LocalDate.now(),
+                entity.getCliente(),
+                dto.alturaBusto(),
+                dto.raioBusto(),
+                dto.corpo(),
+                dto.ombro(),
+                dto.decote(),
+                dto.quadril(),
+                dto.comprimentoVestido()
+        );
     }
 
     public static MedidaFemininaResponse toResponse(MedidaFeminina entity) {
