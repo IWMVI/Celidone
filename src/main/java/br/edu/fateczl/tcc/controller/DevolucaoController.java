@@ -2,6 +2,7 @@ package br.edu.fateczl.tcc.controller;
 
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
 import br.edu.fateczl.tcc.service.DevolucaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -80,7 +81,7 @@ public class DevolucaoController {
     @PutMapping("/{id}")
     public ResponseEntity<DevolucaoResponse> atualizar(
             @PathVariable Long id,
-            @Valid @RequestBody DevolucaoRequest dto) {
+            @Valid @RequestBody DevolucaoUpdateRequest dto) {
 
         return ResponseEntity.ok(devolucaoService.atualizar(id, dto));
     }

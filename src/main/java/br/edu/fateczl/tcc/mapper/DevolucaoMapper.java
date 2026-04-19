@@ -4,6 +4,7 @@ import br.edu.fateczl.tcc.domain.Aluguel;
 import br.edu.fateczl.tcc.domain.Devolucao;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
 
 public class DevolucaoMapper {
 
@@ -18,12 +19,11 @@ public class DevolucaoMapper {
                 .build();
     }
 
-    public static void updateEntity(Devolucao entity, DevolucaoRequest dto, Aluguel aluguel) {
+    public static void updateEntity(Devolucao entity, DevolucaoUpdateRequest dto) {
         entity.atualizar(
                 dto.dataDevolucao(),
                 dto.observacoes(),
-                dto.valorMulta(),
-                aluguel
+                dto.valorMulta()
         );
     }
 

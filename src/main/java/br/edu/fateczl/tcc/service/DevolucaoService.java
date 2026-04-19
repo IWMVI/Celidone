@@ -4,6 +4,7 @@ import br.edu.fateczl.tcc.domain.Aluguel;
 import br.edu.fateczl.tcc.domain.Devolucao;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.mapper.DevolucaoMapper;
@@ -51,12 +52,11 @@ public class DevolucaoService {
     // UPDATE
     // ===============================
     @Transactional
-    public DevolucaoResponse atualizar(Long id, DevolucaoRequest dto) {
+    public DevolucaoResponse atualizar(Long id, DevolucaoUpdateRequest dto) {
 
         Devolucao devolucao = buscarDevolucaoOuFalhar(id);
-        Aluguel aluguel = buscarAluguelOuFalhar(dto.idAluguel());
 
-        DevolucaoMapper.updateEntity(devolucao, dto, aluguel);
+        DevolucaoMapper.updateEntity(devolucao, dto);
 
         devolucaoRepository.save(devolucao);
         return DevolucaoMapper.toResponse(devolucao);
@@ -110,19 +110,4 @@ public class DevolucaoService {
             throw new BusinessException("Já existe devolução para este aluguel");
         }
     }
-
-
-    /*
-    TODO: discutir em grupo depois
-    - Não permite duas devoluções para o mesmo aluguel - já aplicado em "deveExistirApenasUmaDevolucaoPorAluguel"
-    - O atualizar permite alterar o aluguel da devolução, o que é um problema. Duas soluções possíveis:
-      - Bloquear troca de aluguel no update
-      - Validar se já existe devolução no novo aluguel
-    - Permitir registrar apenas devolução de alugueis ativos.
-      - Código: if (!aluguel.getStatus().equals(StatusAluguel.ATIVO)
-    - Tem métodos do repository que não estão sendo utilizados, mas são interessantes:
-      - findByAluguelId
-      - findDevolucoesComMulta
-      - findByDataDevolucaoBetween
-     */
 }

@@ -86,11 +86,10 @@ public class Devolucao {
         this.aluguel = aluguel;
     }
 
-    public void atualizar(LocalDate dataDevolucao, String observacoes, BigDecimal valorMulta, Aluguel aluguel) {
+    public void atualizar(LocalDate dataDevolucao, String observacoes, BigDecimal valorMulta) {
         this.dataDevolucao = dataDevolucao;
         this.observacoes = observacoes;
         this.valorMulta = valorMulta;
-        this.aluguel = aluguel;
     }
 
     @Override
