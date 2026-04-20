@@ -35,8 +35,10 @@ public interface ItemAluguelRepository extends JpaRepository<ItemAluguel, Long> 
            AND :dataDevolucao >= i.aluguel.dataRetirada
           )
     """)
-    boolean trajeIndisponivelNoPeriodo(Long trajeId,
-                                       LocalDate dataRetirada,
-                                       LocalDate dataDevolucao,
-                                       Long aluguelId);
+    boolean trajeIndisponivelNoPeriodo(
+            @Param("trajeId") Long trajeId,
+            @Param("dataRetirada") LocalDate dataRetirada,
+            @Param("dataDevolucao") LocalDate dataDevolucao,
+            @Param("aluguelId") Long aluguelId
+    );
 }
