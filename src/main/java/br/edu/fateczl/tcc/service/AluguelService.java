@@ -62,12 +62,14 @@ public class AluguelService {
 
         // Criar itens
         List<ItemAluguel> itens = criarItens(dto.itens(), aluguel, null);
+        aluguel.setItens(itens);
 
         // Calcular valor total dos itens
         BigDecimal total = calcularValorTotal(itens);
 
         // Subtrair o valor do desconto (se houver)
-        BigDecimal valorComDesconto = total.subtract(dto.valorDesconto());
+        BigDecimal valorDoDesconto = dto.valorDesconto() != null ? dto.valorDesconto() : BigDecimal.ZERO;
+        BigDecimal valorComDesconto = total.subtract(valorDoDesconto);
         aluguel.setValorTotal(valorComDesconto);
 
         // Verificar se o valor com desconto é negativo
@@ -116,7 +118,8 @@ public class AluguelService {
         BigDecimal total = calcularValorTotal(itensAtualizados);
 
         // Subtrair o valor do desconto (se houver)
-        BigDecimal valorComDesconto = total.subtract(dto.valorDesconto());
+        BigDecimal valorDoDesconto = dto.valorDesconto() != null ? dto.valorDesconto() : BigDecimal.ZERO;
+        BigDecimal valorComDesconto = total.subtract(valorDoDesconto);
 
         // Verificar se o valor com desconto é negativo
         validarValorComDesconto(valorComDesconto);
