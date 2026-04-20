@@ -1,6 +1,5 @@
 package br.edu.fateczl.tcc.domain;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -10,7 +9,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity(name = "item_aluguel")
@@ -21,12 +19,6 @@ public class ItemAluguel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private int quantidade;
-
-    @Column(precision = 8, scale = 2, nullable = false)
-    private BigDecimal subtotal;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_aluguel", nullable = false)
     private Aluguel aluguel;
@@ -35,13 +27,12 @@ public class ItemAluguel {
     @JoinColumn(name = "id_traje", nullable = false)
     private Traje traje;
 
+
     public ItemAluguel() {
     }
 
-    public ItemAluguel(Long id, int quantidade, BigDecimal subtotal, Aluguel aluguel, Traje traje) {
+    public ItemAluguel(Long id, Aluguel aluguel, Traje traje) {
         this.id = id;
-        this.quantidade = quantidade;
-        this.subtotal = subtotal;
         this.aluguel = aluguel;
         this.traje = traje;
     }
@@ -52,22 +43,6 @@ public class ItemAluguel {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public int getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(int quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public BigDecimal getSubtotal() {
-        return subtotal;
-    }
-
-    public void setSubtotal(BigDecimal subtotal) {
-        this.subtotal = subtotal;
     }
 
     public Aluguel getAluguel() {
@@ -86,9 +61,7 @@ public class ItemAluguel {
         this.traje = traje;
     }
 
-    public void atualizar(int quantidade, BigDecimal subtotal, Aluguel aluguel, Traje traje) {
-        this.quantidade = quantidade;
-        this.subtotal = subtotal;
+    public void atualizar(Aluguel aluguel, Traje traje) {
         this.aluguel = aluguel;
         this.traje = traje;
     }
@@ -110,10 +83,41 @@ public class ItemAluguel {
     public String toString() {
         return "ItemAluguel{" +
                 "id=" + id +
-                ", quantidade=" + quantidade +
-                ", subtotal=" + subtotal +
                 ", aluguel=" + aluguel +
                 ", traje=" + traje +
                 '}';
+    }
+
+    public static ItemAluguelBuilder builder() {
+        return new ItemAluguelBuilder();
+    }
+
+    public static class ItemAluguelBuilder {
+        private Long id;
+        private Aluguel aluguel;
+        private Traje traje;
+
+        public ItemAluguelBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public ItemAluguelBuilder aluguel(Aluguel aluguel) {
+            this.aluguel = aluguel;
+            return this;
+        }
+
+        public ItemAluguelBuilder traje(Traje traje) {
+            this.traje = traje;
+            return this;
+        }
+
+        public ItemAluguel build() {
+            ItemAluguel item = new ItemAluguel();
+            item.id = this.id;
+            item.aluguel = this.aluguel;
+            item.traje = this.traje;
+            return item;
+        }
     }
 }
