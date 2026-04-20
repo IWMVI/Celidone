@@ -16,9 +16,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity(name = "traje")
@@ -74,10 +76,23 @@ public class Traje {
     @Enumerated(EnumType.STRING)
     private CondicaoTraje condicao;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String imagemUrl;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime dataCadastro;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dataCadastro = LocalDateTime.now();
+    }
+
     public Traje() {
     }
 
-    public Traje(Long id, String descricao, TamanhoTraje tamanho, CorTraje cor, TipoTraje tipo, SexoEnum genero, BigDecimal valorItem, StatusTraje status, String nome, TecidoTraje tecido, EstampaTraje estampa, TexturaTraje textura, CondicaoTraje condicao) {
+    public Traje(Long id, String descricao, TamanhoTraje tamanho, CorTraje cor, TipoTraje tipo, SexoEnum genero,
+            BigDecimal valorItem, StatusTraje status, String nome, TecidoTraje tecido, EstampaTraje estampa,
+            TexturaTraje textura, CondicaoTraje condicao, String imagemUrl) {
         this.id = id;
         this.descricao = descricao;
         this.tamanho = tamanho;
@@ -91,8 +106,8 @@ public class Traje {
         this.estampa = estampa;
         this.textura = textura;
         this.condicao = condicao;
+        this.imagemUrl = imagemUrl;
     }
-
 
     public static TrajeBuilder builder() {
         return new TrajeBuilder();
@@ -112,6 +127,7 @@ public class Traje {
         private EstampaTraje estampa;
         private TexturaTraje textura;
         private CondicaoTraje condicao;
+        private String imagemUrl;
 
         public TrajeBuilder id(Long id) {
             this.id = id;
@@ -178,6 +194,11 @@ public class Traje {
             return this;
         }
 
+        public TrajeBuilder imagemUrl(String imagemUrl) {
+            this.imagemUrl = imagemUrl;
+            return this;
+        }
+
         public Traje build() {
             Traje traje = new Traje();
             traje.setId(this.id);
@@ -193,6 +214,7 @@ public class Traje {
             traje.setEstampa(this.estampa);
             traje.setTextura(this.textura);
             traje.setCondicao(this.condicao);
+            traje.setImagemUrl(this.imagemUrl);
             return traje;
         }
     }
@@ -301,11 +323,30 @@ public class Traje {
         this.condicao = condicao;
     }
 
-    public void atualizar(String descricao, TamanhoTraje tamanho, CorTraje cor, TipoTraje tipo, SexoEnum genero, BigDecimal valorItem, StatusTraje status, String nome, TecidoTraje tecido, EstampaTraje estampa, TexturaTraje textura, CondicaoTraje condicao) {
+    public String getImagemUrl() {
+        return imagemUrl;
+    }
+
+    public void setImagemUrl(String imagemUrl) {
+        this.imagemUrl = imagemUrl;
+    }
+
+    public LocalDateTime getDataCadastro() {
+        return dataCadastro;
+    }
+
+    public void setDataCadastro(LocalDateTime dataCadastro) {
+        this.dataCadastro = dataCadastro;
+    }
+
+    public void atualizar(String descricao, TamanhoTraje tamanho, CorTraje cor, TipoTraje tipo, SexoEnum genero,
+            BigDecimal valorItem, StatusTraje status, String nome, TecidoTraje tecido, EstampaTraje estampa,
+            TexturaTraje textura, CondicaoTraje condicao, String imagemUrl) {
         this.descricao = descricao;
         this.tamanho = tamanho;
         this.cor = cor;
         this.tipo = tipo;
+        this.imagemUrl = imagemUrl;
         this.genero = genero;
         this.valorItem = valorItem;
         this.status = status;
@@ -318,8 +359,10 @@ public class Traje {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Traje traje = (Traje) o;
         return Objects.equals(id, traje.id);
     }
@@ -338,6 +381,7 @@ public class Traje {
                 ", cor=" + cor +
                 ", tipo=" + tipo +
                 ", genero=" + genero +
+                ", imagemUrl=" + (imagemUrl != null ? "present" : "null") +
                 ", valorItem=" + valorItem +
                 ", status=" + status +
                 ", nome='" + nome + '\'' +

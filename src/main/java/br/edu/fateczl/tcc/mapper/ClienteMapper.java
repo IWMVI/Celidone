@@ -37,9 +37,20 @@ public class ClienteMapper {
                 .numero(dto.numero())
                 .cidade(dto.cidade())
                 .bairro(dto.bairro())
-                .estado(dto.getEstadoEnum())
+                .estado(dto.estado())
                 .complemento(dto.complemento())
                 .build();
+    }
+
+    public static void updateEntity(Cliente entity, Cliente novosDados) {
+        entity.atualizar(
+                novosDados.getNome(),
+                novosDados.getCpfCnpj(),
+                novosDados.getEmail(),
+                novosDados.getCelular(),
+                novosDados.getSexo(),
+                novosDados.getEndereco()
+        );
     }
 
     public static ClienteResponse toResponse(Cliente cliente) {

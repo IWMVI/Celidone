@@ -1,20 +1,23 @@
 package br.edu.fateczl.tcc.mapper;
 
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Endereco;
 import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
 import br.edu.fateczl.tcc.dto.EnderecoRequest;
-import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.enums.SexoEnum;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-
-import static org.junit.jupiter.api.Assertions.*;
+import br.edu.fateczl.tcc.enums.SiglaEstados;
 
 @DisplayName("Testes do ClienteMapper")
 class ClienteMapperTest {
@@ -24,8 +27,8 @@ class ClienteMapperTest {
     class ToEntityTest {
         
         @Test
-        void deveConverter_request_para_entity() {
-            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+        void deve_converterParaEntidade_quando_requestValido() {
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", enderecoRequest, "MASCULINO");
 
             Cliente entity = ClienteMapper.toEntity(request);
@@ -40,7 +43,7 @@ class ClienteMapperTest {
         }
 
         @Test
-        void deve_lancar_exception_quando_request_for_nulo() {
+        void deve_lancarExcecao_quando_enderecoNulo() {
             ClienteRequest request = new ClienteRequest("João", "12345678901", "joao@email.com", "11999999999", null, "MASCULINO");
             
             assertThrows(NullPointerException.class, () -> ClienteMapper.toEntity(request));
@@ -48,8 +51,28 @@ class ClienteMapperTest {
 
         @Test
         void deve_definir_sexo_neutro_quando_sexo_for_nulo() {
-            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", "SP", "Sala 1");
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
             ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, null);
+
+            Cliente entity = ClienteMapper.toEntity(request);
+
+            assertEquals(SexoEnum.NEUTRO, entity.getSexo());
+        }
+
+        @Test
+        void deve_definir_sexo_neutro_quando_sexo_for_vazio() {
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
+            ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, "");
+
+            Cliente entity = ClienteMapper.toEntity(request);
+
+            assertEquals(SexoEnum.NEUTRO, entity.getSexo());
+        }
+
+        @Test
+        void deve_definir_sexo_neutro_quando_sexo_for_espacos() {
+            EnderecoRequest enderecoRequest = new EnderecoRequest("01001000", "Rua Teste", "100", "São Paulo", "Centro", SiglaEstados.SP, "Sala 1");
+            ClienteRequest request = new ClienteRequest("Empresa XPTO LTDA", "12345678000195", "empresa@email.com", "11988888888", enderecoRequest, "   ");
 
             Cliente entity = ClienteMapper.toEntity(request);
 
@@ -62,7 +85,7 @@ class ClienteMapperTest {
     class ToResponseTest {
         
         @Test
-        void deveConverter_entity_para_response() {
+        void deve_converterParaResponse_quando_entidadeValida() {
             Endereco endereco = Endereco.builder()
                     .cep("01001000")
                     .logradouro("Rua Teste")
@@ -93,7 +116,7 @@ class ClienteMapperTest {
         }
 
         @Test
-        void deveConverter_entity_para_response_com_endereco_nulo() {
+        void deve_converterParaResponse_quando_enderecoNulo() {
             Cliente entity = ClienteFactory.criar()
                     .comId(1L)
                     .comNome("João")

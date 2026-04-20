@@ -11,14 +11,16 @@ import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaRequest;
 import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaResponse;
 import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaUpdateRequest;
 import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.mapper.MedidaFemininaMapper;
 import br.edu.fateczl.tcc.mapper.MedidaMasculinaMapper;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
 import br.edu.fateczl.tcc.repository.MedidaRepository;
+import br.edu.fateczl.tcc.specification.MedidaSpecification;
 import br.edu.fateczl.tcc.strategy.MedidaStrategy;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +31,9 @@ public class MedidaService {
     private final ClienteRepository clienteRepository;
     private final MedidaRepository medidaRepository;
     private final Map<SexoEnum, MedidaStrategy<?>> strategyMap;
-    private static final String MEDIDA_NAO_ENCONTRADA = "Medida não encontrada: %d";
+
+    private static final String RESOURCE_MEDIDA = "Medida";
+    private static final String RESOURCE_CLIENTE = "Cliente";
 
     public MedidaService(ClienteRepository clienteRepository,
                          MedidaRepository medidaRepository,
@@ -69,23 +73,10 @@ public class MedidaService {
 
 
     // ===============================
-    // READ - por ID (dinâmico)
+    // READ - por ID
     // ===============================
     public Object buscarPorId(Long id) {
-        Medida medida = medidaRepository.findByIdWithCliente(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        MEDIDA_NAO_ENCONTRADA.formatted(id)
-                ));
-
-        if (medida instanceof MedidaFeminina feminina) {
-            return MedidaFemininaMapper.toResponse(feminina);
-        }
-
-        if (medida instanceof MedidaMasculina masculina) {
-            return MedidaMasculinaMapper.toResponse(masculina);
-        }
-
-        throw new IllegalStateException("Tipo de medida desconhecido");
+        return toResponse(buscarOuFalharComCliente(id));
     }
 
 
@@ -93,70 +84,29 @@ public class MedidaService {
     // READ - filtros
     // ===============================
     public List<Object> buscar(Long clienteId, SexoEnum sexo) {
+        Specification<Medida> spec = Specification
+                .where(MedidaSpecification.comClienteId(clienteId))
+                .and(MedidaSpecification.comSexo(sexo));
 
-        List<Medida> medidas;
-
-        if (clienteId != null && sexo != null) {
-            medidas = medidaRepository.findByClienteIdAndSexo(clienteId, sexo);
-        } else if (clienteId != null) {
-            medidas = medidaRepository.findByClienteId(clienteId);
-        } else if (sexo != null) {
-            medidas = medidaRepository.findBySexo(sexo);
-        } else {
-            medidas = medidaRepository.findAll();
-        }
-
-        return medidas.stream()
+        return medidaRepository.findAll(spec).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
 
     // ===============================
-    // UPDATES
+    // UPDATE
     // ===============================
     public MedidaFemininaResponse atualizarFeminina(Long id, MedidaFemininaUpdateRequest dto) {
-        MedidaFeminina medida = (MedidaFeminina) medidaRepository.findByIdWithCliente(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        MEDIDA_NAO_ENCONTRADA.formatted(id)
-                ));
-
-        medida.atualizar(
-                dto.cintura(),
-                dto.manga(),
-                SexoEnum.FEMININO,
-                LocalDate.now(),
-                medida.getCliente(),
-                dto.alturaBusto(),
-                dto.raioBusto(),
-                dto.corpo(),
-                dto.ombro(),
-                dto.decote(),
-                dto.quadril(),
-                dto.comprimentoVestido()
-        );
-
+        MedidaFeminina medida = (MedidaFeminina) buscarOuFalharComCliente(id);
+        MedidaFemininaMapper.updateEntity(medida, dto);
         medidaRepository.save(medida);
         return MedidaFemininaMapper.toResponse(medida);
     }
 
     public MedidaMasculinaResponse atualizarMasculina(Long id, MedidaMasculinaUpdateRequest dto) {
-        MedidaMasculina medida = (MedidaMasculina) medidaRepository.findByIdWithCliente(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        MEDIDA_NAO_ENCONTRADA.formatted(id)
-                ));
-
-        medida.atualizar(
-                dto.cintura(),
-                dto.manga(),
-                SexoEnum.MASCULINO,
-                LocalDate.now(),
-                medida.getCliente(),
-                dto.colarinho(),
-                dto.barra(),
-                dto.torax()
-        );
-
+        MedidaMasculina medida = (MedidaMasculina) buscarOuFalharComCliente(id);
+        MedidaMasculinaMapper.updateEntity(medida, dto);
         medidaRepository.save(medida);
         return MedidaMasculinaMapper.toResponse(medida);
     }
@@ -166,13 +116,9 @@ public class MedidaService {
     // DELETE
     // ===============================
     public void deletar(Long id) {
-        Medida medida = medidaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        MEDIDA_NAO_ENCONTRADA.formatted(id)
-                ));
-
-        medidaRepository.delete(medida);
+        medidaRepository.delete(buscarOuFalhar(id));
     }
+
 
     // ===============================
     // HELPERS
@@ -202,11 +148,18 @@ public class MedidaService {
         if (clienteId == null) {
             throw new IllegalArgumentException("ID do cliente não pode ser nulo");
         }
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + clienteId));
-        if (cliente.getId() == null) {
-            throw new IllegalArgumentException("Cliente retornou ID nulo");
-        }
-        return cliente;
+
+        return clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_CLIENTE, clienteId));
+    }
+
+    private Medida buscarOuFalhar(Long id) {
+        return medidaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_MEDIDA, id));
+    }
+
+    private Medida buscarOuFalharComCliente(Long id) {
+        return medidaRepository.findByIdWithCliente(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_MEDIDA, id));
     }
 }
