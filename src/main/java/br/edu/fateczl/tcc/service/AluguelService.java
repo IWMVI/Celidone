@@ -62,6 +62,7 @@ public class AluguelService {
 
         // Criar itens
         List<ItemAluguel> itens = criarItens(dto.itens(), aluguel, null);
+        aluguel.getItens().addAll(itens);
 
         // Calcular valor total dos itens
         BigDecimal total = calcularValorTotal(itens);
