@@ -36,7 +36,6 @@ class AluguelTest {
             LocalDate hoje = LocalDate.now();
             LocalDate amanha = hoje.plusDays(1);
             LocalDate daquiUmaSemana = hoje.plusDays(7);
-            LocalDate evento = daquiUmaSemana.plusDays(14);
 
             Cliente cliente = new Cliente();
             cliente.setId(1L);
@@ -46,7 +45,6 @@ class AluguelTest {
                     hoje,
                     amanha,
                     daquiUmaSemana,
-                    evento,
                     new BigDecimal("500.00"),
                     new BigDecimal("50.00"),
                     "Observação de teste",
@@ -59,7 +57,6 @@ class AluguelTest {
             assertEquals(hoje, aluguel.getDataAluguel());
             assertEquals(amanha, aluguel.getDataRetirada());
             assertEquals(daquiUmaSemana, aluguel.getDataDevolucao());
-            assertEquals(evento, aluguel.getDataEvento());
             assertEquals(new BigDecimal("500.00"), aluguel.getValorTotal());
             assertEquals(new BigDecimal("50.00"), aluguel.getValorDesconto());
             assertEquals("Observação de teste", aluguel.getObservacoes());
@@ -106,15 +103,6 @@ class AluguelTest {
             LocalDate data = LocalDate.of(2024, 1, 23);
             aluguel.setDataDevolucao(data);
             assertEquals(data, aluguel.getDataDevolucao());
-        }
-
-        @Test
-        @DisplayName("Deve permitir modificar dataEvento")
-        void deve_permitir_modificar_data_evento() {
-            Aluguel aluguel = new Aluguel();
-            LocalDate data = LocalDate.of(2024, 2, 1);
-            aluguel.setDataEvento(data);
-            assertEquals(data, aluguel.getDataEvento());
         }
 
         @Test
@@ -167,44 +155,6 @@ class AluguelTest {
             aluguel.setCliente(cliente);
             assertEquals(cliente, aluguel.getCliente());
             assertEquals(10L, aluguel.getCliente().getId());
-        }
-    }
-
-    @Nested
-    @DisplayName("Método Atualizar")
-    class MetodoAtualizar {
-
-        @Test
-        @DisplayName("Deve atualizar todos os campos do aluguel")
-        void deve_atualizar_todos_os_campos_do_aluguel() {
-            Aluguel aluguel = new Aluguel();
-            LocalDate novaRetirada = LocalDate.of(2024, 2, 1);
-            LocalDate novaDevolucao = LocalDate.of(2024, 2, 8);
-            LocalDate novoEvento = LocalDate.of(2024, 2, 15);
-            Cliente novoCliente = new Cliente();
-            novoCliente.setId(2L);
-
-            aluguel.atualizar(
-                    novaRetirada,
-                    novaDevolucao,
-                    novoEvento,
-                    new BigDecimal("600.00"),
-                    new BigDecimal("60.00"),
-                    "Observação atualizada",
-                    StatusAluguel.CANCELADO,
-                    TipoOcasiao.EVENTO_CORPORATIVO,
-                    novoCliente
-            );
-
-            assertEquals(novaRetirada, aluguel.getDataRetirada());
-            assertEquals(novaDevolucao, aluguel.getDataDevolucao());
-            assertEquals(novoEvento, aluguel.getDataEvento());
-            assertEquals(new BigDecimal("600.00"), aluguel.getValorTotal());
-            assertEquals(new BigDecimal("60.00"), aluguel.getValorDesconto());
-            assertEquals("Observação atualizada", aluguel.getObservacoes());
-            assertEquals(StatusAluguel.CANCELADO, aluguel.getStatus());
-            assertEquals(TipoOcasiao.EVENTO_CORPORATIVO, aluguel.getOcasiao());
-            assertEquals(novoCliente, aluguel.getCliente());
         }
     }
 
