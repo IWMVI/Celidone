@@ -3,10 +3,10 @@ package br.edu.fateczl.tcc.util;
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Endereco;
 import br.edu.fateczl.tcc.domain.factory.ClienteFactory;
-import br.edu.fateczl.tcc.dto.EnderecoRequest;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
-import br.edu.fateczl.tcc.enums.SiglaEstados;
+import br.edu.fateczl.tcc.dto.EnderecoRequest;
 import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.enums.SiglaEstados;
 
 public class ClienteTestDataBuilder {
 
