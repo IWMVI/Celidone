@@ -37,7 +37,6 @@ public class ClienteDataBuilder {
     private String email = EMAIL_DEFAULT;
     private String celular = CELULAR_DEFAULT;
     private SexoEnum sexo = SexoEnum.MASCULINO;
-    private String sexoRequest = "MASCULINO";
     private Endereco endereco = enderecoDefault();
     private EnderecoRequest enderecoRequest = enderecoRequestDefault();
     private Boolean ativo = true;
@@ -81,12 +80,6 @@ public class ClienteDataBuilder {
 
     public ClienteDataBuilder comSexo(SexoEnum sexo) {
         this.sexo = sexo;
-        this.sexoRequest = sexo != null ? sexo.name() : null;
-        return this;
-    }
-
-    public ClienteDataBuilder comSexoRequest(String sexoRequest) {
-        this.sexoRequest = sexoRequest;
         return this;
     }
 
@@ -142,7 +135,7 @@ public class ClienteDataBuilder {
                 email,
                 celular,
                 enderecoRequest,
-                sexoRequest
+                sexo != null ? sexo.name() : null
         );
     }
 
