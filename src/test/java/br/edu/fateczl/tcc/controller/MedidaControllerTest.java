@@ -1,5 +1,34 @@
 package br.edu.fateczl.tcc.controller;
 
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaRequest;
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaResponse;
 import br.edu.fateczl.tcc.dto.feminina.MedidaFemininaUpdateRequest;
@@ -7,395 +36,398 @@ import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaRequest;
 import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaResponse;
 import br.edu.fateczl.tcc.dto.masculina.MedidaMasculinaUpdateRequest;
 import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.service.MedidaService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import br.edu.fateczl.tcc.util.MedidaFemininaDataBuilder;
+import br.edu.fateczl.tcc.util.MedidaMasculinaDataBuilder;
 
 @WebMvcTest(MedidaController.class)
-@DisplayName("Testes de comportamento do MedidaController")
+@AutoConfigureMockMvc(addFilters = false)
+@DisplayName("Testes unitários do MedidaController")
 class MedidaControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @MockitoBean
+    private MedidaService service;
+
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private MedidaService medidaService;
+    private MedidaFemininaRequest requestFemininaValido;
+    private MedidaFemininaResponse responseFemininaValido;
+    private MedidaFemininaUpdateRequest updateFemininaValido;
 
-    @Nested
-    @DisplayName("Criar medida masculina - POST /medidas/masculina")
-    class CriarMasculina {
+    private MedidaMasculinaRequest requestMasculinaValido;
+    private MedidaMasculinaResponse responseMasculinaValido;
+    private MedidaMasculinaUpdateRequest updateMasculinaValido;
 
-        @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 201 ao criar medida masculina com dados validos")
-        void deve_retornar_201_ao_criar_medida_masculina_com_dados_validos() throws Exception {
-            MedidaMasculinaRequest request = new MedidaMasculinaRequest(
-                    1L,
-                    new BigDecimal("80.00"),
-                    new BigDecimal("60.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("50.00"),
-                    new BigDecimal("100.00")
-            );
+    @BeforeEach
+    void setUp() {
+        requestFemininaValido = MedidaFemininaDataBuilder.umaMedida().buildRequest();
+        responseFemininaValido = MedidaFemininaDataBuilder.umaMedida().buildResponse();
+        updateFemininaValido = MedidaFemininaDataBuilder.umaMedida().buildUpdateRequest();
 
-            MedidaMasculinaResponse response = new MedidaMasculinaResponse(
-                    1L,
-                    1L,
-                    SexoEnum.MASCULINO,
-                    LocalDate.now(),
-                    new BigDecimal("80.00"),
-                    new BigDecimal("60.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("50.00"),
-                    new BigDecimal("100.00")
-            );
-
-            when(medidaService.criarMasculina(any())).thenReturn(response);
-
-            mockMvc.perform(post("/medidas/masculina")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").value(1))
-                    .andExpect(jsonPath("$.sexo").value("Masculino"));
-
-            verify(medidaService).criarMasculina(any());
-        }
-
-        @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 400 quando cliente ID for nulo")
-        void deve_retornar_400_quando_cliente_id_for_nulo() throws Exception {
-            MedidaMasculinaRequest request = new MedidaMasculinaRequest(
-                    null,
-                    new BigDecimal("80.00"),
-                    new BigDecimal("60.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("50.00"),
-                    new BigDecimal("100.00")
-            );
-
-            mockMvc.perform(post("/medidas/masculina")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
-
-            verify(medidaService, never()).criarMasculina(any());
-        }
-
-        @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 400 quando medida for negativa")
-        void deve_retornar_400_quando_medida_for_negativa() throws Exception {
-            MedidaMasculinaRequest request = new MedidaMasculinaRequest(
-                    1L,
-                    new BigDecimal("-80.00"),
-                    new BigDecimal("60.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("50.00"),
-                    new BigDecimal("100.00")
-            );
-
-            mockMvc.perform(post("/medidas/masculina")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
-
-            verify(medidaService, never()).criarMasculina(any());
-        }
+        requestMasculinaValido = MedidaMasculinaDataBuilder.umaMedida().buildRequest();
+        responseMasculinaValido = MedidaMasculinaDataBuilder.umaMedida().buildResponse();
+        updateMasculinaValido = MedidaMasculinaDataBuilder.umaMedida().buildUpdateRequest();
     }
 
+    // =========================================================
+    // Criar Medida Feminina — POST /medidas/feminina
+    // =========================================================
     @Nested
-    @DisplayName("Criar medida feminina - POST /medidas/feminina")
-    class CriarFeminina {
+    @DisplayName("Criar Medida Feminina")
+    class CriarFemininaTest {
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 201 ao criar medida feminina com dados validos")
-        void deve_retornar_201_ao_criar_medida_feminina_com_dados_validos() throws Exception {
-            MedidaFemininaRequest request = new MedidaFemininaRequest(
-                    1L,
-                    new BigDecimal("70.00"),
-                    new BigDecimal("55.00"),
-                    new BigDecimal("90.00"),
-                    new BigDecimal("18.00"),
-                    new BigDecimal("45.00"),
-                    new BigDecimal("38.00"),
-                    new BigDecimal("15.00"),
-                    new BigDecimal("95.00"),
-                    new BigDecimal("110.00")
-            );
-
-            MedidaFemininaResponse response = new MedidaFemininaResponse(
-                    1L,
-                    1L,
-                    SexoEnum.FEMININO,
-                    LocalDate.now(),
-                    new BigDecimal("70.00"),
-                    new BigDecimal("55.00"),
-                    new BigDecimal("90.00"),
-                    new BigDecimal("18.00"),
-                    new BigDecimal("45.00"),
-                    new BigDecimal("38.00"),
-                    new BigDecimal("15.00"),
-                    new BigDecimal("95.00"),
-                    new BigDecimal("110.00")
-            );
-
-            when(medidaService.criarFeminina(any())).thenReturn(response);
+        void deve_retornar201_quando_medidaFemininaCriadaComSucesso() throws Exception {
+            when(service.criarFeminina(any(MedidaFemininaRequest.class))).thenReturn(responseFemininaValido);
 
             mockMvc.perform(post("/medidas/feminina")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(requestFemininaValido)))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.id").value(MedidaFemininaDataBuilder.MEDIDA_ID_DEFAULT))
+                    .andExpect(jsonPath("$.clienteId").value(MedidaFemininaDataBuilder.CLIENTE_ID_DEFAULT))
                     .andExpect(jsonPath("$.sexo").value("Feminino"));
 
-            verify(medidaService).criarFeminina(any());
+            verify(service).criarFeminina(any(MedidaFemininaRequest.class));
         }
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 400 quando cliente ID for nulo")
-        void deve_retornar_400_quando_cliente_id_for_nulo() throws Exception {
-            MedidaFemininaRequest request = new MedidaFemininaRequest(
-                    null,
-                    new BigDecimal("70.00"),
-                    new BigDecimal("55.00"),
-                    new BigDecimal("90.00"),
-                    new BigDecimal("18.00"),
-                    new BigDecimal("45.00"),
-                    new BigDecimal("38.00"),
-                    new BigDecimal("15.00"),
-                    new BigDecimal("95.00"),
-                    new BigDecimal("110.00")
-            );
+        void deve_retornar400_quando_clienteIdNulo() throws Exception {
+            MedidaFemininaRequest invalido = MedidaFemininaDataBuilder.umaMedida()
+                    .semClienteId()
+                    .buildRequest();
 
             mockMvc.perform(post("/medidas/feminina")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(invalido)))
                     .andExpect(status().isBadRequest());
 
-            verify(medidaService, never()).criarFeminina(any());
+            verify(service, never()).criarFeminina(any());
+        }
+
+        @Test
+        void deve_retornar400_quando_cinturaNegativa() throws Exception {
+            MedidaFemininaRequest invalido = MedidaFemininaDataBuilder.umaMedida()
+                    .comCintura(new java.math.BigDecimal("-1.00"))
+                    .buildRequest();
+
+            mockMvc.perform(post("/medidas/feminina")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalido)))
+                    .andExpect(status().isBadRequest());
+
+            verify(service, never()).criarFeminina(any());
+        }
+
+        @Test
+        void deve_retornar404_quando_clienteInexistenteNaCriacaoFeminina() throws Exception {
+            when(service.criarFeminina(any(MedidaFemininaRequest.class)))
+                    .thenThrow(new ResourceNotFoundException("Cliente", 99L));
+
+            mockMvc.perform(post("/medidas/feminina")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestFemininaValido)))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Cliente com id 99 não encontrado(a)"));
         }
     }
 
+    // =========================================================
+    // Criar Medida Masculina — POST /medidas/masculina
+    // =========================================================
     @Nested
-    @DisplayName("Buscar por ID - GET /medidas/{id}")
-    class BuscarPorId {
+    @DisplayName("Criar Medida Masculina")
+    class CriarMasculinaTest {
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 200 ao buscar medida por ID existente")
-        void deve_retornar_200_ao_buscar_medida_por_id_existente() throws Exception {
-            MedidaMasculinaResponse response = new MedidaMasculinaResponse(
-                    1L, 1L, SexoEnum.MASCULINO, LocalDate.now(),
-                    new BigDecimal("80.00"), new BigDecimal("60.00"),
-                    new BigDecimal("40.00"), new BigDecimal("50.00"), new BigDecimal("100.00")
-            );
+        void deve_retornar201_quando_medidaMasculinaCriadaComSucesso() throws Exception {
+            when(service.criarMasculina(any(MedidaMasculinaRequest.class))).thenReturn(responseMasculinaValido);
 
-            when(medidaService.buscarPorId(1L)).thenReturn(response);
+            mockMvc.perform(post("/medidas/masculina")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestMasculinaValido)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.id").value(MedidaMasculinaDataBuilder.MEDIDA_ID_DEFAULT))
+                    .andExpect(jsonPath("$.clienteId").value(MedidaMasculinaDataBuilder.CLIENTE_ID_DEFAULT))
+                    .andExpect(jsonPath("$.sexo").value("Masculino"));
+
+            verify(service).criarMasculina(any(MedidaMasculinaRequest.class));
+        }
+
+        @Test
+        void deve_retornar400_quando_clienteIdNulo() throws Exception {
+            MedidaMasculinaRequest invalido = MedidaMasculinaDataBuilder.umaMedida()
+                    .semClienteId()
+                    .buildRequest();
+
+            mockMvc.perform(post("/medidas/masculina")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalido)))
+                    .andExpect(status().isBadRequest());
+
+            verify(service, never()).criarMasculina(any());
+        }
+
+        @Test
+        void deve_retornar400_quando_toraxNulo() throws Exception {
+            MedidaMasculinaRequest invalido = MedidaMasculinaDataBuilder.umaMedida()
+                    .semTorax()
+                    .buildRequest();
+
+            mockMvc.perform(post("/medidas/masculina")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalido)))
+                    .andExpect(status().isBadRequest());
+
+            verify(service, never()).criarMasculina(any());
+        }
+
+        @Test
+        void deve_retornar404_quando_clienteInexistenteNaCriacaoMasculina() throws Exception {
+            when(service.criarMasculina(any(MedidaMasculinaRequest.class)))
+                    .thenThrow(new ResourceNotFoundException("Cliente", 99L));
+
+            mockMvc.perform(post("/medidas/masculina")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestMasculinaValido)))
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    // =========================================================
+    // Buscar por ID — GET /medidas/{id}
+    // =========================================================
+    @Nested
+    @DisplayName("Buscar por ID")
+    class BuscarPorIdTest {
+
+        @Test
+        void deve_retornar200_quando_buscarMedidaFemininaExistente() throws Exception {
+            when(service.buscarPorId(1L)).thenReturn(responseFemininaValido);
 
             mockMvc.perform(get("/medidas/1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(1));
+                    .andExpect(jsonPath("$.sexo").value("Feminino"))
+                    .andExpect(jsonPath("$.quadril").value(MedidaFemininaDataBuilder.QUADRIL_DEFAULT.doubleValue()));
+        }
 
-            verify(medidaService).buscarPorId(1L);
+        @Test
+        void deve_retornar200_quando_buscarMedidaMasculinaExistente() throws Exception {
+            when(service.buscarPorId(1L)).thenReturn(responseMasculinaValido);
+
+            mockMvc.perform(get("/medidas/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.sexo").value("Masculino"))
+                    .andExpect(jsonPath("$.colarinho").value(MedidaMasculinaDataBuilder.COLARINHO_DEFAULT.doubleValue()));
+        }
+
+        @Test
+        void deve_retornar404_quando_medidaNaoEncontrada() throws Exception {
+            when(service.buscarPorId(99L)).thenThrow(new ResourceNotFoundException("Medida", 99L));
+
+            mockMvc.perform(get("/medidas/99"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Medida com id 99 não encontrado(a)"));
         }
     }
 
+    // =========================================================
+    // Buscar com filtros — GET /medidas
+    // =========================================================
     @Nested
-    @DisplayName("Buscar com filtros - GET /medidas")
-    class BuscarComFiltros {
+    @DisplayName("Buscar com filtros")
+    class BuscarComFiltrosTest {
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 200 ao buscar todas as medidas")
-        void deve_retornar_200_ao_buscar_todas_medidas() throws Exception {
-            when(medidaService.buscar(null, null)).thenReturn(List.of());
+        void deve_retornar200_quando_listarSemFiltros() throws Exception {
+            when(service.buscar(null, null))
+                    .thenReturn(List.of(responseFemininaValido, responseMasculinaValido));
 
             mockMvc.perform(get("/medidas"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isArray());
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$.length()").value(2));
 
-            verify(medidaService).buscar(null, null);
+            verify(service).buscar(null, null);
         }
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 200 ao buscar medidas por cliente ID")
-        void deve_retornar_200_ao_buscar_medidas_por_cliente_id() throws Exception {
-            when(medidaService.buscar(eq(1L), eq(null))).thenReturn(List.of());
+        void deve_retornar200_quando_filtrarPorClienteId() throws Exception {
+            when(service.buscar(eq(1L), eq(null)))
+                    .thenReturn(List.of(responseFemininaValido));
 
-            mockMvc.perform(get("/medidas")
-                            .param("clienteId", "1"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/medidas").param("clienteId", "1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(1));
 
-            verify(medidaService).buscar(eq(1L), eq(null));
+            verify(service).buscar(eq(1L), eq(null));
         }
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 200 ao buscar medidas por sexo")
-        void deve_retornar_200_ao_buscar_medidas_por_sexo() throws Exception {
-            when(medidaService.buscar(null, SexoEnum.MASCULINO)).thenReturn(List.of());
+        void deve_retornar200_quando_filtrarPorSexo() throws Exception {
+            when(service.buscar(eq(null), eq(SexoEnum.MASCULINO)))
+                    .thenReturn(List.of(responseMasculinaValido));
 
-            mockMvc.perform(get("/medidas")
-                            .param("sexo", "MASCULINO"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/medidas").param("sexo", "MASCULINO"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[0].sexo").value("Masculino"));
 
-            verify(medidaService).buscar(null, SexoEnum.MASCULINO);
+            verify(service).buscar(eq(null), eq(SexoEnum.MASCULINO));
         }
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 200 ao buscar medidas por cliente ID e sexo")
-        void deve_retornar_200_ao_buscar_medidas_por_cliente_id_e_sexo() throws Exception {
-            when(medidaService.buscar(eq(1L), eq(SexoEnum.FEMININO))).thenReturn(List.of());
+        void deve_retornar200_quando_filtrarPorClienteIdESexo() throws Exception {
+            when(service.buscar(eq(1L), eq(SexoEnum.FEMININO)))
+                    .thenReturn(List.of(responseFemininaValido));
 
             mockMvc.perform(get("/medidas")
                             .param("clienteId", "1")
                             .param("sexo", "FEMININO"))
-                    .andExpect(status().isOk());
-
-            verify(medidaService).buscar(eq(1L), eq(SexoEnum.FEMININO));
-        }
-    }
-
-    @Nested
-    @DisplayName("Atualizar medida masculina - PUT /medidas/masculina/{id}")
-    class AtualizarMasculina {
-
-        @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 200 ao atualizar medida masculina com dados validos")
-        void deve_retornar_200_ao_atualizar_medida_masculina_com_dados_validos() throws Exception {
-            MedidaMasculinaUpdateRequest request = new MedidaMasculinaUpdateRequest(
-                    new BigDecimal("85.00"),
-                    new BigDecimal("62.00"),
-                    new BigDecimal("42.00"),
-                    new BigDecimal("52.00"),
-                    new BigDecimal("105.00")
-            );
-
-            MedidaMasculinaResponse response = new MedidaMasculinaResponse(
-                    1L, 1L, SexoEnum.MASCULINO, LocalDate.now(),
-                    new BigDecimal("85.00"), new BigDecimal("62.00"),
-                    new BigDecimal("42.00"), new BigDecimal("52.00"), new BigDecimal("105.00")
-            );
-
-            when(medidaService.atualizarMasculina(eq(1L), any())).thenReturn(response);
-
-            mockMvc.perform(put("/medidas/masculina/1")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.cintura").value(85.00));
+                    .andExpect(jsonPath("$[0].sexo").value("Feminino"));
 
-            verify(medidaService).atualizarMasculina(eq(1L), any());
+            verify(service).buscar(eq(1L), eq(SexoEnum.FEMININO));
         }
     }
 
+    // =========================================================
+    // Atualizar Medida Feminina — PUT /medidas/feminina/{id}
+    // =========================================================
     @Nested
-    @DisplayName("Atualizar medida feminina - PUT /medidas/feminina/{id}")
-    class AtualizarFeminina {
+    @DisplayName("Atualizar Medida Feminina")
+    class AtualizarFemininaTest {
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 200 ao atualizar medida feminina com dados validos")
-        void deve_retornar_200_ao_atualizar_medida_feminina_com_dados_validos() throws Exception {
-            MedidaFemininaUpdateRequest request = new MedidaFemininaUpdateRequest(
-                    new BigDecimal("72.00"),
-                    new BigDecimal("57.00"),
-                    new BigDecimal("92.00"),
-                    new BigDecimal("19.00"),
-                    new BigDecimal("47.00"),
-                    new BigDecimal("40.00"),
-                    new BigDecimal("16.00"),
-                    new BigDecimal("97.00"),
-                    new BigDecimal("115.00")
-            );
-
-            MedidaFemininaResponse response = new MedidaFemininaResponse(
-                    1L, 1L, SexoEnum.FEMININO, LocalDate.now(),
-                    new BigDecimal("72.00"), new BigDecimal("57.00"),
-                    new BigDecimal("92.00"), new BigDecimal("19.00"),
-                    new BigDecimal("47.00"), new BigDecimal("40.00"),
-                    new BigDecimal("16.00"), new BigDecimal("97.00"),
-                    new BigDecimal("115.00")
-            );
-
-            when(medidaService.atualizarFeminina(eq(1L), any())).thenReturn(response);
+        void deve_retornar200_quando_atualizarFemininaComSucesso() throws Exception {
+            when(service.atualizarFeminina(eq(1L), any(MedidaFemininaUpdateRequest.class)))
+                    .thenReturn(responseFemininaValido);
 
             mockMvc.perform(put("/medidas/feminina/1")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(updateFemininaValido)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.cintura").value(72.00));
+                    .andExpect(jsonPath("$.sexo").value("Feminino"));
 
-            verify(medidaService).atualizarFeminina(eq(1L), any());
+            verify(service).atualizarFeminina(eq(1L), any(MedidaFemininaUpdateRequest.class));
+        }
+
+        @Test
+        void deve_retornar400_quando_dadosInvalidosNaAtualizacaoFeminina() throws Exception {
+            MedidaFemininaUpdateRequest invalido = MedidaFemininaDataBuilder.umaMedida()
+                    .semQuadril()
+                    .buildUpdateRequest();
+
+            mockMvc.perform(put("/medidas/feminina/1")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalido)))
+                    .andExpect(status().isBadRequest());
+
+            verify(service, never()).atualizarFeminina(any(), any());
+        }
+
+        @Test
+        void deve_retornar404_quando_medidaFemininaNaoEncontradaParaAtualizar() throws Exception {
+            when(service.atualizarFeminina(eq(99L), any(MedidaFemininaUpdateRequest.class)))
+                    .thenThrow(new ResourceNotFoundException("Medida", 99L));
+
+            mockMvc.perform(put("/medidas/feminina/99")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateFemininaValido)))
+                    .andExpect(status().isNotFound());
         }
     }
 
+    // =========================================================
+    // Atualizar Medida Masculina — PUT /medidas/masculina/{id}
+    // =========================================================
     @Nested
-    @DisplayName("Deletar medida - DELETE /medidas/{id}")
-    class Deletar {
+    @DisplayName("Atualizar Medida Masculina")
+    class AtualizarMasculinaTest {
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve retornar 204 ao deletar medida existente")
-        void deve_retornar_204_ao_deletar_medida_existente() throws Exception {
-            doNothing().when(medidaService).deletar(1L);
+        void deve_retornar200_quando_atualizarMasculinaComSucesso() throws Exception {
+            when(service.atualizarMasculina(eq(1L), any(MedidaMasculinaUpdateRequest.class)))
+                    .thenReturn(responseMasculinaValido);
 
-            mockMvc.perform(delete("/medidas/1")
-                            .with(csrf()))
-                    .andExpect(status().isNoContent());
+            mockMvc.perform(put("/medidas/masculina/1")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateMasculinaValido)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.sexo").value("Masculino"));
 
-            verify(medidaService).deletar(1L);
+            verify(service).atualizarMasculina(eq(1L), any(MedidaMasculinaUpdateRequest.class));
         }
 
         @Test
-        @WithMockUser
-        @DisplayName("Deve propagar excecao quando medida nao existir")
-        void deve_propagar_excecao_quando_medida_nao_existir() throws Exception {
-            doThrow(new IllegalArgumentException("Medida não encontrada: 999"))
-                    .when(medidaService).deletar(999L);
+        void deve_retornar400_quando_dadosInvalidosNaAtualizacaoMasculina() throws Exception {
+            MedidaMasculinaUpdateRequest invalido = MedidaMasculinaDataBuilder.umaMedida()
+                    .semColarinho()
+                    .buildUpdateRequest();
 
-            mockMvc.perform(delete("/medidas/999")
-                            .with(csrf()))
-                    .andExpect(status().is4xxClientError());
+            mockMvc.perform(put("/medidas/masculina/1")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalido)))
+                    .andExpect(status().isBadRequest());
 
-            verify(medidaService).deletar(999L);
+            verify(service, never()).atualizarMasculina(any(), any());
+        }
+
+        @Test
+        void deve_retornar404_quando_medidaMasculinaNaoEncontradaParaAtualizar() throws Exception {
+            when(service.atualizarMasculina(eq(99L), any(MedidaMasculinaUpdateRequest.class)))
+                    .thenThrow(new ResourceNotFoundException("Medida", 99L));
+
+            mockMvc.perform(put("/medidas/masculina/99")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateMasculinaValido)))
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    // =========================================================
+    // Deletar Medida — DELETE /medidas/{id}
+    // =========================================================
+    @Nested
+    @DisplayName("Deletar Medida")
+    class DeletarTest {
+
+        @Test
+        void deve_retornar204_quando_deletarComSucesso() throws Exception {
+            doNothing().when(service).deletar(1L);
+
+            mockMvc.perform(delete("/medidas/1").with(csrf()))
+                    .andExpect(status().isNoContent());
+
+            verify(service).deletar(1L);
+        }
+
+        @Test
+        void deve_retornar404_quando_medidaNaoEncontradaParaDeletar() throws Exception {
+            doThrow(new ResourceNotFoundException("Medida", 99L))
+                    .when(service).deletar(99L);
+
+            mockMvc.perform(delete("/medidas/99").with(csrf()))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Medida com id 99 não encontrado(a)"));
         }
     }
 }
