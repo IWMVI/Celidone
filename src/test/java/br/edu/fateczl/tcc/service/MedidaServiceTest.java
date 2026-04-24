@@ -95,11 +95,12 @@ import static org.mockito.Mockito.when;
  *   CT10 — I3 isolada: id inexistente                         → ResourceNotFoundException("Medida")
  *   CT11 — I4 isolada: tipo desconhecido                      → IllegalStateException
  *
- *  BUSCAR COM FILTROS (CT12..CT15)
- *   CT12 — V6: clienteId e sexo preenchidos                   → findAll(spec) filtrado
- *   CT13 — V6 borda: só clienteId                             → findAll(spec) filtrado por cliente
- *   CT14 — V6 borda: só sexo                                  → findAll(spec) filtrado por sexo
- *   CT15 — V6 borda: ambos nulos                              → findAll(spec) sem predicates → tudo
+ *  BUSCAR COM FILTROS (CT12..CT15b)
+ *   CT12  — V6: clienteId e sexo preenchidos                  → findAll(spec) filtrado
+ *   CT13  — V6 borda: só clienteId                            → findAll(spec) filtrado por cliente
+ *   CT14  — V6 borda: só sexo                                 → findAll(spec) filtrado por sexo
+ *   CT15  — V6 borda: ambos nulos                             → findAll(spec) → lista completa (feminina + masculina)
+ *   CT15b — I4 isolada (variante lista): tipo desconhecido    → IllegalStateException
  *
  *  ATUALIZAR FEMININA (CT16..CT18)
  *   CT16 — V3+V5 típicos                                      → save + MedidaFemininaResponse
@@ -391,14 +392,35 @@ class MedidaServiceTest {
         }
 
         @Test
-        @DisplayName("CT15 — V6 borda: ambos filtros nulos → lista completa")
-        void ct15_deve_retornarListaVazia_quando_filtrosNulos() {
-            when(medidaRepository.findAll(any(Specification.class))).thenReturn(List.of());
+        @DisplayName("CT15 — V6 borda: ambos filtros nulos → lista completa (feminina + masculina)")
+        void ct15_deve_retornarListaCompleta_quando_filtrosNulos() {
+            MedidaFeminina femininaPersistida = MedidaFemininaDataBuilder.umaMedida()
+                    .comCliente(cliente)
+                    .buildEntity();
+            MedidaMasculina masculinaPersistida = MedidaMasculinaDataBuilder.umaMedida()
+                    .comCliente(cliente)
+                    .buildEntity();
+            when(medidaRepository.findAll(any(Specification.class)))
+                    .thenReturn(List.of(femininaPersistida, masculinaPersistida));
 
             List<Object> resultado = service.buscar(null, null);
 
-            assertTrue(resultado.isEmpty());
+            assertEquals(2, resultado.size());
+            assertInstanceOf(MedidaFemininaResponse.class, resultado.get(0));
+            assertInstanceOf(MedidaMasculinaResponse.class, resultado.get(1));
             verify(medidaRepository).findAll(any(Specification.class));
+        }
+
+        @Test
+        @DisplayName("CT15b — I4 isolada (variante lista): findAll devolve tipo desconhecido")
+        void ct15b_deve_lancarIllegalState_quando_tipoDesconhecidoNaLista() {
+            Medida desconhecida = mock(Medida.class);
+            when(medidaRepository.findAll(any(Specification.class)))
+                    .thenReturn(List.of(desconhecida));
+
+            IllegalStateException ex = assertThrows(IllegalStateException.class,
+                    () -> service.buscar(null, null));
+            assertEquals("Tipo de medida desconhecido", ex.getMessage());
         }
     }
 
