@@ -1,6 +1,5 @@
 package br.edu.fateczl.tcc.controller;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,10 +34,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.dto.ClienteResponse;
-import br.edu.fateczl.tcc.dto.EnderecoRequest;
-import br.edu.fateczl.tcc.enums.SiglaEstados;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.service.ClienteService;
+import br.edu.fateczl.tcc.util.ClienteDataBuilder;
 
 @WebMvcTest(ClienteController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -59,22 +57,8 @@ class ClienteControllerTest {
 
     @BeforeEach
     void setUp() {
-        EnderecoRequest endereco = new EnderecoRequest(
-                "01001000", "Praça da Sé", "100",
-                "São Paulo", "Sé", SiglaEstados.SP, null
-        );
-
-        requestValido = new ClienteRequest(
-                "João da Silva", "12345678901",
-                "joao@email.com", "11999999999",
-                endereco, "MASCULINO"
-        );
-
-        responseValido = new ClienteResponse(
-                1L, "João da Silva", "12345678901",
-                "joao@email.com", "11999999999",
-                "MASCULINO", null, LocalDate.now()
-        );
+        requestValido = ClienteDataBuilder.umCliente().buildRequest();
+        responseValido = ClienteDataBuilder.umCliente().buildResponse();
     }
 
     @Nested
@@ -89,7 +73,7 @@ class ClienteControllerTest {
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(requestValido)))
-                    .andExpect(status().isOk())
+                    .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.nome").value("João da Silva"));
 
             verify(service).criar(any(ClienteRequest.class));
