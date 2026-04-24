@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.edu.fateczl.tcc.dto.ClienteRequest;
 import br.edu.fateczl.tcc.mapper.ClienteMapper;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
-import br.edu.fateczl.tcc.util.ClienteTestFactory;
+import br.edu.fateczl.tcc.util.ClienteDataBuilder;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -44,15 +44,14 @@ class ClienteControllerIntegrationTest {
 
     @Test
     void deve_criarCliente_quando_dadosValidosIntegracao() throws Exception {
-        // Usa o factory para gerar um ClienteRequest válido
-        ClienteRequest request = ClienteTestFactory.requestValido();
+        ClienteRequest request = ClienteDataBuilder.umCliente().buildRequest();
 
         // Execução: O Controller chamará o Service REAL e o Repository REAL
         mockMvc.perform(post("/clientes")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         // Verificação real: o cliente realmente existe no banco de dados?
         boolean existeNoBanco = clienteRepository.findByCpfCnpj(request.cpfCnpj()).isPresent();
@@ -61,22 +60,26 @@ class ClienteControllerIntegrationTest {
 
     @Test
     void deve_criarClientePJ_quando_dadosValidosIntegracao() throws Exception {
-        // Cliente PJ usando o factory
-        ClienteRequest request = ClienteTestFactory.requestPJ();
+        ClienteRequest request = ClienteDataBuilder.umCliente()
+                .comNome("Empresa XPTO LTDA")
+                .comCpfCnpj("12345678000195")
+                .comEmail("empresa@email.com")
+                .comCelular("11988888888")
+                .buildRequest();
 
         mockMvc.perform(post("/clientes")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         boolean existeNoBanco = clienteRepository.findByCpfCnpj(request.cpfCnpj()).isPresent();
-        assertTrue(existeNoBanco, "O cliente feminino deveria ter sido salvo no banco de dados real");
+        assertTrue(existeNoBanco, "O cliente PJ deveria ter sido salvo no banco de dados real");
     }
 
     @Test
     void deve_listarClientes_quando_clientesCadastrados() throws Exception {
-        ClienteRequest request = ClienteTestFactory.requestValido();
+        ClienteRequest request = ClienteDataBuilder.umCliente().buildRequest();
         clienteRepository.save(ClienteMapper.toEntity(request));
 
         mockMvc.perform(get("/clientes")
