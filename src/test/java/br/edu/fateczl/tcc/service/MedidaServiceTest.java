@@ -485,7 +485,7 @@ class MedidaServiceTest {
             );
 
             assertTrue(exception.getMessage().contains("Medida não encontrada"));
-            verify(medidaRepository, never()).delete(any());
+            verify(medidaRepository, never()).delete(any(Medida.class));
         }
     }
 

@@ -4,8 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Testes de Comportamento do ItemAluguel")
@@ -36,17 +34,9 @@ class ItemAluguelTest {
             Traje traje = new Traje();
             traje.setId(1L);
 
-            ItemAluguel itemAluguel = new ItemAluguel(
-                    1L,
-                    2,
-                    new BigDecimal("300.00"),
-                    aluguel,
-                    traje
-            );
+            ItemAluguel itemAluguel = new ItemAluguel(1L, aluguel, traje);
 
             assertEquals(1L, itemAluguel.getId());
-            assertEquals(2, itemAluguel.getQuantidade());
-            assertEquals(new BigDecimal("300.00"), itemAluguel.getSubtotal());
             assertEquals(aluguel, itemAluguel.getAluguel());
             assertEquals(traje, itemAluguel.getTraje());
         }
@@ -62,22 +52,6 @@ class ItemAluguelTest {
             ItemAluguel itemAluguel = new ItemAluguel();
             itemAluguel.setId(5L);
             assertEquals(5L, itemAluguel.getId());
-        }
-
-        @Test
-        @DisplayName("Deve permitir modificar quantidade")
-        void deve_permitir_modificar_quantidade() {
-            ItemAluguel itemAluguel = new ItemAluguel();
-            itemAluguel.setQuantidade(3);
-            assertEquals(3, itemAluguel.getQuantidade());
-        }
-
-        @Test
-        @DisplayName("Deve permitir modificar subtotal")
-        void deve_permitir_modificar_subtotal() {
-            ItemAluguel itemAluguel = new ItemAluguel();
-            itemAluguel.setSubtotal(new BigDecimal("450.00"));
-            assertEquals(new BigDecimal("450.00"), itemAluguel.getSubtotal());
         }
 
         @Test
@@ -106,8 +80,8 @@ class ItemAluguelTest {
     class MetodoAtualizar {
 
         @Test
-        @DisplayName("Deve atualizar todos os campos do item aluguel")
-        void deve_atualizar_todos_os_campos_do_item_aluguel() {
+        @DisplayName("Deve atualizar aluguel e traje do item")
+        void deve_atualizar_aluguel_e_traje() {
             ItemAluguel itemAluguel = new ItemAluguel();
             Aluguel novoAluguel = new Aluguel();
             novoAluguel.setId(2L);
@@ -115,15 +89,8 @@ class ItemAluguelTest {
             Traje novoTraje = new Traje();
             novoTraje.setId(3L);
 
-            itemAluguel.atualizar(
-                    5,
-                    new BigDecimal("750.00"),
-                    novoAluguel,
-                    novoTraje
-            );
+            itemAluguel.atualizar(novoAluguel, novoTraje);
 
-            assertEquals(5, itemAluguel.getQuantidade());
-            assertEquals(new BigDecimal("750.00"), itemAluguel.getSubtotal());
             assertEquals(novoAluguel, itemAluguel.getAluguel());
             assertEquals(novoTraje, itemAluguel.getTraje());
         }
@@ -177,8 +144,6 @@ class ItemAluguelTest {
         void deve_conter_informacoes_do_item_na_representacao_textual() {
             ItemAluguel itemAluguel = new ItemAluguel();
             itemAluguel.setId(1L);
-            itemAluguel.setQuantidade(2);
-            itemAluguel.setSubtotal(new BigDecimal("300.00"));
 
             String resultado = itemAluguel.toString();
 
