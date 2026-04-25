@@ -70,6 +70,7 @@ import static org.mockito.Mockito.when;
  *   C5: traje.status          | V5 DISPONIVEL               | I5 ≠ DISPONIVEL
  *   C6: traje no período      | V6 livre                    | I6 ocupado
  *   C7: valorDesconto         | V7 [0, total] (ou null)     | I7 > total
+ *   C8: quantidade de itens   | V8 ≥ 1 (1 ou múltiplos)     | (= 0 validado no DTO)
  *
  * VALORES LIMITE RELEVANTES:
  *   - dataRetirada: hoje (borda V), ontem (borda I)
@@ -82,35 +83,36 @@ import static org.mockito.Mockito.when;
  *   CT2  — todas V, bordas inferiores (retirada=hoje, dev=retirada, desconto=0) → sucesso
  *   CT3  — todas V, borda superior do desconto (=total)       → sucesso, total=0
  *   CT4  — todas V, desconto=null                             → sucesso, desconto tratado como 0
- *   CT5  — I1 isolada (cliente inexistente)                   → ResourceNotFoundException
- *   CT6  — I2 isolada na borda (retirada=ontem)               → BusinessException "passado"
- *   CT7  — I3 isolada na borda (dev=retirada-1)               → BusinessException "após a retirada"
- *   CT8  — I4 isolada (traje inexistente)                     → ResourceNotFoundException
- *   CT9  — I5 isolada (traje ALUGADO)                         → BusinessException "não está disponível"
- *   CT10 — I6 isolada (período ocupado)                       → BusinessException "alugado nesse período"
- *   CT11 — I7 isolada na borda (desconto=total+0,01)          → BusinessException "negativo"
+ *   CT5  — V8 múltiplos itens: soma de valorItem coerente     → valorTotal = soma dos itens
+ *   CT6  — I1 isolada (cliente inexistente)                   → ResourceNotFoundException
+ *   CT7  — I2 isolada na borda (retirada=ontem)               → BusinessException "passado"
+ *   CT8  — I3 isolada na borda (dev=retirada-1)               → BusinessException "após a retirada"
+ *   CT9  — I4 isolada (traje inexistente)                     → ResourceNotFoundException
+ *   CT10 — I5 isolada (traje ALUGADO)                         → BusinessException "não está disponível"
+ *   CT11 — I6 isolada (período ocupado)                       → BusinessException "alugado nesse período"
+ *   CT12 — I7 isolada na borda (desconto=total+0,01)          → BusinessException "negativo"
  *
  * =========================================================================
  * MATRIZ (método atualizar) — acrescenta duas variáveis:
- *   C8: existência do aluguel: V8 existe / I8 não existe
- *   C9: status do aluguel:      V9 ATIVO  / I9 ≠ ATIVO
+ *   C9: existência do aluguel: V9 existe / I9 não existe
+ *   C10: status do aluguel:    V10 ATIVO  / I10 ≠ ATIVO
  *
  * CASOS DE TESTE (atualizar):
- *   CT12 — todas V                                            → sucesso
- *   CT13 — I8 (aluguel inexistente)                           → ResourceNotFoundException
- *   CT14 — I9 (aluguel CONCLUÍDO)                             → BusinessException "só ATIVOS"
- *   CT15 — I3 na borda                                        → BusinessException
- *   CT16 — I6 isolada                                         → BusinessException
- *   CT17 — I7 na borda                                        → BusinessException
+ *   CT13 — todas V                                            → sucesso
+ *   CT14 — I9 (aluguel inexistente)                           → ResourceNotFoundException
+ *   CT15 — I10 (aluguel CONCLUÍDO)                            → BusinessException "só ATIVOS"
+ *   CT16 — I3 na borda                                        → BusinessException
+ *   CT17 — I6 isolada                                         → BusinessException
+ *   CT18 — I7 na borda                                        → BusinessException
  *
  * =========================================================================
  * Operações de leitura/remoção (buscarPorId, listarTodos, deletar) possuem
  * uma única condição de entrada (existência do ID) e são tratadas com um
- * caso V e um caso I — CT18..CT22.
+ * caso V e um caso I — CT19..CT24.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TFS - AluguelService (Teste Funcional Sistemático)")
-class AluguelServiceTFSTest {
+class AluguelServiceTest {
 
     @Mock
     private AluguelRepository aluguelRepository;
@@ -145,7 +147,7 @@ class AluguelServiceTFSTest {
     }
 
     // =========================================================
-    // CRIAR — CT1..CT11
+    // CRIAR — CT1..CT12
     // =========================================================
     @Nested
     @DisplayName("Criar Aluguel — matriz TFS")
@@ -211,8 +213,30 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT5 — I1 isolada: cliente inexistente, demais VÁLIDAS")
-        void ct5_deve_lancarResourceNotFound_quando_apenasClienteInexistente() {
+        @DisplayName("CT5 — V8 múltiplos itens: valorTotal soma corretamente os valorItem")
+        void ct5_deve_somarValoresCorretamente_quando_multiplosItens() {
+            Long trajeId2 = 11L;
+            Traje traje2 = AlugueisDataBuilder.umTrajeDisponivel(trajeId2, new BigDecimal("250.50"));
+            AluguelRequest request = AlugueisDataBuilder.umAluguel()
+                    .comItens(TRAJE_ID_DEFAULT, trajeId2)
+                    .buildRequest();
+
+            when(clienteRepository.findById(CLIENTE_ID_DEFAULT)).thenReturn(Optional.of(cliente));
+            when(trajeRepository.findById(TRAJE_ID_DEFAULT)).thenReturn(Optional.of(traje));
+            when(trajeRepository.findById(trajeId2)).thenReturn(Optional.of(traje2));
+            when(itemAluguelRepository.trajeIndisponivelNoPeriodo(
+                    any(Long.class), any(LocalDate.class), any(LocalDate.class), eq(null)))
+                    .thenReturn(false);
+
+            AluguelResponse response = service.criar(request);
+
+            // 100.00 + 250.50 = 350.50
+            assertEquals(0, response.valorTotal().compareTo(new BigDecimal("350.50")));
+        }
+
+        @Test
+        @DisplayName("CT6 — I1 isolada: cliente inexistente, demais VÁLIDAS")
+        void ct6_deve_lancarResourceNotFound_quando_apenasClienteInexistente() {
             AluguelRequest request = AlugueisDataBuilder.umAluguel().buildRequest();
             when(clienteRepository.findById(CLIENTE_ID_DEFAULT)).thenReturn(Optional.empty());
 
@@ -221,8 +245,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT6 — I2 isolada na borda: dataRetirada=ontem, demais VÁLIDAS")
-        void ct6_deve_lancarBusinessException_quando_apenasRetiradaNoPassado() {
+        @DisplayName("CT7 — I2 isolada na borda: dataRetirada=ontem, demais VÁLIDAS")
+        void ct7_deve_lancarBusinessException_quando_apenasRetiradaNoPassado() {
             LocalDate ontem = LocalDate.now().minusDays(1);
             AluguelRequest request = AlugueisDataBuilder.umAluguel()
                     .comDatas(ontem, LocalDate.now().plusDays(3))
@@ -235,8 +259,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT7 — I3 isolada na borda: dataDevolucao=dataRetirada-1, demais VÁLIDAS")
-        void ct7_deve_lancarBusinessException_quando_apenasDevolucaoAntesDaRetirada() {
+        @DisplayName("CT8 — I3 isolada na borda: dataDevolucao=dataRetirada-1, demais VÁLIDAS")
+        void ct8_deve_lancarBusinessException_quando_apenasDevolucaoAntesDaRetirada() {
             LocalDate retirada = LocalDate.now().plusDays(5);
             AluguelRequest request = AlugueisDataBuilder.umAluguel()
                     .comDatas(retirada, retirada.minusDays(1))
@@ -249,8 +273,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT8 — I4 isolada: traje inexistente, demais VÁLIDAS")
-        void ct8_deve_lancarResourceNotFound_quando_apenasTrajeInexistente() {
+        @DisplayName("CT9 — I4 isolada: traje inexistente, demais VÁLIDAS")
+        void ct9_deve_lancarResourceNotFound_quando_apenasTrajeInexistente() {
             AluguelRequest request = AlugueisDataBuilder.umAluguel().buildRequest();
             when(clienteRepository.findById(CLIENTE_ID_DEFAULT)).thenReturn(Optional.of(cliente));
             when(trajeRepository.findById(TRAJE_ID_DEFAULT)).thenReturn(Optional.empty());
@@ -260,8 +284,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT9 — I5 isolada: traje com status ALUGADO, demais VÁLIDAS")
-        void ct9_deve_lancarBusinessException_quando_apenasTrajeNaoDisponivel() {
+        @DisplayName("CT10 — I5 isolada: traje com status ALUGADO, demais VÁLIDAS")
+        void ct10_deve_lancarBusinessException_quando_apenasTrajeNaoDisponivel() {
             AluguelRequest request = AlugueisDataBuilder.umAluguel().buildRequest();
             Traje indisponivel = AlugueisDataBuilder.umTrajeIndisponivel(TRAJE_ID_DEFAULT);
 
@@ -274,8 +298,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT10 — I6 isolada: traje ocupado no período, demais VÁLIDAS")
-        void ct10_deve_lancarBusinessException_quando_apenasTrajeOcupadoNoPeriodo() {
+        @DisplayName("CT11 — I6 isolada: traje ocupado no período, demais VÁLIDAS")
+        void ct11_deve_lancarBusinessException_quando_apenasTrajeOcupadoNoPeriodo() {
             AluguelRequest request = AlugueisDataBuilder.umAluguel().buildRequest();
             when(clienteRepository.findById(CLIENTE_ID_DEFAULT)).thenReturn(Optional.of(cliente));
             when(trajeRepository.findById(TRAJE_ID_DEFAULT)).thenReturn(Optional.of(traje));
@@ -289,8 +313,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT11 — I7 isolada na borda: desconto = total + 0,01, demais VÁLIDAS")
-        void ct11_deve_lancarBusinessException_quando_apenasDescontoUmCentavoAcimaDoTotal() {
+        @DisplayName("CT12 — I7 isolada na borda: desconto = total + 0,01, demais VÁLIDAS")
+        void ct12_deve_lancarBusinessException_quando_apenasDescontoUmCentavoAcimaDoTotal() {
             AluguelRequest request = AlugueisDataBuilder.umAluguel()
                     .comValorDesconto(new BigDecimal("100.01"))
                     .buildRequest();
@@ -303,7 +327,7 @@ class AluguelServiceTFSTest {
     }
 
     // =========================================================
-    // ATUALIZAR — CT12..CT17
+    // ATUALIZAR — CT13..CT18
     // =========================================================
     @Nested
     @DisplayName("Atualizar Aluguel — matriz TFS")
@@ -327,8 +351,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT12 — todas VÁLIDAS: aluguel ATIVO, datas/traje/desconto ok")
-        void ct12_deve_atualizar_quando_todasClassesValidas() {
+        @DisplayName("CT13 — todas VÁLIDAS: aluguel ATIVO, datas/traje/desconto ok")
+        void ct13_deve_atualizar_quando_todasClassesValidas() {
             AluguelUpdateRequest request = AlugueisDataBuilder.umAluguel().buildUpdateRequest();
             stubarCaminhoFelizAtualizar();
 
@@ -339,8 +363,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT13 — I8 isolada: aluguel inexistente")
-        void ct13_deve_lancarResourceNotFound_quando_apenasAluguelInexistente() {
+        @DisplayName("CT14 — I9 isolada: aluguel inexistente")
+        void ct14_deve_lancarResourceNotFound_quando_apenasAluguelInexistente() {
             AluguelUpdateRequest request = AlugueisDataBuilder.umAluguel().buildUpdateRequest();
             when(aluguelRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -349,8 +373,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT14 — I9 isolada: aluguel CONCLUÍDO (status ≠ ATIVO)")
-        void ct14_deve_lancarBusinessException_quando_apenasStatusNaoAtivo() {
+        @DisplayName("CT15 — I10 isolada: aluguel CONCLUÍDO (status ≠ ATIVO)")
+        void ct15_deve_lancarBusinessException_quando_apenasStatusNaoAtivo() {
             Aluguel concluido = AlugueisDataBuilder.umAluguel()
                     .comStatus(StatusAluguel.CONCLUIDO)
                     .buildEntity(cliente);
@@ -364,8 +388,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT15 — I3 isolada na borda: devolução = retirada - 1")
-        void ct15_deve_lancarBusinessException_quando_apenasDevolucaoAntesDaRetirada() {
+        @DisplayName("CT16 — I3 isolada na borda: devolução = retirada - 1")
+        void ct16_deve_lancarBusinessException_quando_apenasDevolucaoAntesDaRetirada() {
             LocalDate retirada = LocalDate.now().plusDays(5);
             AluguelUpdateRequest request = AlugueisDataBuilder.umAluguel()
                     .comDatas(retirada, retirada.minusDays(1))
@@ -378,8 +402,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT16 — I6 isolada: traje ocupado no novo período")
-        void ct16_deve_lancarBusinessException_quando_apenasTrajeOcupadoNoPeriodo() {
+        @DisplayName("CT17 — I6 isolada: traje ocupado no novo período")
+        void ct17_deve_lancarBusinessException_quando_apenasTrajeOcupadoNoPeriodo() {
             AluguelUpdateRequest request = AlugueisDataBuilder.umAluguel().buildUpdateRequest();
             when(aluguelRepository.findById(ALUGUEL_ID_DEFAULT)).thenReturn(Optional.of(aluguelAtivo));
             when(itemAluguelRepository.trajeIndisponivelNoPeriodo(
@@ -393,8 +417,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT17 — I7 isolada na borda: desconto = total + 0,01")
-        void ct17_deve_lancarBusinessException_quando_apenasDescontoUmCentavoAcimaDoTotal() {
+        @DisplayName("CT18 — I7 isolada na borda: desconto = total + 0,01")
+        void ct18_deve_lancarBusinessException_quando_apenasDescontoUmCentavoAcimaDoTotal() {
             AluguelUpdateRequest request = AlugueisDataBuilder.umAluguel()
                     .comValorDesconto(new BigDecimal("100.01"))
                     .buildUpdateRequest();
@@ -408,15 +432,15 @@ class AluguelServiceTFSTest {
     }
 
     // =========================================================
-    // BUSCAR POR ID — CT18, CT19
+    // BUSCAR POR ID — CT19, CT20
     // =========================================================
     @Nested
     @DisplayName("Buscar por ID — matriz TFS")
     class BuscarPorId {
 
         @Test
-        @DisplayName("CT18 — V: ID existe")
-        void ct18_deve_retornar_quando_idExiste() {
+        @DisplayName("CT19 — V: ID existe")
+        void ct19_deve_retornar_quando_idExiste() {
             Aluguel aluguel = AlugueisDataBuilder.umAluguel().buildEntity(cliente);
             when(aluguelRepository.findById(ALUGUEL_ID_DEFAULT)).thenReturn(Optional.of(aluguel));
 
@@ -427,8 +451,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT19 — I: ID inexistente")
-        void ct19_deve_lancarResourceNotFound_quando_idInexistente() {
+        @DisplayName("CT20 — I: ID inexistente")
+        void ct20_deve_lancarResourceNotFound_quando_idInexistente() {
             when(aluguelRepository.findById(99L)).thenReturn(Optional.empty());
 
             assertThrows(ResourceNotFoundException.class, () -> service.buscarPorId(99L));
@@ -436,15 +460,15 @@ class AluguelServiceTFSTest {
     }
 
     // =========================================================
-    // LISTAR TODOS — CT20, CT21
+    // LISTAR TODOS — CT21, CT22
     // =========================================================
     @Nested
     @DisplayName("Listar Todos — matriz TFS")
     class ListarTodos {
 
         @Test
-        @DisplayName("CT20 — V típico: existe pelo menos 1 aluguel")
-        void ct20_deve_retornarLista_quando_existemAlugueis() {
+        @DisplayName("CT21 — V típico: existe pelo menos 1 aluguel")
+        void ct21_deve_retornarLista_quando_existemAlugueis() {
             Aluguel aluguel = AlugueisDataBuilder.umAluguel().buildEntity(cliente);
             when(aluguelRepository.findAll()).thenReturn(List.of(aluguel));
 
@@ -454,8 +478,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT21 — V borda inferior: nenhum aluguel cadastrado")
-        void ct21_deve_retornarListaVazia_quando_nenhumAluguel() {
+        @DisplayName("CT22 — V borda inferior: nenhum aluguel cadastrado")
+        void ct22_deve_retornarListaVazia_quando_nenhumAluguel() {
             when(aluguelRepository.findAll()).thenReturn(List.of());
 
             List<AluguelResponse> responses = service.listarTodos();
@@ -465,15 +489,15 @@ class AluguelServiceTFSTest {
     }
 
     // =========================================================
-    // DELETAR — CT22, CT23
+    // DELETAR — CT23, CT24
     // =========================================================
     @Nested
     @DisplayName("Deletar — matriz TFS")
     class Deletar {
 
         @Test
-        @DisplayName("CT22 — V: ID existe → deleta")
-        void ct22_deve_deletar_quando_idExiste() {
+        @DisplayName("CT23 — V: ID existe → deleta")
+        void ct23_deve_deletar_quando_idExiste() {
             Aluguel aluguel = AlugueisDataBuilder.umAluguel().buildEntity(cliente);
             when(aluguelRepository.findById(ALUGUEL_ID_DEFAULT)).thenReturn(Optional.of(aluguel));
 
@@ -483,8 +507,8 @@ class AluguelServiceTFSTest {
         }
 
         @Test
-        @DisplayName("CT23 — I: ID inexistente → nada é removido")
-        void ct23_deve_lancarResourceNotFound_quando_idInexistente() {
+        @DisplayName("CT24 — I: ID inexistente → nada é removido")
+        void ct24_deve_lancarResourceNotFound_quando_idInexistente() {
             when(aluguelRepository.findById(99L)).thenReturn(Optional.empty());
 
             assertThrows(ResourceNotFoundException.class, () -> service.deletar(99L));
