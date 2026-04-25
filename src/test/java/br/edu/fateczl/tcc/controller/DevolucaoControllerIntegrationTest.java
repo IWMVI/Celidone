@@ -183,7 +183,7 @@ class DevolucaoControllerIntegrationTest {
         );
 
         BigDecimal novaMulta = new BigDecimal("75.00");
-        LocalDate novaData = LocalDate.now().plusDays(2);
+        LocalDate novaData = DevolucaoDataBuilder.DATA_DEVOLUCAO_DEFAULT.plusDays(2);
         DevolucaoUpdateRequest atualizado = DevolucaoDataBuilder.umaDevolucao()
                 .comDataDevolucao(novaData)
                 .comObservacoes("Devolução com atraso")

@@ -204,7 +204,7 @@ class DevolucaoServiceTest {
         @DisplayName("CT5 — mapeamento: save recebe entidade com os 4 campos do request")
         void ct5_deve_mapearTodosOsCampos_quando_criar() {
             BigDecimal multa = new BigDecimal("25.50");
-            LocalDate hoje = LocalDate.now();
+            LocalDate hoje = DevolucaoDataBuilder.DATA_DEVOLUCAO_DEFAULT;
             DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
                     .comDataDevolucao(hoje)
                     .comObservacoes("Roupa com pequena mancha")
@@ -301,7 +301,7 @@ class DevolucaoServiceTest {
         @DisplayName("CT10 — V3 + V4a: id existente, campos aplicados via updateEntity")
         void ct10_deve_atualizar_quando_idExistente() {
             BigDecimal novaMulta = new BigDecimal("50.00");
-            LocalDate novaData = LocalDate.now().plusDays(1);
+            LocalDate novaData = DevolucaoDataBuilder.DATA_DEVOLUCAO_DEFAULT.plusDays(1);
             DevolucaoUpdateRequest request = DevolucaoDataBuilder.umaDevolucao()
                     .comDataDevolucao(novaData)
                     .comObservacoes("Atraso de 2 dias")

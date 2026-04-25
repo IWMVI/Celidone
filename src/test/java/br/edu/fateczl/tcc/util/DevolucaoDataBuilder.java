@@ -14,7 +14,7 @@ import java.time.LocalDate;
  *
  * Uso típico:
  *   DevolucaoRequest req = DevolucaoDataBuilder.umaDevolucao()
- *           .comDataDevolucao(LocalDate.now())
+ *           .comDataDevolucao(LocalDate.of(2024, 1, 15))
  *           .comValorMulta(new BigDecimal("25.00"))
  *           .buildRequest();
  *
@@ -25,7 +25,7 @@ public class DevolucaoDataBuilder {
 
     public static final Long DEVOLUCAO_ID_DEFAULT = 1L;
     public static final Long ID_ALUGUEL_DEFAULT = 100L;
-    public static final LocalDate DATA_DEVOLUCAO_DEFAULT = LocalDate.now();
+    public static final LocalDate DATA_DEVOLUCAO_DEFAULT = LocalDate.of(2024, 1, 15);
     public static final String OBSERVACOES_DEFAULT = "Devolução em bom estado";
     public static final BigDecimal VALOR_MULTA_DEFAULT = new BigDecimal("0.00");
 
