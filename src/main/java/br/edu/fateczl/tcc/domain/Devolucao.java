@@ -86,11 +86,10 @@ public class Devolucao {
         this.aluguel = aluguel;
     }
 
-    public void atualizar(LocalDate dataDevolucao, String observacoes, BigDecimal valorMulta, Aluguel aluguel) {
+    public void atualizar(LocalDate dataDevolucao, String observacoes, BigDecimal valorMulta) {
         this.dataDevolucao = dataDevolucao;
         this.observacoes = observacoes;
         this.valorMulta = valorMulta;
-        this.aluguel = aluguel;
     }
 
     @Override
@@ -115,5 +114,52 @@ public class Devolucao {
                 ", valorMulta=" + valorMulta +
                 ", aluguel=" + aluguel +
                 '}';
+    }
+
+    public static DevolucaoBuilder builder() {
+        return new DevolucaoBuilder();
+    }
+
+    public static class DevolucaoBuilder {
+        private Long id;
+        private LocalDate dataDevolucao;
+        private String observacoes;
+        private BigDecimal valorMulta;
+        private Aluguel aluguel;
+
+        public DevolucaoBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public DevolucaoBuilder dataDevolucao(LocalDate dataDevolucao) {
+            this.dataDevolucao = dataDevolucao;
+            return this;
+        }
+
+        public DevolucaoBuilder observacoes(String observacoes) {
+            this.observacoes = observacoes;
+            return this;
+        }
+
+        public DevolucaoBuilder valorMulta(BigDecimal valorMulta) {
+            this.valorMulta = valorMulta;
+            return this;
+        }
+
+        public DevolucaoBuilder aluguel(Aluguel aluguel) {
+            this.aluguel = aluguel;
+            return this;
+        }
+
+        public Devolucao build() {
+            Devolucao devolucao = new Devolucao();
+            devolucao.id = this.id;
+            devolucao.dataDevolucao = this.dataDevolucao;
+            devolucao.observacoes = this.observacoes;
+            devolucao.valorMulta = this.valorMulta;
+            devolucao.aluguel = this.aluguel;
+            return devolucao;
+        }
     }
 }
