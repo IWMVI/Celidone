@@ -2,19 +2,25 @@ package br.edu.fateczl.tcc.controller;
 
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
-import br.edu.fateczl.tcc.enums.*;
+import br.edu.fateczl.tcc.enums.SexoEnum;
+import br.edu.fateczl.tcc.enums.StatusTraje;
+import br.edu.fateczl.tcc.enums.TamanhoTraje;
+import br.edu.fateczl.tcc.enums.TipoTraje;
+import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.service.TrajeService;
+import br.edu.fateczl.tcc.util.TrajeDataBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,409 +30,375 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TrajeController.class)
-@DisplayName("Testes de comportamento do TrajeController")
+@AutoConfigureMockMvc(addFilters = false)
+@DisplayName("Testes unitários do TrajeController")
 class TrajeControllerTest {
 
-        @Autowired
-        private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-        @Autowired
-        private ObjectMapper objectMapper;
+    @MockitoBean
+    private TrajeService service;
 
-        @MockitoBean
-        private TrajeService trajeService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-        private TrajeRequest criarRequestValido() {
-                return new TrajeRequest(
-                                "Traje social azul marinho",
-                                TamanhoTraje.M,
-                                CorTraje.AZUL,
-                                TipoTraje.TERNO,
-                                SexoEnum.MASCULINO,
-                                new BigDecimal("250.00"),
-                                StatusTraje.DISPONIVEL,
-                                "Terno Classic",
-                                TecidoTraje.LA,
-                                EstampaTraje.LISA,
-                                TexturaTraje.LISO,
-                                CondicaoTraje.NOVO,
-                                null);
+    private TrajeRequest requestValido;
+    private TrajeResponse responseValido;
+
+    @BeforeEach
+    void setUp() {
+        requestValido = TrajeDataBuilder.umTraje().buildRequest();
+        responseValido = TrajeDataBuilder.umTraje().buildResponse();
+    }
+
+    @Nested
+    @DisplayName("Criar Traje")
+    class CriarTrajeTest {
+
+        @Test
+        void deve_retornar201_quando_trajeCriadoComSucesso() throws Exception {
+            when(service.criar(any(TrajeRequest.class))).thenReturn(responseValido);
+
+            mockMvc.perform(post("/trajes")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestValido)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.id").value(TrajeDataBuilder.TRAJE_ID_DEFAULT))
+                    .andExpect(jsonPath("$.nome").value(TrajeDataBuilder.NOME_DEFAULT));
+
+            verify(service).criar(any(TrajeRequest.class));
         }
 
-        private TrajeResponse criarResponseValido() {
-                return new TrajeResponse(
-                                1L,
-                                "Traje social azul marinho",
-                                TamanhoTraje.M,
-                                CorTraje.AZUL,
-                                TipoTraje.TERNO,
-                                SexoEnum.MASCULINO,
-                                new BigDecimal("250.00"),
-                                StatusTraje.DISPONIVEL,
-                                "Terno Classic",
-                                TecidoTraje.LA,
-                                EstampaTraje.LISA,
-                                TexturaTraje.LISO,
-                                CondicaoTraje.NOVO,
-                                null,
-                                java.time.LocalDateTime.now());
+        @Test
+        void deve_retornar400_quando_descricaoVazia() throws Exception {
+            TrajeRequest request = TrajeDataBuilder.umTraje().comDescricao("").buildRequest();
+
+            mockMvc.perform(post("/trajes")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
+
+            verify(service, never()).criar(any(TrajeRequest.class));
         }
 
-        @Nested
-        @DisplayName("Criar traje - POST /trajes")
-        class Criar {
+        @Test
+        void deve_retornar400_quando_nomeVazio() throws Exception {
+            TrajeRequest request = TrajeDataBuilder.umTraje().comNome("").buildRequest();
 
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 201 ao criar traje com dados validos")
-                void deve_retornar_201_ao_criar_traje_com_dados_validos() throws Exception {
-                        TrajeRequest request = criarRequestValido();
-                        TrajeResponse response = criarResponseValido();
+            mockMvc.perform(post("/trajes")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
 
-                        when(trajeService.criar(any())).thenReturn(response);
-
-                        mockMvc.perform(post("/trajes")
-                                        .with(csrf())
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isCreated())
-                                        .andExpect(jsonPath("$.id").value(1))
-                                        .andExpect(jsonPath("$.nome").value("Terno Classic"));
-
-                        verify(trajeService).criar(any());
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 400 quando descricao for nula")
-                void deve_retornar_400_quando_descricao_for_nula() throws Exception {
-                        TrajeRequest request = new TrajeRequest(
-                                        null,
-                                        TamanhoTraje.M,
-                                        CorTraje.AZUL,
-                                        TipoTraje.TERNO,
-                                        SexoEnum.MASCULINO,
-                                        new BigDecimal("250.00"),
-                                        StatusTraje.DISPONIVEL,
-                                        "Terno Classic",
-                                        TecidoTraje.LA,
-                                        EstampaTraje.LISA,
-                                        TexturaTraje.LISO,
-                                        CondicaoTraje.NOVO,
-                                        null);
-
-                        mockMvc.perform(post("/trajes")
-                                        .with(csrf())
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isBadRequest());
-
-                        verify(trajeService, never()).criar(any());
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 400 quando valor for negativo")
-                void deve_retornar_400_quando_valor_for_negativo() throws Exception {
-                        TrajeRequest request = new TrajeRequest(
-                                        "Traje social",
-                                        TamanhoTraje.M,
-                                        CorTraje.AZUL,
-                                        TipoTraje.TERNO,
-                                        SexoEnum.MASCULINO,
-                                        new BigDecimal("-100.00"),
-                                        StatusTraje.DISPONIVEL,
-                                        "Terno Classic",
-                                        TecidoTraje.LA,
-                                        EstampaTraje.LISA,
-                                        TexturaTraje.LISO,
-                                        CondicaoTraje.NOVO,
-                                        null);
-
-                        mockMvc.perform(post("/trajes")
-                                        .with(csrf())
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isBadRequest());
-
-                        verify(trajeService, never()).criar(any());
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 400 quando nome for vazio")
-                void deve_retornar_400_quando_nome_for_vazio() throws Exception {
-                        TrajeRequest request = new TrajeRequest(
-                                        "Traje social",
-                                        TamanhoTraje.M,
-                                        CorTraje.AZUL,
-                                        TipoTraje.TERNO,
-                                        SexoEnum.MASCULINO,
-                                        new BigDecimal("250.00"),
-                                        StatusTraje.DISPONIVEL,
-                                        "",
-                                        TecidoTraje.LA,
-                                        EstampaTraje.LISA,
-                                        TexturaTraje.LISO,
-                                        CondicaoTraje.NOVO,
-                                        null);
-
-                        mockMvc.perform(post("/trajes")
-                                        .with(csrf())
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isBadRequest());
-
-                        verify(trajeService, never()).criar(any());
-                }
+            verify(service, never()).criar(any(TrajeRequest.class));
         }
 
-        @Nested
-        @DisplayName("Buscar por ID - GET /trajes/{id}")
-        class BuscarPorId {
+        @Test
+        void deve_retornar400_quando_valorNegativo() throws Exception {
+            TrajeRequest request = TrajeDataBuilder.umTraje().comValorItemNegativo().buildRequest();
 
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar traje por ID existente")
-                void deve_retornar_200_ao_buscar_traje_por_id_existente() throws Exception {
-                        TrajeResponse response = criarResponseValido();
+            mockMvc.perform(post("/trajes")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
 
-                        when(trajeService.buscarPorId(1L)).thenReturn(response);
-
-                        mockMvc.perform(get("/trajes/1"))
-                                        .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.id").value(1))
-                                        .andExpect(jsonPath("$.nome").value("Terno Classic"));
-
-                        verify(trajeService).buscarPorId(1L);
-                }
+            verify(service, never()).criar(any(TrajeRequest.class));
         }
 
-        @Nested
-        @DisplayName("Buscar com filtros - GET /trajes")
-        class BuscarComFiltros {
+        @Test
+        void deve_retornar400_quando_camposObrigatoriosNulos() throws Exception {
+            // Payload literal com vários enums/campos ausentes em um único caso
+            // consolidado (espelha o padrão usado em ClienteControllerTest).
+            String requestInvalido = """
+                    {
+                        "descricao": "",
+                        "tamanho": null,
+                        "cor": null,
+                        "tipo": null,
+                        "genero": null,
+                        "valorItem": null,
+                        "status": null,
+                        "nome": "",
+                        "tecido": null,
+                        "estampa": null,
+                        "textura": null,
+                        "condicao": null,
+                        "imagemUrl": null
+                    }
+                    """;
 
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar todos os trajes sem filtros")
-                void deve_retornar_200_ao_buscar_todos_trajes_sem_filtros() throws Exception {
-                        when(trajeService.buscar(any(), any(), any(), any(), any(Pageable.class)))
-                                .thenReturn(Page.empty());
+            mockMvc.perform(post("/trajes")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestInvalido))
+                    .andExpect(status().isBadRequest());
+        }
+    }
 
-                        mockMvc.perform(get("/trajes"))
-                                .andExpect(status().isOk());
+    @Nested
+    @DisplayName("Buscar por ID")
+    class BuscarPorIdTest {
 
-                        verify(trajeService).buscar(any(), any(), any(), any(), any(Pageable.class));
-                }
+        @Test
+        void deve_retornar200_quando_trajeEncontrado() throws Exception {
+            when(service.buscarPorId(TrajeDataBuilder.TRAJE_ID_DEFAULT)).thenReturn(responseValido);
 
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes com termo de busca")
-                void deve_retornar_200_ao_buscar_trajes_com_termo_de_busca() throws Exception {
-                        when(trajeService.buscar(any(), any(), any(), any(), anyString(), any(Pageable.class)))
-                                .thenReturn(Page.empty());
+            mockMvc.perform(get("/trajes/{id}", TrajeDataBuilder.TRAJE_ID_DEFAULT))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(TrajeDataBuilder.TRAJE_ID_DEFAULT))
+                    .andExpect(jsonPath("$.nome").value(TrajeDataBuilder.NOME_DEFAULT));
 
-                        mockMvc.perform(get("/trajes")
-                                        .param("busca", "terno"))
-                                .andExpect(status().isOk());
-
-                        verify(trajeService).buscar(any(), any(), any(), any(), anyString(), any(Pageable.class));
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes por status")
-                void deve_retornar_200_ao_buscar_trajes_por_status() throws Exception {
-                        when(trajeService.buscar(any(StatusTraje.class), any(), any(), any(), any(Pageable.class)))
-                                .thenReturn(new PageImpl<>(List.of(criarResponseValido())));
-
-                        mockMvc.perform(get("/trajes")
-                                        .param("status", "DISPONIVEL"))
-                                .andExpect(status().isOk());
-
-                        verify(trajeService).buscar(any(StatusTraje.class), any(), any(), any(), any(Pageable.class));
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes por genero")
-                void deve_retornar_200_ao_buscar_trajes_por_genero() throws Exception {
-                        when(trajeService.buscar(any(), any(SexoEnum.class), any(), any(), any(Pageable.class)))
-                                .thenReturn(Page.empty());
-
-                        mockMvc.perform(get("/trajes")
-                                        .param("genero", "MASCULINO"))
-                                .andExpect(status().isOk());
-
-                        verify(trajeService).buscar(any(), any(SexoEnum.class), any(), any(), any(Pageable.class));
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes por tipo")
-                void deve_retornar_200_ao_buscar_trajes_por_tipo() throws Exception {
-                        when(trajeService.buscar(any(), any(), any(TipoTraje.class), any(), any(Pageable.class)))
-                                .thenReturn(Page.empty());
-
-                        mockMvc.perform(get("/trajes")
-                                        .param("tipo", "TERNO"))
-                                .andExpect(status().isOk());
-
-                        verify(trajeService).buscar(any(), any(), any(TipoTraje.class), any(), any(Pageable.class));
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes por tamanho")
-                void deve_retornar_200_ao_buscar_trajes_por_tamanho() throws Exception {
-                        when(trajeService.buscar(any(), any(), any(), any(TamanhoTraje.class), any(Pageable.class)))
-                                .thenReturn(Page.empty());
-
-                        mockMvc.perform(get("/trajes")
-                                        .param("tamanho", "G"))
-                                .andExpect(status().isOk());
-
-                        verify(trajeService).buscar(any(), any(), any(), any(TamanhoTraje.class), any(Pageable.class));
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes com todos os filtros")
-                void deve_retornar_200_ao_buscar_trajes_com_todos_filtros() throws Exception {
-                        when(trajeService.buscar(any(StatusTraje.class), any(SexoEnum.class), any(TipoTraje.class),
-                                any(TamanhoTraje.class), any(Pageable.class)))
-                                .thenReturn(new PageImpl<>(List.of(criarResponseValido())));
-
-                        mockMvc.perform(get("/trajes")
-                                        .param("status", "DISPONIVEL")
-                                        .param("genero", "FEMININO")
-                                        .param("tipo", "TERNO")
-                                        .param("tamanho", "M"))
-                                .andExpect(status().isOk());
-
-                        verify(trajeService).buscar(any(StatusTraje.class), any(SexoEnum.class),
-                                any(TipoTraje.class), any(TamanhoTraje.class), any(Pageable.class));
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes com busca e filtros")
-                void deve_retornar_200_ao_buscar_trajes_com_busca_e_filtros() throws Exception {
-                        when(trajeService.buscar(any(StatusTraje.class), any(SexoEnum.class), any(TipoTraje.class),
-                                any(TamanhoTraje.class), anyString(), any(Pageable.class)))
-                                .thenReturn(new PageImpl<>(List.of(criarResponseValido())));
-
-                        mockMvc.perform(get("/trajes")
-                                        .param("busca", "terno")
-                                        .param("status", "DISPONIVEL")
-                                        .param("genero", "MASCULINO")
-                                        .param("tipo", "TERNO")
-                                        .param("tamanho", "M"))
-                                .andExpect(status().isOk());
-
-                        verify(trajeService).buscar(any(StatusTraje.class), any(SexoEnum.class),
-                                any(TipoTraje.class), any(TamanhoTraje.class), anyString(), any(Pageable.class));
-                }
+            verify(service).buscarPorId(TrajeDataBuilder.TRAJE_ID_DEFAULT);
         }
 
-        @Nested
-        @DisplayName("Buscar por termo - GET /trajes/buscar")
-        class BuscarPorTermo {
+        @Test
+        void deve_retornar404_quando_trajeNaoEncontrado() throws Exception {
+            when(service.buscarPorId(99L))
+                    .thenThrow(new ResourceNotFoundException("Traje", 99L));
 
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes por termo")
-                void deve_retornar_200_ao_buscar_trajes_por_termo() throws Exception {
-                        when(trajeService.buscarPorNomeOuDescricao("terno")).thenReturn(List.of(criarResponseValido()));
+            mockMvc.perform(get("/trajes/99"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Traje com id 99 não encontrado(a)"));
+        }
+    }
 
-                        mockMvc.perform(get("/trajes/buscar")
-                                        .param("termo", "terno"))
-                                        .andExpect(status().isOk());
+    @Nested
+    @DisplayName("Listar com filtros")
+    class ListarComFiltrosTest {
 
-                        verify(trajeService).buscarPorNomeOuDescricao("terno");
-                }
+        @Test
+        void deve_retornar200_quando_listarSemFiltros() throws Exception {
+            Page<TrajeResponse> page = new PageImpl<>(List.of(responseValido));
+            when(service.buscar(any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
+
+            mockMvc.perform(get("/trajes"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content[0].nome").value(TrajeDataBuilder.NOME_DEFAULT));
+
+            verify(service).buscar(any(), any(), any(), any(), any(Pageable.class));
+            verify(service, never()).buscar(any(), any(), any(), any(), anyString(), any(Pageable.class));
         }
 
-        @Nested
-        @DisplayName("Buscar por faixa de preco - GET /trajes/preco")
-        class BuscarPorFaixaPreco {
+        @Test
+        void deve_retornar200_quando_listarComTermoDeBusca() throws Exception {
+            Page<TrajeResponse> page = new PageImpl<>(List.of(responseValido));
+            when(service.buscar(any(), any(), any(), any(), anyString(), any(Pageable.class))).thenReturn(page);
 
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao buscar trajes por faixa de preco")
-                void deve_retornar_200_ao_buscar_trajes_por_faixa_de_preco() throws Exception {
-                        when(trajeService.buscarPorFaixaPreco(new BigDecimal("100.00"), new BigDecimal("500.00")))
-                                        .thenReturn(List.of(criarResponseValido()));
+            mockMvc.perform(get("/trajes").param("busca", "terno"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content[0].nome").value(TrajeDataBuilder.NOME_DEFAULT));
 
-                        mockMvc.perform(get("/trajes/preco")
-                                        .param("min", "100.00")
-                                        .param("max", "500.00"))
-                                        .andExpect(status().isOk());
-
-                        verify(trajeService).buscarPorFaixaPreco(new BigDecimal("100.00"), new BigDecimal("500.00"));
-                }
+            verify(service).buscar(any(), any(), any(), any(), eq("terno"), any(Pageable.class));
         }
 
-        @Nested
-        @DisplayName("Atualizar traje - PUT /trajes/{id}")
-        class Atualizar {
+        @Test
+        void deve_retornar200_quando_filtrarPorStatus() throws Exception {
+            Page<TrajeResponse> page = new PageImpl<>(List.of(responseValido));
+            when(service.buscar(eq(StatusTraje.DISPONIVEL), any(), any(), any(), any(Pageable.class)))
+                    .thenReturn(page);
 
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 200 ao atualizar traje com dados validos")
-                void deve_retornar_200_ao_atualizar_traje_com_dados_validos() throws Exception {
-                        TrajeRequest request = criarRequestValido();
-                        TrajeResponse response = criarResponseValido();
+            mockMvc.perform(get("/trajes").param("status", "DISPONIVEL"))
+                    .andExpect(status().isOk());
 
-                        when(trajeService.atualizar(eq(1L), any())).thenReturn(response);
-
-                        mockMvc.perform(put("/trajes/1")
-                                        .with(csrf())
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.id").value(1));
-
-                        verify(trajeService).atualizar(eq(1L), any());
-                }
+            verify(service).buscar(eq(StatusTraje.DISPONIVEL), any(), any(), any(), any(Pageable.class));
         }
 
-        @Nested
-        @DisplayName("Deletar traje - DELETE /trajes/{id}")
-        class Deletar {
+        @Test
+        void deve_retornar200_quando_filtrarPorGenero() throws Exception {
+            when(service.buscar(any(), eq(SexoEnum.MASCULINO), any(), any(), any(Pageable.class)))
+                    .thenReturn(Page.empty());
 
-                @Test
-                @WithMockUser
-                @DisplayName("Deve retornar 204 ao deletar traje existente")
-                void deve_retornar_204_ao_deletar_traje_existente() throws Exception {
-                        doNothing().when(trajeService).deletar(1L);
+            mockMvc.perform(get("/trajes").param("genero", "MASCULINO"))
+                    .andExpect(status().isOk());
 
-                        mockMvc.perform(delete("/trajes/1")
-                                        .with(csrf()))
-                                        .andExpect(status().isNoContent());
-
-                        verify(trajeService).deletar(1L);
-                }
-
-                @Test
-                @WithMockUser
-                @DisplayName("Deve propagar excecao quando traje nao existir")
-                void deve_propagar_excecao_quando_traje_nao_existir() throws Exception {
-                        doThrow(new IllegalArgumentException("Traje não encontrado: 999"))
-                                        .when(trajeService).deletar(999L);
-
-                        mockMvc.perform(delete("/trajes/999")
-                                        .with(csrf()))
-                                        .andExpect(status().is4xxClientError());
-
-                        verify(trajeService).deletar(999L);
-                }
+            verify(service).buscar(any(), eq(SexoEnum.MASCULINO), any(), any(), any(Pageable.class));
         }
+
+        @Test
+        void deve_retornar200_quando_filtrarPorTipo() throws Exception {
+            when(service.buscar(any(), any(), eq(TipoTraje.TERNO), any(), any(Pageable.class)))
+                    .thenReturn(Page.empty());
+
+            mockMvc.perform(get("/trajes").param("tipo", "TERNO"))
+                    .andExpect(status().isOk());
+
+            verify(service).buscar(any(), any(), eq(TipoTraje.TERNO), any(), any(Pageable.class));
+        }
+
+        @Test
+        void deve_retornar200_quando_filtrarPorTamanho() throws Exception {
+            when(service.buscar(any(), any(), any(), eq(TamanhoTraje.M), any(Pageable.class)))
+                    .thenReturn(Page.empty());
+
+            mockMvc.perform(get("/trajes").param("tamanho", "M"))
+                    .andExpect(status().isOk());
+
+            verify(service).buscar(any(), any(), any(), eq(TamanhoTraje.M), any(Pageable.class));
+        }
+
+        @Test
+        void deve_retornar200_quando_todosFiltrosCombinados() throws Exception {
+            Page<TrajeResponse> page = new PageImpl<>(List.of(responseValido));
+            when(service.buscar(eq(StatusTraje.DISPONIVEL), eq(SexoEnum.MASCULINO),
+                    eq(TipoTraje.TERNO), eq(TamanhoTraje.M), any(Pageable.class)))
+                    .thenReturn(page);
+
+            mockMvc.perform(get("/trajes")
+                            .param("status", "DISPONIVEL")
+                            .param("genero", "MASCULINO")
+                            .param("tipo", "TERNO")
+                            .param("tamanho", "M"))
+                    .andExpect(status().isOk());
+
+            verify(service).buscar(eq(StatusTraje.DISPONIVEL), eq(SexoEnum.MASCULINO),
+                    eq(TipoTraje.TERNO), eq(TamanhoTraje.M), any(Pageable.class));
+        }
+
+        @Test
+        void deve_retornar200_quando_combinarBuscaComFiltros() throws Exception {
+            Page<TrajeResponse> page = new PageImpl<>(List.of(responseValido));
+            when(service.buscar(eq(StatusTraje.DISPONIVEL), eq(SexoEnum.MASCULINO),
+                    eq(TipoTraje.TERNO), eq(TamanhoTraje.M), eq("terno"), any(Pageable.class)))
+                    .thenReturn(page);
+
+            mockMvc.perform(get("/trajes")
+                            .param("busca", "terno")
+                            .param("status", "DISPONIVEL")
+                            .param("genero", "MASCULINO")
+                            .param("tipo", "TERNO")
+                            .param("tamanho", "M"))
+                    .andExpect(status().isOk());
+
+            verify(service).buscar(eq(StatusTraje.DISPONIVEL), eq(SexoEnum.MASCULINO),
+                    eq(TipoTraje.TERNO), eq(TamanhoTraje.M), eq("terno"), any(Pageable.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("Buscar por termo")
+    class BuscarPorTermoTest {
+
+        @Test
+        void deve_retornar200_quando_buscarPorTermo() throws Exception {
+            when(service.buscarPorNomeOuDescricao("terno")).thenReturn(List.of(responseValido));
+
+            mockMvc.perform(get("/trajes/buscar").param("termo", "terno"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[0].nome").value(TrajeDataBuilder.NOME_DEFAULT));
+
+            verify(service).buscarPorNomeOuDescricao("terno");
+        }
+    }
+
+    @Nested
+    @DisplayName("Buscar por faixa de preço")
+    class BuscarPorFaixaPrecoTest {
+
+        @Test
+        void deve_retornar200_quando_faixaValida() throws Exception {
+            BigDecimal min = new BigDecimal("100.00");
+            BigDecimal max = new BigDecimal("500.00");
+            when(service.buscarPorFaixaPreco(min, max)).thenReturn(List.of(responseValido));
+
+            mockMvc.perform(get("/trajes/preco")
+                            .param("min", "100.00")
+                            .param("max", "500.00"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[0].nome").value(TrajeDataBuilder.NOME_DEFAULT));
+
+            verify(service).buscarPorFaixaPreco(min, max);
+        }
+    }
+
+    @Nested
+    @DisplayName("Atualizar Traje")
+    class AtualizarTrajeTest {
+
+        @Test
+        void deve_retornar200_quando_atualizarComSucesso() throws Exception {
+            when(service.atualizar(eq(TrajeDataBuilder.TRAJE_ID_DEFAULT), any(TrajeRequest.class)))
+                    .thenReturn(responseValido);
+
+            mockMvc.perform(put("/trajes/{id}", TrajeDataBuilder.TRAJE_ID_DEFAULT)
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestValido)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.nome").value(TrajeDataBuilder.NOME_DEFAULT));
+
+            verify(service).atualizar(eq(TrajeDataBuilder.TRAJE_ID_DEFAULT), any(TrajeRequest.class));
+        }
+
+        @Test
+        void deve_retornar400_quando_dadosInvalidosNaAtualizacao() throws Exception {
+            TrajeRequest request = TrajeDataBuilder.umTraje().comDescricao("").buildRequest();
+
+            mockMvc.perform(put("/trajes/1")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
+
+            verify(service, never()).atualizar(any(), any(TrajeRequest.class));
+        }
+
+        @Test
+        void deve_retornar404_quando_trajeNaoEncontradoParaAtualizar() throws Exception {
+            when(service.atualizar(eq(99L), any(TrajeRequest.class)))
+                    .thenThrow(new ResourceNotFoundException("Traje", 99L));
+
+            mockMvc.perform(put("/trajes/99")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestValido)))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Traje com id 99 não encontrado(a)"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Deletar Traje")
+    class DeletarTrajeTest {
+
+        @Test
+        void deve_retornar204_quando_deletarComSucesso() throws Exception {
+            doNothing().when(service).deletar(TrajeDataBuilder.TRAJE_ID_DEFAULT);
+
+            mockMvc.perform(delete("/trajes/{id}", TrajeDataBuilder.TRAJE_ID_DEFAULT)
+                            .with(csrf()))
+                    .andExpect(status().isNoContent());
+
+            verify(service).deletar(TrajeDataBuilder.TRAJE_ID_DEFAULT);
+        }
+
+        @Test
+        void deve_retornar404_quando_trajeNaoEncontradoParaDeletar() throws Exception {
+            doThrow(new ResourceNotFoundException("Traje", 99L))
+                    .when(service).deletar(99L);
+
+            mockMvc.perform(delete("/trajes/99")
+                            .with(csrf()))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Traje com id 99 não encontrado(a)"));
+        }
+    }
 }
