@@ -2,7 +2,6 @@ package br.edu.fateczl.tcc.controller;
 
 import br.edu.fateczl.tcc.domain.Traje;
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
-import br.edu.fateczl.tcc.mapper.TrajeMapper;
 import br.edu.fateczl.tcc.repository.TrajeRepository;
 import br.edu.fateczl.tcc.util.TrajeDataBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,8 +67,7 @@ class TrajeControllerIntegrationTest {
 
     @Test
     void deve_buscarPorId_quando_trajeExisteIntegracao() throws Exception {
-        TrajeRequest request = TrajeDataBuilder.umTraje().buildRequest();
-        Traje salvo = trajeRepository.save(TrajeMapper.toEntity(request));
+        Traje salvo = trajeRepository.save(TrajeDataBuilder.umTraje().comId(null).buildEntity());
 
         mockMvc.perform(get("/trajes/{id}", salvo.getId()))
                 .andExpect(status().isOk())
@@ -79,13 +77,12 @@ class TrajeControllerIntegrationTest {
 
     @Test
     void deve_listarTrajes_quando_existiremTrajesIntegracao() throws Exception {
-        TrajeRequest req1 = TrajeDataBuilder.umTraje().buildRequest();
-        TrajeRequest req2 = TrajeDataBuilder.umTraje()
+        trajeRepository.save(TrajeDataBuilder.umTraje().comId(null).buildEntity());
+        trajeRepository.save(TrajeDataBuilder.umTraje()
+                .comId(null)
                 .comDescricao("Vestido longo floral cerimônia")
                 .comNome("Vestido Longo")
-                .buildRequest();
-        trajeRepository.save(TrajeMapper.toEntity(req1));
-        trajeRepository.save(TrajeMapper.toEntity(req2));
+                .buildEntity());
 
         mockMvc.perform(get("/trajes")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -95,8 +92,7 @@ class TrajeControllerIntegrationTest {
 
     @Test
     void deve_atualizarTraje_quando_dadosValidosIntegracao() throws Exception {
-        TrajeRequest original = TrajeDataBuilder.umTraje().buildRequest();
-        Traje salvo = trajeRepository.save(TrajeMapper.toEntity(original));
+        Traje salvo = trajeRepository.save(TrajeDataBuilder.umTraje().comId(null).buildEntity());
 
         TrajeRequest atualizado = TrajeDataBuilder.umTraje()
                 .comNome("Terno Premium")
@@ -117,8 +113,7 @@ class TrajeControllerIntegrationTest {
 
     @Test
     void deve_deletarTraje_quando_trajeExisteIntegracao() throws Exception {
-        TrajeRequest request = TrajeDataBuilder.umTraje().buildRequest();
-        Traje salvo = trajeRepository.save(TrajeMapper.toEntity(request));
+        Traje salvo = trajeRepository.save(TrajeDataBuilder.umTraje().comId(null).buildEntity());
         assertTrue(trajeRepository.findById(salvo.getId()).isPresent());
 
         mockMvc.perform(delete("/trajes/{id}", salvo.getId())
