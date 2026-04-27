@@ -104,6 +104,7 @@ import static org.mockito.Mockito.when;
  *   CT16 — I3 na borda                                        → BusinessException
  *   CT17 — I6 isolada                                         → BusinessException
  *   CT18 — I7 na borda                                        → BusinessException
+ *   CT25 — V7 borda no update: desconto=null                  → sucesso, total = soma dos itens
  *
  * =========================================================================
  * Operações de leitura/remoção (buscarPorId, listarTodos, deletar) possuem
@@ -353,12 +354,34 @@ class AluguelServiceTest {
         @Test
         @DisplayName("CT13 — todas VÁLIDAS: aluguel ATIVO, datas/traje/desconto ok")
         void ct13_deve_atualizar_quando_todasClassesValidas() {
-            AluguelUpdateRequest request = AlugueisDataBuilder.umAluguel().buildUpdateRequest();
+            // aluguelAtivo nasce com 1 item pré-existente, datas antigas e observação antiga,
+            // de modo que cada efeito do método seja observável (mapper, clear, setValorTotal).
+            aluguelAtivo = AlugueisDataBuilder.umAluguel()
+                    .comStatus(StatusAluguel.ATIVO)
+                    .comDatas(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2))
+                    .comObservacoes("observacao antiga")
+                    .buildEntityComItens(cliente, List.of(traje));
+
+            LocalDate novaRetirada = LocalDate.now().plusDays(10);
+            LocalDate novaDevolucao = LocalDate.now().plusDays(15);
+            AluguelUpdateRequest request = AlugueisDataBuilder.umAluguel()
+                    .comDatas(novaRetirada, novaDevolucao)
+                    .comObservacoes("observacao nova")
+                    .comValorDesconto(new BigDecimal("20.00"))
+                    .buildUpdateRequest();
             stubarCaminhoFelizAtualizar();
 
             AluguelResponse response = service.atualizar(ALUGUEL_ID_DEFAULT, request);
 
             assertNotNull(response);
+            // updateEntity precisa ter sido chamado: campos do DTO refletidos na resposta
+            assertEquals(novaRetirada, response.dataRetirada());
+            assertEquals(novaDevolucao, response.dataDevolucao());
+            assertEquals("observacao nova", response.observacoes());
+            // itens.clear() precisa ter sido chamado: sem ele teríamos 2 itens (1 antigo + 1 novo)
+            assertEquals(1, response.itens().size());
+            // setValorTotal precisa ter sido chamado: 100.00 - 20.00 = 80.00
+            assertEquals(0, response.valorTotal().compareTo(new BigDecimal("80.00")));
             verify(aluguelRepository).save(any(Aluguel.class));
         }
 
@@ -428,6 +451,20 @@ class AluguelServiceTest {
                     () -> service.atualizar(ALUGUEL_ID_DEFAULT, request));
             assertEquals("O valor com desconto não pode ser negativo", ex.getMessage());
             verify(aluguelRepository, never()).save(any(Aluguel.class));
+        }
+
+        @Test
+        @DisplayName("CT25 — V7 borda: desconto=null no update (tratado como zero)")
+        void ct25_deve_atualizar_quando_descontoNulo() {
+            AluguelUpdateRequest request = AlugueisDataBuilder.umAluguel()
+                    .comDescontoNulo()
+                    .buildUpdateRequest();
+            stubarCaminhoFelizAtualizar();
+
+            AluguelResponse response = service.atualizar(ALUGUEL_ID_DEFAULT, request);
+
+            assertNotNull(response);
+            assertEquals(0, response.valorTotal().compareTo(new BigDecimal("100.00")));
         }
     }
 
