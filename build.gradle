@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.4.0'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'jacoco'
+	id 'info.solidsoft.pitest' version '1.19.0'
 }
 
 group = 'br.edu.fateczl.tcc'
@@ -193,4 +194,38 @@ tasks.named('jacocoTestCoverageVerification') {
 
 tasks.named('check') {
 	dependsOn tasks.named('jacocoTestCoverageVerification')
+}
+
+pitest {
+    pitestVersion = '1.19.0'
+    junit5PluginVersion = '1.2.1'
+
+    targetClasses = ['br.edu.fateczl.tcc.service.*']
+    targetTests   = ['br.edu.fateczl.tcc.service.*Test']
+
+    excludedClasses = [
+        'br.edu.fateczl.tcc.domain.*',
+        'br.edu.fateczl.tcc.dto.*',
+        'br.edu.fateczl.tcc.enums.*',
+        'br.edu.fateczl.tcc.config.*',
+        'br.edu.fateczl.tcc.mapper.*',
+        'br.edu.fateczl.tcc.exception.*',
+        'br.edu.fateczl.tcc.repository.*',
+        'br.edu.fateczl.tcc.specification.*',
+        'br.edu.fateczl.tcc.strategy.*'
+    ]
+
+    mutators = ['STRONGER']
+
+    threads = 4
+    timestampedReports = false
+    outputFormats = ['HTML', 'XML']
+
+    avoidCallsTo = [
+        'java.util.logging',
+        'org.slf4j',
+        'org.apache.commons.logging'
+    ]
+
+    mutationThreshold = 60   // score mínimo, falha o build se abaixo
 }
