@@ -50,7 +50,7 @@ Funcionalidade: Gerenciamento de clientes
     Quando envio uma requisicao de cadastro com os dados:
       | nome           | cpfCnpj     | email           | celular      | cep      | logradouro    | numero | cidade     | bairro | estado | complemento | sexo        |
       | Joao da Silva  | 12345678901 | joao@email.com  | 11999999999  | 01001000 | Rua Exemplo   | 100    | Sao Paulo  | Centro | SP     | Sala 101    | MASCULINO   |
-    Entao o status da resposta deve ser 200
+    Entao o status da resposta deve ser 201
     E deve existir um cliente com cpf "12345678901"
     E o campo "cpfCnpj" da resposta deve ser "12345678901"
     E o campo "nome" da resposta deve ser "Joao da Silva"
@@ -146,7 +146,7 @@ Funcionalidade: Gerenciamento de clientes
   Cenario: Deve retornar erro quando buscar cliente por ID inexistente
     Quando envio uma requisicao de busca pelo id 999999
     Entao o status da resposta deve ser 404
-    E o campo "message" da resposta deve conter "Cliente não encontrado"
+    E o campo "message" da resposta deve conter "não encontrado"
 
   # ==========================
   # ATUALIZAR
@@ -184,7 +184,7 @@ Funcionalidade: Gerenciamento de clientes
       | nome    | cpfCnpj     | email        | celular      | cep      | logradouro | numero | cidade    | bairro    | estado | complemento | sexo        |
       | Fantasma| 11111111111 | x@email.com | 11999999999  | 00000000 | Rua X      | 1      | Cidade X  | Bairro X  | SP     | Apto 1      | MASCULINO   |
     Entao o status da resposta deve ser 404
-    E o campo "message" da resposta deve conter "Cliente não encontrado"
+    E o campo "message" da resposta deve conter "não encontrado"
 
   Cenario: Deve permitir atualizar quando mesmo CPF for mantido
     Dado que ja existe um cliente cadastrado com cpf "12345678901"
@@ -208,4 +208,4 @@ Funcionalidade: Gerenciamento de clientes
   Cenario: Deve retornar erro ao deletar cliente com ID inexistente
     Quando envio uma requisicao de exclusao do id 999999
     Entao o status da resposta deve ser 404
-    E o campo "message" da resposta deve conter "Cliente não encontrado"
+    E o campo "message" da resposta deve conter "não encontrado"
