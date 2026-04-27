@@ -31,9 +31,7 @@ public class ImagemService {
     public String removerPrefixoDataUrl(String imagemBase64) {
         if (imagemBase64 != null && imagemBase64.startsWith("data:")) {
             int commaIndex = imagemBase64.indexOf(',');
-            if (commaIndex > 0) {
-                return imagemBase64.substring(commaIndex + 1);
-            }
+            return imagemBase64.substring(commaIndex + 1);
         }
         return imagemBase64;
     }
@@ -62,7 +60,7 @@ public class ImagemService {
     }
 
     public long obterTamanho(String imagemBase64) {
-        if (imagemBase64 == null || imagemBase64.isBlank()) {
+        if (imagemBase64 == null) {
             return 0;
         }
 
@@ -71,9 +69,6 @@ public class ImagemService {
     }
 
     private boolean isFormatoPermitido(String mimeType) {
-        if (mimeType == null) {
-            return false;
-        }
         for (String formatoPermitido : ALLOWED_FORMATS) {
             if (formatoPermitido.equalsIgnoreCase(mimeType)) {
                 return true;
