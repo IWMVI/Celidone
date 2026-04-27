@@ -67,11 +67,12 @@ import static org.mockito.Mockito.when;
  *   C4: celular               | V4 não-blank                | I4 null/blank
  *   C5: cpfCnpj no banco      | V5 inexistente              | I5 já cadastrado
  *   C6: email no banco        | V6 inexistente              | I6 já cadastrado
- *   C7: resultado do save     | V7 sucesso                  | I7a DIV causa "cpf"/"cnpj"
- *                             |                             | I7b DIV causa "email"
- *                             |                             | I7c DIV causa genérica
- *                             |                             | I7d DIV sem cause
- *                             |                             | I7e DIV com cause de msg null
+ *   C7: resultado do save     | V7 sucesso                  | I7a  DIV causa "cpf"
+ *                             |                             | I7a' DIV causa "cnpj"
+ *                             |                             | I7b  DIV causa "email"
+ *                             |                             | I7c  DIV causa genérica
+ *                             |                             | I7d  DIV sem cause
+ *                             |                             | I7e  DIV com cause de msg null
  *
  * VALORES LIMITE RELEVANTES:
  *   - nome/cpf/email/celular: string em branco ("") e null — ambos caem na
@@ -87,8 +88,9 @@ import static org.mockito.Mockito.when;
  *   CT5  — I4 isolada (celular em branco)                     → BusinessException "Telefone é obrigatório"
  *   CT6  — I5 isolada (CPF já cadastrado)                     → BusinessException "CPF ou CNPJ já cadastrado"
  *   CT7  — I6 isolada (email já cadastrado)                   → BusinessException "Email já cadastrado"
- *   CT8  — I7a isolada (DIV causa "cpf")                      → BusinessException "CPF ou CNPJ já cadastrado"
- *   CT9  — I7b isolada (DIV causa "email")                    → BusinessException "Email já cadastrado"
+ *   CT8  — I7a  isolada (DIV causa "cpf")                     → BusinessException "CPF ou CNPJ já cadastrado"
+ *   CT8b — I7a' isolada (DIV causa "cnpj", sem "cpf")         → BusinessException "CPF ou CNPJ já cadastrado"
+ *   CT9  — I7b  isolada (DIV causa "email")                   → BusinessException "Email já cadastrado"
  *   CT10 — I7c isolada (DIV causa genérica)                   → BusinessException "Violação de integridade."
  *   CT11 — I7d isolada (DIV sem cause)                        → BusinessException "Violação de integridade."
  *   CT12 — I7e isolada (DIV com cause de msg null)            → BusinessException "Violação de integridade."
@@ -238,6 +240,20 @@ class ClienteServiceTest {
         }
 
         @Test
+        @DisplayName("CT8b — I7a' isolada na borda: DIV com causa contendo 'cnpj' (sem 'cpf')")
+        void ct8b_deve_traduzirParaCpfDuplicado_quando_saveLancaDivComCausaCnpj() {
+            ClienteRequest request = ClienteDataBuilder.umCliente().buildRequest();
+            when(repository.findByCpfCnpj(anyString())).thenReturn(Optional.empty());
+            when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
+            DataIntegrityViolationException div = new DataIntegrityViolationException(
+                    "erro", new SQLIntegrityConstraintViolationException("Duplicate entry for cnpj"));
+            when(repository.save(any(Cliente.class))).thenThrow(div);
+
+            BusinessException ex = assertThrows(BusinessException.class, () -> service.criar(request));
+            assertEquals("CPF ou CNPJ já cadastrado", ex.getMessage());
+        }
+
+        @Test
         @DisplayName("CT9 — I7b isolada na borda: DIV com causa contendo 'email'")
         void ct9_deve_traduzirParaEmailDuplicado_quando_saveLancaDivComCausaEmail() {
             ClienteRequest request = ClienteDataBuilder.umCliente().buildRequest();
@@ -314,6 +330,8 @@ class ClienteServiceTest {
             ClienteResponse response = service.atualizar(CLIENTE_ID_DEFAULT, request);
 
             assertNotNull(response);
+            assertEquals("98765432100", response.cpfCnpj());
+            assertEquals("joao.novo@email.com", response.email());
             verify(repository).save(any(Cliente.class));
         }
 
