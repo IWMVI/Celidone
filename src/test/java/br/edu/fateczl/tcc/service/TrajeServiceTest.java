@@ -9,7 +9,11 @@ import br.edu.fateczl.tcc.enums.TamanhoTraje;
 import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.repository.TrajeRepository;
+import br.edu.fateczl.tcc.util.SpecificationTestUtils;
+import br.edu.fateczl.tcc.util.SpecificationTestUtils.CapturedSpec;
 import br.edu.fateczl.tcc.util.TrajeDataBuilder;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -34,8 +38,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -320,19 +327,27 @@ class TrajeServiceTest {
     @SuppressWarnings("unchecked")
     class Buscar {
 
+        private ArgumentCaptor<Specification<Traje>> specCaptor() {
+            return ArgumentCaptor.forClass(Specification.class);
+        }
+
         @Test
-        @DisplayName("CT11 — V6a: buscar(sem pageable) com todos os filtros nulos")
+        @DisplayName("CT11 — V6a: buscar(sem pageable) com todos os filtros nulos — Specification não adiciona filtros")
         void ct11_deve_retornarLista_quando_filtrosTodosNulos() {
             when(repository.findAll(any(Specification.class))).thenReturn(List.of(traje));
 
             List<TrajeResponse> result = service.buscar(null, null, null, null);
 
             assertEquals(1, result.size());
-            verify(repository).findAll(any(Specification.class));
+            ArgumentCaptor<Specification<Traje>> captor = specCaptor();
+            verify(repository).findAll(captor.capture());
+
+            CapturedSpec<Traje> captured = SpecificationTestUtils.invoke(captor.getValue());
+            verifyNoInteractions(captured.cb());
         }
 
         @Test
-        @DisplayName("CT12 — V6b: buscar(sem pageable) com cada filtro isolado")
+        @DisplayName("CT12 — V6b: buscar(sem pageable) com cada filtro isolado — adiciona exatamente o cb.equal correspondente")
         void ct12_deve_retornarLista_quando_filtroIsolado() {
             when(repository.findAll(any(Specification.class))).thenReturn(List.of(traje));
 
@@ -340,10 +355,29 @@ class TrajeServiceTest {
             assertEquals(1, service.buscar(null, SexoEnum.MASCULINO, null, null).size());
             assertEquals(1, service.buscar(null, null, TipoTraje.TERNO, null).size());
             assertEquals(1, service.buscar(null, null, null, TamanhoTraje.M).size());
+
+            ArgumentCaptor<Specification<Traje>> captor = specCaptor();
+            verify(repository, times(4)).findAll(captor.capture());
+            List<Specification<Traje>> specs = captor.getAllValues();
+
+            verificarFiltroIsolado(specs.get(0), "status", StatusTraje.DISPONIVEL);
+            verificarFiltroIsolado(specs.get(1), "genero", SexoEnum.MASCULINO);
+            verificarFiltroIsolado(specs.get(2), "tipo", TipoTraje.TERNO);
+            verificarFiltroIsolado(specs.get(3), "tamanho", TamanhoTraje.M);
+        }
+
+        private void verificarFiltroIsolado(Specification<Traje> spec, String campo, Object valor) {
+            CapturedSpec<Traje> captured = SpecificationTestUtils.invoke(spec);
+            verify(captured.cb(), times(1)).equal(any(), eq(valor));
+            verify(captured.root()).get(campo);
+            // Garante que o lambda devolveu o predicate (mata "replaced return value with null").
+            // Com 1 só filtro, o predicate final é exatamente o do lambda; se ele virar null,
+            // a Specification composta também vira null.
+            assertNotNull(captured.predicate());
         }
 
         @Test
-        @DisplayName("CT13 — V6c: buscar(sem pageable) com todos os filtros combinados")
+        @DisplayName("CT13 — V6c: buscar(sem pageable) com todos os filtros combinados — 4 cb.equal e cada root.get")
         void ct13_deve_retornarLista_quando_filtrosCombinados() {
             when(repository.findAll(any(Specification.class))).thenReturn(List.of(traje));
 
@@ -351,10 +385,28 @@ class TrajeServiceTest {
                     StatusTraje.DISPONIVEL, SexoEnum.MASCULINO, TipoTraje.TERNO, TamanhoTraje.M);
 
             assertEquals(1, result.size());
+
+            ArgumentCaptor<Specification<Traje>> captor = specCaptor();
+            verify(repository).findAll(captor.capture());
+            CapturedSpec<Traje> captured = SpecificationTestUtils.invoke(captor.getValue());
+
+            verify(captured.cb(), times(4)).equal(any(Expression.class), any(Object.class));
+            verify(captured.cb()).equal(any(), eq(StatusTraje.DISPONIVEL));
+            verify(captured.cb()).equal(any(), eq(SexoEnum.MASCULINO));
+            verify(captured.cb()).equal(any(), eq(TipoTraje.TERNO));
+            verify(captured.cb()).equal(any(), eq(TamanhoTraje.M));
+            verify(captured.root()).get("status");
+            verify(captured.root()).get("genero");
+            verify(captured.root()).get("tipo");
+            verify(captured.root()).get("tamanho");
+            // 4 lambdas non-null >>> composição chama cb.and 3 vezes (N-1).
+            // Se algum lambda virar null, a contagem cai >>> mata "replaced return value with null".
+            verify(captured.cb(), times(3)).and(any(Expression.class), any(Expression.class));
+            assertNotNull(captured.predicate());
         }
 
         @Test
-        @DisplayName("CT14 — V6a: buscar(com pageable, sem busca) sem filtros")
+        @DisplayName("CT14 — V6a: buscar(com pageable, sem busca) sem filtros — Specification não adiciona filtros")
         void ct14_deve_retornarPagina_quando_pageableSemFiltros() {
             Page<Traje> page = new PageImpl<>(List.of(traje));
             when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
@@ -362,10 +414,15 @@ class TrajeServiceTest {
             Page<TrajeResponse> result = service.buscar(null, null, null, null, Pageable.ofSize(10));
 
             assertEquals(1, result.getTotalElements());
+
+            ArgumentCaptor<Specification<Traje>> captor = specCaptor();
+            verify(repository).findAll(captor.capture(), any(Pageable.class));
+            CapturedSpec<Traje> captured = SpecificationTestUtils.invoke(captor.getValue());
+            verifyNoInteractions(captured.cb());
         }
 
         @Test
-        @DisplayName("CT15 — V6c: buscar(com pageable, sem busca) com todos os filtros")
+        @DisplayName("CT15 — V6c: buscar(com pageable, sem busca) com todos os filtros — 4 cb.equal")
         void ct15_deve_retornarPagina_quando_pageableComFiltros() {
             Page<Traje> page = new PageImpl<>(List.of(traje));
             when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
@@ -375,22 +432,50 @@ class TrajeServiceTest {
                     Pageable.ofSize(10));
 
             assertEquals(1, result.getTotalElements());
+
+            ArgumentCaptor<Specification<Traje>> captor = specCaptor();
+            verify(repository).findAll(captor.capture(), any(Pageable.class));
+            CapturedSpec<Traje> captured = SpecificationTestUtils.invoke(captor.getValue());
+            verify(captured.cb(), times(4)).equal(any(Expression.class), any(Object.class));
+            // 4 lambdas non-null >>> 3 cb.and; mata "replaced return value with null" nas linhas 103-112.
+            verify(captured.cb(), times(3)).and(any(Expression.class), any(Expression.class));
+            assertNotNull(captured.predicate());
         }
 
         @Test
-        @DisplayName("CT16 — V7a: buscar(com pageable, com busca) com busca preenchida")
+        @DisplayName("CT16 — V7a: buscar(com pageable, com busca) com todos os enums + busca preenchida — 4 cb.equal + OR de 3 likes")
         void ct16_deve_retornarPagina_quando_buscaPreenchida() {
             Page<Traje> page = new PageImpl<>(List.of(traje));
             when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
             Page<TrajeResponse> result = service.buscar(
-                    StatusTraje.DISPONIVEL, null, null, null, "terno", Pageable.ofSize(10));
+                    StatusTraje.DISPONIVEL, SexoEnum.MASCULINO, TipoTraje.TERNO, TamanhoTraje.M,
+                    "terno", Pageable.ofSize(10));
 
             assertEquals(1, result.getTotalElements());
+
+            ArgumentCaptor<Specification<Traje>> captor = specCaptor();
+            verify(repository).findAll(captor.capture(), any(Pageable.class));
+            CapturedSpec<Traje> captured = SpecificationTestUtils.invoke(captor.getValue());
+
+            verify(captured.cb(), times(4)).equal(any(Expression.class), any(Object.class));
+            verify(captured.cb()).equal(any(), eq(StatusTraje.DISPONIVEL));
+            verify(captured.cb()).equal(any(), eq(SexoEnum.MASCULINO));
+            verify(captured.cb()).equal(any(), eq(TipoTraje.TERNO));
+            verify(captured.cb()).equal(any(), eq(TamanhoTraje.M));
+            verify(captured.cb(), times(3)).like(any(Expression.class), eq("%terno%"));
+            verify(captured.cb(), times(3)).lower(any(Expression.class));
+            verify(captured.cb(), times(1)).or(any(Predicate[].class));
+            verify(captured.root()).get("nome");
+            verify(captured.root()).get("descricao");
+            verify(captured.root()).get("cor");
+            // 5 lambdas non-null (4 enums + busca) >>> 4 cb.and; mata "replaced return value with null" nas linhas 129-142.
+            verify(captured.cb(), times(4)).and(any(Expression.class), any(Expression.class));
+            assertNotNull(captured.predicate());
         }
 
         @Test
-        @DisplayName("CT17 — V7b: buscar(com pageable, com busca) com busca vazia — não aplica OR")
+        @DisplayName("CT17 — V7b: buscar(com pageable, com busca) com busca vazia — não aplica OR/like")
         void ct17_deve_retornarPagina_quando_buscaVazia() {
             Page<Traje> page = new PageImpl<>(List.of(traje));
             when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
@@ -399,10 +484,16 @@ class TrajeServiceTest {
                     null, null, null, null, "", Pageable.ofSize(10));
 
             assertEquals(1, result.getTotalElements());
+
+            ArgumentCaptor<Specification<Traje>> captor = specCaptor();
+            verify(repository).findAll(captor.capture(), any(Pageable.class));
+            CapturedSpec<Traje> captured = SpecificationTestUtils.invoke(captor.getValue());
+
+            verifyNoInteractions(captured.cb());
         }
 
         @Test
-        @DisplayName("CT18 — V7c: buscar(com pageable, com busca) com busca null — não aplica OR")
+        @DisplayName("CT18 — V7c: buscar(com pageable, com busca) com busca null — Specification não adiciona filtros")
         void ct18_deve_retornarPagina_quando_buscaNula() {
             Page<Traje> page = new PageImpl<>(List.of(traje));
             when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
@@ -411,6 +502,12 @@ class TrajeServiceTest {
                     null, null, null, null, null, Pageable.ofSize(10));
 
             assertEquals(1, result.getTotalElements());
+
+            ArgumentCaptor<Specification<Traje>> captor = specCaptor();
+            verify(repository).findAll(captor.capture(), any(Pageable.class));
+            CapturedSpec<Traje> captured = SpecificationTestUtils.invoke(captor.getValue());
+
+            verifyNoInteractions(captured.cb());
         }
     }
 
