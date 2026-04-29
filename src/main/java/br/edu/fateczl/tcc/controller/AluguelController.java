@@ -55,7 +55,7 @@ public class AluguelController {
     @ApiResponse(responseCode = "200", description = "Aluguel encontrado com sucesso")
     @ApiResponse(responseCode = "404", description = "Aluguel não encontrado")
     @GetMapping("/{id}")
-    public ResponseEntity<AluguelResponse> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<AluguelResponse> buscarPorId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(aluguelService.buscarPorId(id));
     }
 
@@ -80,7 +80,7 @@ public class AluguelController {
     @ApiResponse(responseCode = "404", description = "Aluguel não encontrado")
     @PutMapping("/{id}")
     public ResponseEntity<AluguelResponse> atualizar(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody AluguelUpdateRequest dto) {
 
         return ResponseEntity.ok(aluguelService.atualizar(id, dto));
@@ -94,7 +94,7 @@ public class AluguelController {
     @ApiResponse(responseCode = "204", description = "Aluguel removido com sucesso")
     @ApiResponse(responseCode = "404", description = "Aluguel não encontrado")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
         aluguelService.deletar(id);
         return ResponseEntity.noContent().build();
     }
