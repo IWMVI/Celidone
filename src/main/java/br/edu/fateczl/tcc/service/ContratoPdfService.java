@@ -37,9 +37,10 @@ public class ContratoPdfService {
 
     private static final String RESOURCE_ALUGUEL = "Aluguel";
 
+    private static final Locale LOCALE_BR = Locale.of("pt", "BR");
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DecimalFormat MONEY_FMT =
-            new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.US));
+            new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(LOCALE_BR));
 
     private static final Font FONT_TITULO = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
     private static final Font FONT_SUBTITULO = FontFactory.getFont(FontFactory.HELVETICA, 11);
@@ -68,6 +69,8 @@ public class ContratoPdfService {
         Aluguel aluguel = aluguelRepository.findWithRelacionamentosById(aluguelId)
                 .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_ALUGUEL, aluguelId));
 
+        validarAluguel(aluguel);
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document doc = new Document(PageSize.A4, 60, 60, 60, 60);
 
@@ -94,6 +97,31 @@ public class ContratoPdfService {
         }
 
         return baos.toByteArray();
+    }
+
+    private void validarAluguel(Aluguel aluguel) {
+        if (aluguel.getCliente() == null) {
+            throw new IllegalStateException(
+                    "Aluguel " + aluguel.getId() + " não possui cliente associado");
+        }
+        if (aluguel.getDataRetirada() == null || aluguel.getDataDevolucao() == null) {
+            throw new IllegalStateException(
+                    "Aluguel " + aluguel.getId() + " não possui datas de retirada/devolução");
+        }
+        if (aluguel.getValorTotal() == null) {
+            throw new IllegalStateException(
+                    "Aluguel " + aluguel.getId() + " não possui valor total");
+        }
+        if (aluguel.getItens() == null || aluguel.getItens().isEmpty()) {
+            throw new IllegalStateException(
+                    "Aluguel " + aluguel.getId() + " não possui itens");
+        }
+        for (ItemAluguel item : aluguel.getItens()) {
+            if (item.getTraje() == null) {
+                throw new IllegalStateException(
+                        "Aluguel " + aluguel.getId() + " contém item sem traje associado");
+            }
+        }
     }
 
     private void escreverCabecalho(Document doc) throws DocumentException {
