@@ -4,8 +4,11 @@ import br.edu.fateczl.tcc.dto.aluguel.AluguelRequest;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelResponse;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelUpdateRequest;
 import br.edu.fateczl.tcc.dto.aluguel.ItemAluguelResponse;
+import br.edu.fateczl.tcc.enums.CorTraje;
 import br.edu.fateczl.tcc.enums.StatusAluguel;
+import br.edu.fateczl.tcc.enums.TamanhoTraje;
 import br.edu.fateczl.tcc.enums.TipoOcasiao;
+import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.service.AluguelService;
@@ -82,7 +85,7 @@ class AluguelControllerTest {
                 "Observacao de teste",
                 StatusAluguel.ATIVO,
                 TipoOcasiao.FORMATURA,
-                List.of(new ItemAluguelResponse(AlugueisDataBuilder.TRAJE_ID_DEFAULT, "Traje 10"))
+                List.of(new ItemAluguelResponse(AlugueisDataBuilder.TRAJE_ID_DEFAULT, "Traje 10", TipoTraje.TERNO, TamanhoTraje.M, CorTraje.PRETO, AlugueisDataBuilder.VALOR_TRAJE_DEFAULT))
         );
     }
 
