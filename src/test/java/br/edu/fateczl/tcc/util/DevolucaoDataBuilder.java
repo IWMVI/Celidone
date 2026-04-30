@@ -5,9 +5,12 @@ import br.edu.fateczl.tcc.domain.Devolucao;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
+import br.edu.fateczl.tcc.dto.devolucao.ItemDevolucaoRequest;
+import br.edu.fateczl.tcc.enums.CondicaoTraje;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Builder fluente para montar objetos usados nos testes de Devolução.
@@ -25,6 +28,7 @@ public class DevolucaoDataBuilder {
 
     public static final Long DEVOLUCAO_ID_DEFAULT = 1L;
     public static final Long ID_ALUGUEL_DEFAULT = 100L;
+    public static final Long TRAJE_ID_DEFAULT = AlugueisDataBuilder.TRAJE_ID_DEFAULT;
     public static final LocalDate DATA_DEVOLUCAO_DEFAULT = LocalDate.of(2024, 1, 15);
     public static final String OBSERVACOES_DEFAULT = "Devolução em bom estado";
     public static final BigDecimal VALOR_MULTA_DEFAULT = new BigDecimal("0.00");
@@ -34,6 +38,9 @@ public class DevolucaoDataBuilder {
     private String observacoes = OBSERVACOES_DEFAULT;
     private BigDecimal valorMulta = VALOR_MULTA_DEFAULT;
     private Long idAluguel = ID_ALUGUEL_DEFAULT;
+    private List<ItemDevolucaoRequest> itens = List.of(
+            new ItemDevolucaoRequest(TRAJE_ID_DEFAULT, CondicaoTraje.BOM)
+    );
 
     private DevolucaoDataBuilder() {
     }
@@ -68,6 +75,16 @@ public class DevolucaoDataBuilder {
 
     public DevolucaoDataBuilder comIdAluguel(Long idAluguel) {
         this.idAluguel = idAluguel;
+        return this;
+    }
+
+    public DevolucaoDataBuilder comItens(List<ItemDevolucaoRequest> itens) {
+        this.itens = itens;
+        return this;
+    }
+
+    public DevolucaoDataBuilder semItens() {
+        this.itens = List.of();
         return this;
     }
 
@@ -116,7 +133,8 @@ public class DevolucaoDataBuilder {
         return new DevolucaoRequest(
                 dataDevolucao,
                 observacoes,
-                valorMulta
+                valorMulta,
+                itens
         );
     }
 

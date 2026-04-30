@@ -208,6 +208,16 @@ public class AluguelService {
             throw new BusinessException("Só é possível registrar devolução de aluguéis ATIVOS");
         }
 
+        // Atualizar a condição de cada traje informada na devolução
+        if (dto.itens() != null) {
+            dto.itens().forEach(itemDto -> {
+                Traje traje = buscarTrajeOuFalhar(itemDto.trajeId());
+                traje.setCondicao(itemDto.condicao());
+                traje.setStatus(StatusTraje.DISPONIVEL);
+                trajeRepository.save(traje);
+            });
+        }
+
         DevolucaoResponse devolucaoResponse = devolucaoService.criar(dto, aluguel);
 
         aluguel.setStatus(StatusAluguel.CONCLUIDO);
