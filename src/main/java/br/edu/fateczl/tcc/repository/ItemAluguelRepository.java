@@ -44,4 +44,17 @@ public interface ItemAluguelRepository extends JpaRepository<ItemAluguel, Long> 
             @Param("dataDevolucao") LocalDate dataDevolucao,
             @Param("aluguelId") Long aluguelId
     );
+
+    /**
+     * Retorna todos os períodos (dataRetirada, dataDevolucao) de aluguéis
+     * ATIVOS que contêm o traje informado.
+     */
+    @Query("""
+        SELECT i.aluguel.dataRetirada, i.aluguel.dataDevolucao
+        FROM item_aluguel i
+        WHERE i.traje.id = :trajeId
+          AND i.aluguel.status = 'ATIVO'
+        ORDER BY i.aluguel.dataRetirada
+    """)
+    List<Object[]> findPeriodosAlugadosByTrajeId(@Param("trajeId") Long trajeId);
 }

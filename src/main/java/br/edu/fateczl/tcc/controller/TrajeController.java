@@ -1,5 +1,6 @@
 package br.edu.fateczl.tcc.controller;
 
+import br.edu.fateczl.tcc.dto.traje.PeriodoAlugadoResponse;
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
 import br.edu.fateczl.tcc.enums.SexoEnum;
@@ -116,6 +117,18 @@ public class TrajeController {
             @RequestParam BigDecimal max) {
 
         return ResponseEntity.ok(trajeService.buscarPorFaixaPreco(min, max));
+    }
+
+    // ===============================
+    // READ - períodos alugados
+    // ===============================
+    @Operation(summary = "Buscar períodos em que o traje está alugado")
+    @ApiResponse(responseCode = "200", description = "Períodos recuperados com sucesso")
+    @ApiResponse(responseCode = "404", description = "Traje não encontrado")
+    @GetMapping("/{id}/periodos-alugados")
+    public ResponseEntity<List<PeriodoAlugadoResponse>> buscarPeriodosAlugados(
+            @PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(trajeService.buscarPeriodosAlugados(id));
     }
 
     // ===============================

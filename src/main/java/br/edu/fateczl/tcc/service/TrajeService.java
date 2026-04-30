@@ -1,6 +1,7 @@
 package br.edu.fateczl.tcc.service;
 
 import br.edu.fateczl.tcc.domain.Traje;
+import br.edu.fateczl.tcc.dto.traje.PeriodoAlugadoResponse;
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
 import br.edu.fateczl.tcc.enums.SexoEnum;
@@ -9,6 +10,7 @@ import br.edu.fateczl.tcc.enums.TamanhoTraje;
 import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.mapper.TrajeMapper;
+import br.edu.fateczl.tcc.repository.ItemAluguelRepository;
 import br.edu.fateczl.tcc.repository.TrajeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -23,11 +26,14 @@ public class TrajeService {
 
     private final TrajeRepository trajeRepository;
     private final ImagemService imagemService;
+    private final ItemAluguelRepository itemAluguelRepository;
     private static final String RESOURCE = "Traje";
 
-    public TrajeService(TrajeRepository trajeRepository, ImagemService imagemService) {
+    public TrajeService(TrajeRepository trajeRepository, ImagemService imagemService,
+                        ItemAluguelRepository itemAluguelRepository) {
         this.trajeRepository = trajeRepository;
         this.imagemService = imagemService;
+        this.itemAluguelRepository = itemAluguelRepository;
     }
 
     // ===============================
@@ -147,6 +153,16 @@ public class TrajeService {
         }
         
         return trajeRepository.findAll(spec, pageable).map(TrajeMapper::toResponse);
+    }
+
+    // ===============================
+    // READ - períodos alugados
+    // ===============================
+    public List<PeriodoAlugadoResponse> buscarPeriodosAlugados(Long trajeId) {
+        buscarOuFalhar(trajeId); // garante que o traje existe
+        return itemAluguelRepository.findPeriodosAlugadosByTrajeId(trajeId).stream()
+                .map(row -> new PeriodoAlugadoResponse((LocalDate) row[0], (LocalDate) row[1]))
+                .toList();
     }
 
     // ===============================
