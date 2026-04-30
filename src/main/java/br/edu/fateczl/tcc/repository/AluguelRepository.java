@@ -2,6 +2,7 @@ package br.edu.fateczl.tcc.repository;
 
 import br.edu.fateczl.tcc.domain.Aluguel;
 import br.edu.fateczl.tcc.enums.StatusAluguel;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +28,7 @@ public interface AluguelRepository extends JpaRepository<Aluguel, Long>,
 
     @Query("SELECT a FROM aluguel a JOIN FETCH a.cliente WHERE a.id = :id")
     Optional<Aluguel> findByIdWithCliente(@Param("id") Long id);
+
+    @EntityGraph(attributePaths = {"cliente", "itens", "itens.traje"})
+    Optional<Aluguel> findWithRelacionamentosById(Long id);
 }
