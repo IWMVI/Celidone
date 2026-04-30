@@ -210,14 +210,7 @@ public class AluguelService {
             throw new BusinessException("Só é possível registrar devolução de aluguéis ATIVOS");
         }
 
-        DevolucaoRequest dtoComAluguelId = new DevolucaoRequest(
-                dto.dataDevolucao(),
-                dto.observacoes(),
-                dto.valorMulta(),
-                aluguelId
-        );
-
-        DevolucaoResponse devolucaoResponse = devolucaoService.criar(dtoComAluguelId);
+        DevolucaoResponse devolucaoResponse = devolucaoService.criar(dto, aluguel);
 
         aluguel.setStatus(StatusAluguel.CONCLUIDO);
         aluguelRepository.save(aluguel);
