@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class DevolucaoService {
@@ -31,8 +32,9 @@ public class DevolucaoService {
     // CREATE
     // ===============================
     @Transactional
-    public DevolucaoResponse criar(DevolucaoRequest dto, Aluguel aluguel) {
+    public DevolucaoResponse criar(DevolucaoRequest dto, @NonNull Aluguel aluguel) {
 
+        Objects.requireNonNull(aluguel, "aluguel must not be null");
         validarDevolucaoUnicaPorAluguel(aluguel);
 
         Devolucao devolucao = DevolucaoMapper.toEntity(dto, aluguel);
@@ -46,7 +48,7 @@ public class DevolucaoService {
     // UPDATE
     // ===============================
     @Transactional
-    public DevolucaoResponse atualizar(Long id, DevolucaoUpdateRequest dto) {
+    public DevolucaoResponse atualizar(@NonNull Long id, DevolucaoUpdateRequest dto) {
 
         Devolucao devolucao = buscarDevolucaoOuFalhar(id);
 
@@ -81,9 +83,9 @@ public class DevolucaoService {
     // DELETE
     // ===============================
     @Transactional
-    public void deletar(Long id) {
-        buscarDevolucaoOuFalhar(id); // valida existência antes de deletar
-        devolucaoRepository.deleteById(id);
+    public void deletar(@NonNull Long id) {
+        Devolucao devolucao = buscarDevolucaoOuFalhar(id);
+        devolucaoRepository.delete(devolucao);
     }
 
 
