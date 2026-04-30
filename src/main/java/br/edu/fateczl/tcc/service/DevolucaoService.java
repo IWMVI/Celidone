@@ -8,26 +8,23 @@ import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.mapper.DevolucaoMapper;
-import br.edu.fateczl.tcc.repository.AluguelRepository;
 import br.edu.fateczl.tcc.repository.DevolucaoRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class DevolucaoService {
 
     private final DevolucaoRepository devolucaoRepository;
-    private final AluguelRepository aluguelRepository;
 
     private static final String RESOURCE_DEVOLUCAO = "Devolucao";
-    private static final String RESOURCE_ALUGUEL = "Aluguel";
 
-    public DevolucaoService(DevolucaoRepository devolucaoRepository,
-                            AluguelRepository aluguelRepository) {
+    public DevolucaoService(DevolucaoRepository devolucaoRepository) {
         this.devolucaoRepository = devolucaoRepository;
-        this.aluguelRepository = aluguelRepository;
     }
 
 
@@ -35,10 +32,9 @@ public class DevolucaoService {
     // CREATE
     // ===============================
     @Transactional
-    public DevolucaoResponse criar(DevolucaoRequest dto) {
+    public DevolucaoResponse criar(DevolucaoRequest dto, @NonNull Aluguel aluguel) {
 
-        Aluguel aluguel = buscarAluguelOuFalhar(dto.idAluguel());
-
+        Objects.requireNonNull(aluguel, "aluguel must not be null");
         validarDevolucaoUnicaPorAluguel(aluguel);
 
         Devolucao devolucao = DevolucaoMapper.toEntity(dto, aluguel);
@@ -52,7 +48,7 @@ public class DevolucaoService {
     // UPDATE
     // ===============================
     @Transactional
-    public DevolucaoResponse atualizar(Long id, DevolucaoUpdateRequest dto) {
+    public DevolucaoResponse atualizar(@NonNull Long id, DevolucaoUpdateRequest dto) {
 
         Devolucao devolucao = buscarDevolucaoOuFalhar(id);
 
@@ -87,22 +83,19 @@ public class DevolucaoService {
     // DELETE
     // ===============================
     @Transactional
-    public void deletar(Long id) {
-        devolucaoRepository.delete(buscarDevolucaoOuFalhar(id));
+    public void deletar(@NonNull Long id) {
+        Devolucao devolucao = buscarDevolucaoOuFalhar(id);
+        devolucaoRepository.delete(devolucao);
     }
 
 
     // ===============================
     // HELPERS
     // ===============================
-    private Devolucao buscarDevolucaoOuFalhar(Long id) {
+    @NonNull
+    private Devolucao buscarDevolucaoOuFalhar(@NonNull Long id) {
         return devolucaoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_DEVOLUCAO, id));
-    }
-
-    private Aluguel buscarAluguelOuFalhar(Long id) {
-        return aluguelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_ALUGUEL, id));
     }
 
     private void validarDevolucaoUnicaPorAluguel(Aluguel aluguel) {

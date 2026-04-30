@@ -83,12 +83,11 @@ class DevolucaoControllerIntegrationTest {
     @Test
     void deve_criarDevolucao_quando_dadosValidosIntegracao() throws Exception {
         DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
-                .comIdAluguel(aluguelPersistido.getId())
                 .buildRequest();
 
-        // Execução: o Controller aciona o DevolucaoService REAL, que grava
-        // via DevolucaoRepository REAL no H2.
-        mockMvc.perform(post("/devolucoes")
+        // Execução: o Controller aciona o AluguelService REAL, que aciona o
+        // DevolucaoService REAL, que grava via DevolucaoRepository REAL no H2.
+        mockMvc.perform(post("/alugueis/{id}/devolucao", aluguelPersistido.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -109,11 +108,10 @@ class DevolucaoControllerIntegrationTest {
                         .buildEntity(aluguelPersistido)
         );
         DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
-                .comIdAluguel(aluguelPersistido.getId())
                 .buildRequest();
 
         // A regra de negócio "uma devolução por aluguel" deve barrar a 2ª criação.
-        mockMvc.perform(post("/devolucoes")
+        mockMvc.perform(post("/alugueis/{id}/devolucao", aluguelPersistido.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
