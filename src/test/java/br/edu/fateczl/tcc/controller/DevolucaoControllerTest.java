@@ -1,6 +1,5 @@
 package br.edu.fateczl.tcc.controller;
 
-import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
@@ -25,13 +24,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,7 +47,6 @@ class DevolucaoControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private DevolucaoRequest requestValido;
     private DevolucaoUpdateRequest updateRequestValido;
     private DevolucaoResponse responseValido;
 
@@ -59,104 +55,8 @@ class DevolucaoControllerTest {
         // Garante suporte a LocalDate na (de)serialização do MockMvc
         objectMapper.registerModule(new JavaTimeModule());
 
-        requestValido = DevolucaoDataBuilder.umaDevolucao().buildRequest();
         updateRequestValido = DevolucaoDataBuilder.umaDevolucao().buildUpdateRequest();
         responseValido = DevolucaoDataBuilder.umaDevolucao().buildResponse();
-    }
-
-    @Nested
-    @DisplayName("Criar Devolução")
-    class CriarDevolucaoTest {
-
-        @Test
-        void deve_retornar201_quando_devolucaoCriadaComSucesso() throws Exception {
-            when(service.criar(any(DevolucaoRequest.class))).thenReturn(responseValido);
-
-            mockMvc.perform(post("/devolucoes")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(requestValido)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.idDevolucao").value(DevolucaoDataBuilder.DEVOLUCAO_ID_DEFAULT))
-                    .andExpect(jsonPath("$.idAluguel").value(DevolucaoDataBuilder.ID_ALUGUEL_DEFAULT));
-
-            verify(service).criar(any(DevolucaoRequest.class));
-        }
-
-        @Test
-        void deve_retornar400_quando_dataDevolucaoNula() throws Exception {
-            DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
-                    .semDataDevolucao()
-                    .buildRequest();
-
-            mockMvc.perform(post("/devolucoes")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
-
-            verify(service, never()).criar(any(DevolucaoRequest.class));
-        }
-
-        @Test
-        void deve_retornar400_quando_idAluguelNulo() throws Exception {
-            DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
-                    .semIdAluguel()
-                    .buildRequest();
-
-            mockMvc.perform(post("/devolucoes")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
-
-            verify(service, never()).criar(any(DevolucaoRequest.class));
-        }
-
-        @Test
-        void deve_retornar400_quando_observacoesMuitoLongas() throws Exception {
-            DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
-                    .comObservacoesMuitoLongas()
-                    .buildRequest();
-
-            mockMvc.perform(post("/devolucoes")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
-
-            verify(service, never()).criar(any(DevolucaoRequest.class));
-        }
-
-        @Test
-        void deve_retornar400_quando_valorMultaNegativo() throws Exception {
-            DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
-                    .comValorMultaNegativo()
-                    .buildRequest();
-
-            mockMvc.perform(post("/devolucoes")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
-
-            verify(service, never()).criar(any(DevolucaoRequest.class));
-        }
-
-        @Test
-        void deve_retornar400_quando_valorMultaComDigitosInvalidos() throws Exception {
-            DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
-                    .comValorMultaComDigitosInvalidos()
-                    .buildRequest();
-
-            mockMvc.perform(post("/devolucoes")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
-
-            verify(service, never()).criar(any(DevolucaoRequest.class));
-        }
     }
 
     @Nested
@@ -252,7 +152,7 @@ class DevolucaoControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest());
 
-            verify(service, never()).atualizar(any(), any(DevolucaoUpdateRequest.class));
+            verify(service, org.mockito.Mockito.never()).atualizar(any(), any(DevolucaoUpdateRequest.class));
         }
 
         @Test
@@ -267,7 +167,7 @@ class DevolucaoControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest());
 
-            verify(service, never()).atualizar(any(), any(DevolucaoUpdateRequest.class));
+            verify(service, org.mockito.Mockito.never()).atualizar(any(), any(DevolucaoUpdateRequest.class));
         }
 
         @Test

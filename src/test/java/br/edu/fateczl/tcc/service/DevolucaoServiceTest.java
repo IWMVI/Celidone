@@ -7,7 +7,6 @@ import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
-import br.edu.fateczl.tcc.repository.AluguelRepository;
 import br.edu.fateczl.tcc.repository.DevolucaoRepository;
 import br.edu.fateczl.tcc.util.DevolucaoDataBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,11 +57,10 @@ import static org.mockito.Mockito.when;
  * =========================================================================
  * OBSERVAÇÃO IMPORTANTE
  * =========================================================================
- * Validações de DTO (@NotNull em dataDevolucao/idAluguel, @Size(max=200) em
+ * Validações de DTO (@NotNull em dataDevolucao, @Size(max=200) em
  * observacoes, @PositiveOrZero e @Digits em valorMulta) são executadas pelo
  * Jakarta Validation no controller, NÃO no service. Por isso a matriz TFS do
  * DevolucaoService foca somente em regras de negócio:
- *   - existência do aluguel referenciado no criar();
  *   - unicidade de devolução por aluguel (validarDevolucaoUnicaPorAluguel);
  *   - existência da devolução em buscarPorId/atualizar/deletar;
  *   - presença/ausência dos campos opcionais observacoes/valorMulta;
@@ -74,30 +72,28 @@ import static org.mockito.Mockito.when;
  * =========================================================================
  *   Variável                              | Classes Válidas (V)        | Classes Inválidas (I)
  *   --------------------------------------|----------------------------|---------------------------
- *   C1: idAluguel em criar                | V1 existe no repositório   | I1 inexistente
- *   C2: aluguel já possui devolução       | V2 não existe              | I2 já existe
- *   C3: id em buscarPorId/atualizar/      | V3 existe no repositório   | I3 inexistente
+ *   C1: aluguel já possui devolução       | V1 não existe              | I1 já existe
+ *   C2: id em buscarPorId/atualizar/      | V2 existe no repositório   | I2 inexistente
  *       deletar                           |                            |
- *   C4: campos opcionais (observacoes,    | V4a preenchidos / V4b nulos| —
+ *   C3: campos opcionais (observacoes,    | V3a preenchidos / V3b nulos| —
  *       valorMulta)                       |                            |
  *
  * CASOS DE TESTE DERIVADOS:
- *   CT1  — criar V típico: aluguel existe, sem devolução prévia          → sucesso
- *   CT2  — criar V4b: observacoes/valorMulta nulos                       → sucesso
- *   CT3  — criar I1: aluguel inexistente                                 → ResourceNotFoundException
- *   CT4  — criar I2: aluguel já possui devolução                         → BusinessException
- *   CT5  — criar: ArgumentCaptor confere mapeamento dos 4 campos         → entidade salva consistente
- *   CT6  — buscarPorId V3: id existente                                  → DevolucaoResponse
- *   CT7  — buscarPorId I3: id inexistente                                → ResourceNotFoundException
- *   CT8  — listarTodos V: 2 devoluções                                   → Lista com 2 elementos
- *   CT9  — listarTodos AVL: nenhuma devolução                            → Lista vazia
- *   CT10 — atualizar V3 + V4a: id existente, campos preenchidos          → Response atualizado
- *   CT11 — atualizar V3 + V4b: observacoes/valorMulta nulos              → Response com nulos
- *   CT12 — atualizar I3: id inexistente                                  → ResourceNotFoundException, save nunca chamado
- *   CT13 — atualizar V: ArgumentCaptor confirma que o aluguel original   → entidade preserva aluguel
+ *   CT1  — criar V típico: sem devolução prévia                          → sucesso
+ *   CT2  — criar V3b: observacoes/valorMulta nulos                       → sucesso
+ *   CT3  — criar I1: aluguel já possui devolução                         → BusinessException
+ *   CT4  — criar: ArgumentCaptor confere mapeamento dos campos           → entidade salva consistente
+ *   CT5  — buscarPorId V2: id existente                                  → DevolucaoResponse
+ *   CT6  — buscarPorId I2: id inexistente                                → ResourceNotFoundException
+ *   CT7  — listarTodos V: 2 devoluções                                   → Lista com 2 elementos
+ *   CT8  — listarTodos AVL: nenhuma devolução                            → Lista vazia
+ *   CT9  — atualizar V2 + V3a: id existente, campos preenchidos          → Response atualizado
+ *   CT10 — atualizar V2 + V3b: observacoes/valorMulta nulos              → Response com nulos
+ *   CT11 — atualizar I2: id inexistente                                  → ResourceNotFoundException, save nunca chamado
+ *   CT12 — atualizar V: ArgumentCaptor confirma que o aluguel original   → entidade preserva aluguel
  *          NÃO é trocado durante o update                                |
- *   CT14 — deletar V3: id existente                                      → repository.delete chamado
- *   CT15 — deletar I3: id inexistente                                    → ResourceNotFoundException, delete nunca chamado
+ *   CT13 — deletar V2: id existente                                      → repository.deleteById chamado
+ *   CT14 — deletar I2: id inexistente                                    → ResourceNotFoundException, deleteById nunca chamado
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TFS - DevolucaoService (Teste Funcional Sistemático)")
@@ -105,9 +101,6 @@ class DevolucaoServiceTest {
 
     @Mock
     private DevolucaoRepository devolucaoRepository;
-
-    @Mock
-    private AluguelRepository aluguelRepository;
 
     @InjectMocks
     private DevolucaoService service;
@@ -117,14 +110,13 @@ class DevolucaoServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Aluguel mínimo só com id — basta para o service fazer findById e o
+        // Aluguel mínimo só com id — basta para o service fazer a validação e o
         // mapper extrair aluguel.getId() na resposta.
         aluguel = Aluguel.builder().id(ID_ALUGUEL_DEFAULT).build();
         devolucao = DevolucaoDataBuilder.umaDevolucao().buildEntity(aluguel);
     }
 
     private void stubarCaminhoFelizCriar() {
-        when(aluguelRepository.findById(ID_ALUGUEL_DEFAULT)).thenReturn(Optional.of(aluguel));
         when(devolucaoRepository.existsByAluguelId(ID_ALUGUEL_DEFAULT)).thenReturn(false);
         when(devolucaoRepository.save(any(Devolucao.class))).thenAnswer(invocation -> {
             Devolucao d = invocation.getArgument(0);
@@ -134,19 +126,19 @@ class DevolucaoServiceTest {
     }
 
     // =========================================================
-    // CRIAR — CT1..CT5
+    // CRIAR — CT1..CT4
     // =========================================================
     @Nested
     @DisplayName("Criar Devolução — matriz TFS")
     class Criar {
 
         @Test
-        @DisplayName("CT1 — V típico: aluguel existe e ainda não tem devolução")
-        void ct1_deve_criar_quando_aluguelExisteESemDevolucaoPrevia() {
+        @DisplayName("CT1 — V típico: aluguel sem devolução prévia")
+        void ct1_deve_criar_quando_aluguelSemDevolucaoPrevia() {
             DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao().buildRequest();
             stubarCaminhoFelizCriar();
 
-            DevolucaoResponse response = service.criar(request);
+            DevolucaoResponse response = service.criar(request, aluguel);
 
             assertNotNull(response);
             assertEquals(DEVOLUCAO_ID_DEFAULT, response.idDevolucao());
@@ -158,7 +150,7 @@ class DevolucaoServiceTest {
         }
 
         @Test
-        @DisplayName("CT2 — V4b: campos opcionais (observacoes/valorMulta) nulos")
+        @DisplayName("CT2 — V3b: campos opcionais (observacoes/valorMulta) nulos")
         void ct2_deve_criar_quando_camposOpcionaisNulos() {
             DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
                     .semObservacoes()
@@ -166,7 +158,7 @@ class DevolucaoServiceTest {
                     .buildRequest();
             stubarCaminhoFelizCriar();
 
-            DevolucaoResponse response = service.criar(request);
+            DevolucaoResponse response = service.criar(request, aluguel);
 
             assertNotNull(response);
             assertNull(response.observacoes());
@@ -174,35 +166,20 @@ class DevolucaoServiceTest {
         }
 
         @Test
-        @DisplayName("CT3 — I1 isolada: idAluguel inexistente")
-        void ct3_deve_lancarResourceNotFound_quando_aluguelInexistente() {
-            DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
-                    .comIdAluguel(99L)
-                    .buildRequest();
-            when(aluguelRepository.findById(99L)).thenReturn(Optional.empty());
-
-            ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
-                    () -> service.criar(request));
-            assertEquals("Aluguel com id 99 não encontrado(a)", ex.getMessage());
-            verify(devolucaoRepository, never()).save(any(Devolucao.class));
-        }
-
-        @Test
-        @DisplayName("CT4 — I2 isolada: aluguel já possui devolução cadastrada")
-        void ct4_deve_lancarBusinessException_quando_aluguelJaPossuiDevolucao() {
+        @DisplayName("CT3 — I1 isolada: aluguel já possui devolução cadastrada")
+        void ct3_deve_lancarBusinessException_quando_aluguelJaPossuiDevolucao() {
             DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao().buildRequest();
-            when(aluguelRepository.findById(ID_ALUGUEL_DEFAULT)).thenReturn(Optional.of(aluguel));
             when(devolucaoRepository.existsByAluguelId(ID_ALUGUEL_DEFAULT)).thenReturn(true);
 
             BusinessException ex = assertThrows(BusinessException.class,
-                    () -> service.criar(request));
+                    () -> service.criar(request, aluguel));
             assertEquals("Já existe devolução para este aluguel", ex.getMessage());
             verify(devolucaoRepository, never()).save(any(Devolucao.class));
         }
 
         @Test
-        @DisplayName("CT5 — mapeamento: save recebe entidade com os 4 campos do request")
-        void ct5_deve_mapearTodosOsCampos_quando_criar() {
+        @DisplayName("CT4 — mapeamento: save recebe entidade com os campos do request")
+        void ct4_deve_mapearTodosOsCampos_quando_criar() {
             BigDecimal multa = new BigDecimal("25.50");
             LocalDate hoje = DevolucaoDataBuilder.DATA_DEVOLUCAO_DEFAULT;
             DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
@@ -212,7 +189,7 @@ class DevolucaoServiceTest {
                     .buildRequest();
             stubarCaminhoFelizCriar();
 
-            service.criar(request);
+            service.criar(request, aluguel);
 
             ArgumentCaptor<Devolucao> captor = ArgumentCaptor.forClass(Devolucao.class);
             verify(devolucaoRepository).save(captor.capture());
@@ -221,20 +198,20 @@ class DevolucaoServiceTest {
             assertEquals("Roupa com pequena mancha", salva.getObservacoes());
             assertEquals(multa, salva.getValorMulta());
             assertSame(aluguel, salva.getAluguel(),
-                    "A entidade salva deveria referenciar o Aluguel resolvido pelo service");
+                    "A entidade salva deveria referenciar o Aluguel passado ao service");
         }
     }
 
     // =========================================================
-    // BUSCAR POR ID — CT6, CT7
+    // BUSCAR POR ID — CT5, CT6
     // =========================================================
     @Nested
     @DisplayName("Buscar por ID — matriz TFS")
     class BuscarPorId {
 
         @Test
-        @DisplayName("CT6 — V3: id existente")
-        void ct6_deve_retornar_quando_idExistente() {
+        @DisplayName("CT5 — V2: id existente")
+        void ct5_deve_retornar_quando_idExistente() {
             when(devolucaoRepository.findById(DEVOLUCAO_ID_DEFAULT))
                     .thenReturn(Optional.of(devolucao));
 
@@ -246,8 +223,8 @@ class DevolucaoServiceTest {
         }
 
         @Test
-        @DisplayName("CT7 — I3 isolada: id inexistente")
-        void ct7_deve_lancarResourceNotFound_quando_idInexistente() {
+        @DisplayName("CT6 — I2 isolada: id inexistente")
+        void ct6_deve_lancarResourceNotFound_quando_idInexistente() {
             when(devolucaoRepository.findById(99L)).thenReturn(Optional.empty());
 
             ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
@@ -257,15 +234,15 @@ class DevolucaoServiceTest {
     }
 
     // =========================================================
-    // LISTAR TODOS — CT8, CT9
+    // LISTAR TODOS — CT7, CT8
     // =========================================================
     @Nested
     @DisplayName("Listar todas — matriz TFS")
     class ListarTodos {
 
         @Test
-        @DisplayName("CT8 — V típico: 2 devoluções cadastradas")
-        void ct8_deve_retornarLista_quando_existemDevolucoes() {
+        @DisplayName("CT7 — V típico: 2 devoluções cadastradas")
+        void ct7_deve_retornarLista_quando_existemDevolucoes() {
             Aluguel outroAluguel = Aluguel.builder().id(200L).build();
             Devolucao outra = DevolucaoDataBuilder.umaDevolucao()
                     .comId(2L)
@@ -280,8 +257,8 @@ class DevolucaoServiceTest {
         }
 
         @Test
-        @DisplayName("CT9 — AVL: nenhuma devolução cadastrada")
-        void ct9_deve_retornarListaVazia_quando_naoExistemDevolucoes() {
+        @DisplayName("CT8 — AVL: nenhuma devolução cadastrada")
+        void ct8_deve_retornarListaVazia_quando_naoExistemDevolucoes() {
             when(devolucaoRepository.findAll()).thenReturn(List.of());
 
             List<DevolucaoResponse> result = service.listarTodos();
@@ -291,15 +268,15 @@ class DevolucaoServiceTest {
     }
 
     // =========================================================
-    // ATUALIZAR — CT10..CT13
+    // ATUALIZAR — CT9..CT12
     // =========================================================
     @Nested
     @DisplayName("Atualizar Devolução — matriz TFS")
     class Atualizar {
 
         @Test
-        @DisplayName("CT10 — V3 + V4a: id existente, campos aplicados via updateEntity")
-        void ct10_deve_atualizar_quando_idExistente() {
+        @DisplayName("CT9 — V2 + V3a: id existente, campos aplicados via updateEntity")
+        void ct9_deve_atualizar_quando_idExistente() {
             BigDecimal novaMulta = new BigDecimal("50.00");
             LocalDate novaData = DevolucaoDataBuilder.DATA_DEVOLUCAO_DEFAULT.plusDays(1);
             DevolucaoUpdateRequest request = DevolucaoDataBuilder.umaDevolucao()
@@ -321,8 +298,8 @@ class DevolucaoServiceTest {
         }
 
         @Test
-        @DisplayName("CT11 — V3 + V4b: observacoes/valorMulta nulos no update")
-        void ct11_deve_atualizar_quando_camposOpcionaisNulos() {
+        @DisplayName("CT10 — V2 + V3b: observacoes/valorMulta nulos no update")
+        void ct10_deve_atualizar_quando_camposOpcionaisNulos() {
             DevolucaoUpdateRequest request = DevolucaoDataBuilder.umaDevolucao()
                     .semObservacoes()
                     .semValorMulta()
@@ -338,8 +315,8 @@ class DevolucaoServiceTest {
         }
 
         @Test
-        @DisplayName("CT12 — I3 isolada: id inexistente ao atualizar")
-        void ct12_deve_lancarResourceNotFound_quando_idInexistenteAoAtualizar() {
+        @DisplayName("CT11 — I2 isolada: id inexistente ao atualizar")
+        void ct11_deve_lancarResourceNotFound_quando_idInexistenteAoAtualizar() {
             DevolucaoUpdateRequest request = DevolucaoDataBuilder.umaDevolucao()
                     .buildUpdateRequest();
             when(devolucaoRepository.findById(99L)).thenReturn(Optional.empty());
@@ -350,8 +327,8 @@ class DevolucaoServiceTest {
         }
 
         @Test
-        @DisplayName("CT13 — update preserva o aluguel original (não é trocado)")
-        void ct13_deve_preservarAluguel_quando_atualizar() {
+        @DisplayName("CT12 — update preserva o aluguel original (não é trocado)")
+        void ct12_deve_preservarAluguel_quando_atualizar() {
             DevolucaoUpdateRequest request = DevolucaoDataBuilder.umaDevolucao()
                     .comObservacoes("Atualização sem trocar aluguel")
                     .buildUpdateRequest();
@@ -370,31 +347,31 @@ class DevolucaoServiceTest {
     }
 
     // =========================================================
-    // DELETAR — CT14, CT15
+    // DELETAR — CT13, CT14
     // =========================================================
     @Nested
     @DisplayName("Deletar Devolução — matriz TFS")
     class Deletar {
 
         @Test
-        @DisplayName("CT14 — V3: id existente, repository.delete chamado")
-        void ct14_deve_deletar_quando_idExistente() {
+        @DisplayName("CT13 — V2: id existente, repository.deleteById chamado")
+        void ct13_deve_deletar_quando_idExistente() {
             when(devolucaoRepository.findById(DEVOLUCAO_ID_DEFAULT))
                     .thenReturn(Optional.of(devolucao));
 
             service.deletar(DEVOLUCAO_ID_DEFAULT);
 
-            verify(devolucaoRepository).delete(devolucao);
+            verify(devolucaoRepository).deleteById(DEVOLUCAO_ID_DEFAULT);
         }
 
         @Test
-        @DisplayName("CT15 — I3 isolada: id inexistente ao deletar")
-        void ct15_deve_lancarResourceNotFound_quando_idInexistenteAoDeletar() {
+        @DisplayName("CT14 — I2 isolada: id inexistente ao deletar")
+        void ct14_deve_lancarResourceNotFound_quando_idInexistenteAoDeletar() {
             when(devolucaoRepository.findById(99L)).thenReturn(Optional.empty());
 
             assertThrows(ResourceNotFoundException.class,
                     () -> service.deletar(99L));
-            verify(devolucaoRepository, never()).delete(any(Devolucao.class));
+            verify(devolucaoRepository, never()).deleteById(any());
         }
     }
 }

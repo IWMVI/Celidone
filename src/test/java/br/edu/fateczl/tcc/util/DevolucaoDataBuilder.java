@@ -116,8 +116,7 @@ public class DevolucaoDataBuilder {
         return new DevolucaoRequest(
                 dataDevolucao,
                 observacoes,
-                valorMulta,
-                idAluguel
+                valorMulta
         );
     }
 
