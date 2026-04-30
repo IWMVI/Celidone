@@ -28,7 +28,11 @@ public class ItemAluguelMapper {
     public static ItemAluguelResponse toResponse(ItemAluguel entity) {
         return new ItemAluguelResponse(
                 entity.getTraje().getId(),
-                entity.getTraje().getNome()
+                entity.getTraje().getNome(),
+                entity.getTraje().getTipo(),
+                entity.getTraje().getTamanho(),
+                entity.getTraje().getCor(),
+                entity.getTraje().getValorItem()
         );
     }
 }
