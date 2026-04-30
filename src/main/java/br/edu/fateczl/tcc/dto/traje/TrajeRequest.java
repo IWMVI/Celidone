@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 
 public record TrajeRequest(
 
-        @NotBlank(message = "A descrição é obrigatória") @Size(max = 200, message = "A descrição deve ter no máximo 200 caracteres") String descricao,
+        @Size(max = 200, message = "A descrição deve ter no máximo 200 caracteres") String descricao,
 
         @NotNull(message = "O tamanho é obrigatório") TamanhoTraje tamanho,
 
