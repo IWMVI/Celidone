@@ -92,8 +92,8 @@ import static org.mockito.Mockito.when;
  *   CT11 — atualizar I2: id inexistente                                  → ResourceNotFoundException, save nunca chamado
  *   CT12 — atualizar V: ArgumentCaptor confirma que o aluguel original   → entidade preserva aluguel
  *          NÃO é trocado durante o update                                |
- *   CT13 — deletar V2: id existente                                      → repository.deleteById chamado
- *   CT14 — deletar I2: id inexistente                                    → ResourceNotFoundException, deleteById nunca chamado
+ *   CT13 — deletar V2: id existente                                      → repository.delete chamado
+ *   CT14 — deletar I2: id inexistente                                    → ResourceNotFoundException, delete nunca chamado
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TFS - DevolucaoService (Teste Funcional Sistemático)")
@@ -354,14 +354,14 @@ class DevolucaoServiceTest {
     class Deletar {
 
         @Test
-        @DisplayName("CT13 — V2: id existente, repository.deleteById chamado")
+        @DisplayName("CT13 — V2: id existente, repository.delete chamado")
         void ct13_deve_deletar_quando_idExistente() {
             when(devolucaoRepository.findById(DEVOLUCAO_ID_DEFAULT))
                     .thenReturn(Optional.of(devolucao));
 
             service.deletar(DEVOLUCAO_ID_DEFAULT);
 
-            verify(devolucaoRepository).deleteById(DEVOLUCAO_ID_DEFAULT);
+            verify(devolucaoRepository).delete(devolucao);
         }
 
         @Test
@@ -371,7 +371,7 @@ class DevolucaoServiceTest {
 
             assertThrows(ResourceNotFoundException.class,
                     () -> service.deletar(99L));
-            verify(devolucaoRepository, never()).deleteById(any());
+            verify(devolucaoRepository, never()).delete(any());
         }
     }
 }
