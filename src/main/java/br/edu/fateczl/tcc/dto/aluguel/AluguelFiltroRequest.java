@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public record AluguelFiltroRequest(
 
         StatusAluguel status,
-        Long clienteId,
+        String nomeCliente,
         LocalDate dataRetiradaInicio,
         LocalDate dataRetiradaFim,
         TipoOcasiao ocasiao

@@ -75,13 +75,13 @@ public class AluguelController {
     @GetMapping
     public ResponseEntity<List<AluguelResponse>> listarComFiltros(
             @RequestParam(name = "status", required = false) StatusAluguel status,
-            @RequestParam(name = "clienteId", required = false) Long clienteId,
+            @RequestParam(name = "nomeCliente", required = false) String nomeCliente,
             @RequestParam(name = "dataRetiradaInicio", required = false) LocalDate dataRetiradaInicio,
             @RequestParam(name = "dataRetiradaFim", required = false) LocalDate dataRetiradaFim,
             @RequestParam(name = "ocasiao", required = false) TipoOcasiao ocasiao) {
 
         return ResponseEntity.ok(aluguelService.listarComFiltros(
-                new AluguelFiltroRequest(status, clienteId, dataRetiradaInicio, dataRetiradaFim, ocasiao)));
+                new AluguelFiltroRequest(status, nomeCliente, dataRetiradaInicio, dataRetiradaFim, ocasiao)));
     }
 
 

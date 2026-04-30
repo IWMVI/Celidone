@@ -165,11 +165,9 @@ public class AluguelService {
     // ===============================
     @Transactional(readOnly = true)
     public List<AluguelResponse> listarComFiltros(AluguelFiltroRequest filtro) {
-        StatusAluguel statusEfetivo = filtro.status() != null ? filtro.status() : StatusAluguel.ATIVO;
-
         Specification<Aluguel> specification = Specification
-                .where(AluguelSpecification.comStatus(statusEfetivo))
-                .and(AluguelSpecification.comClienteId(filtro.clienteId()))
+                .where(AluguelSpecification.comStatus(filtro.status()))
+                .and(AluguelSpecification.comNomeCliente(filtro.nomeCliente()))
                 .and(AluguelSpecification.comDataRetiradaEntre(filtro.dataRetiradaInicio(), filtro.dataRetiradaFim()))
                 .and(AluguelSpecification.comOcasiao(filtro.ocasiao()));
 

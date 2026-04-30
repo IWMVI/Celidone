@@ -13,7 +13,7 @@ public class AluguelSpecification {
     private static final String OCASIAO = "ocasiao";
     private static final String DATA_RETIRADA = "dataRetirada";
     private static final String CLIENTE = "cliente";
-    private static final String ID = "id";
+    private static final String NOME = "nome";
 
     private AluguelSpecification() { }
 
@@ -22,9 +22,10 @@ public class AluguelSpecification {
                 status == null ? null : cb.equal(root.get(STATUS), status);
     }
 
-    public static Specification<Aluguel> comClienteId(Long clienteId) {
+    public static Specification<Aluguel> comNomeCliente(String nomeCliente) {
         return (root, query, cb) ->
-                clienteId == null ? null : cb.equal(root.get(CLIENTE).get(ID), clienteId);
+                (nomeCliente == null || nomeCliente.isBlank()) ? null
+                        : cb.like(cb.lower(root.get(CLIENTE).get(NOME)), "%" + nomeCliente.toLowerCase() + "%");
     }
 
     public static Specification<Aluguel> comDataRetiradaEntre(LocalDate inicio, LocalDate fim) {
