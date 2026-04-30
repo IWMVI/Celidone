@@ -1,6 +1,16 @@
 package br.edu.fateczl.tcc.controller;
 
-import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
 import br.edu.fateczl.tcc.service.DevolucaoService;
@@ -8,18 +18,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/devolucoes")
@@ -34,28 +32,13 @@ public class DevolucaoController {
 
 
     // ===============================
-    // CREATE
-    // ===============================
-    @Operation(summary = "Criar devolução")
-    @ApiResponse(responseCode = "201", description = "Devolução criada com sucesso")
-    @ApiResponse(responseCode = "400", description = "Dados da devolução inválidos")
-    @PostMapping
-    public ResponseEntity<DevolucaoResponse> criar(
-            @Valid @RequestBody DevolucaoRequest dto) {
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(devolucaoService.criar(dto));
-    }
-
-
-    // ===============================
     // READ - por ID
     // ===============================
     @Operation(summary = "Buscar devolução por ID")
     @ApiResponse(responseCode = "200", description = "Devolução recuperada com sucesso")
     @ApiResponse(responseCode = "404", description = "Devolução não encontrada")
     @GetMapping("/{id}")
-    public ResponseEntity<DevolucaoResponse> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<DevolucaoResponse> buscarPorId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(devolucaoService.buscarPorId(id));
     }
 
@@ -80,7 +63,7 @@ public class DevolucaoController {
     @ApiResponse(responseCode = "404", description = "Devolução não encontrada")
     @PutMapping("/{id}")
     public ResponseEntity<DevolucaoResponse> atualizar(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody DevolucaoUpdateRequest dto) {
 
         return ResponseEntity.ok(devolucaoService.atualizar(id, dto));
@@ -94,7 +77,7 @@ public class DevolucaoController {
     @ApiResponse(responseCode = "204", description = "Devolução removida com sucesso")
     @ApiResponse(responseCode = "404", description = "Devolução não encontrada")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
         devolucaoService.deletar(id);
         return ResponseEntity.noContent().build();
     }
