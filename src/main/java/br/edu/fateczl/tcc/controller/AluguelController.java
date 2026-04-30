@@ -9,11 +9,14 @@ import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
 import br.edu.fateczl.tcc.enums.StatusAluguel;
 import br.edu.fateczl.tcc.enums.TipoOcasiao;
 import br.edu.fateczl.tcc.service.AluguelService;
+import br.edu.fateczl.tcc.service.ContratoPdfService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,9 +37,11 @@ import java.util.List;
 public class AluguelController {
 
     private final AluguelService aluguelService;
+    private final ContratoPdfService contratoPdfService;
 
-    public AluguelController(AluguelService aluguelService) {
+    public AluguelController(AluguelService aluguelService, ContratoPdfService contratoPdfService) {
         this.aluguelService = aluguelService;
+        this.contratoPdfService = contratoPdfService;
     }
 
 
@@ -123,6 +128,23 @@ public class AluguelController {
     public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
         aluguelService.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+
+    // ===============================
+    // CONTRATO (PDF)
+    // ===============================
+    @Operation(summary = "Gerar contrato de aluguel em PDF")
+    @ApiResponse(responseCode = "200", description = "PDF gerado com sucesso")
+    @ApiResponse(responseCode = "404", description = "Aluguel não encontrado")
+    @GetMapping(value = "/{id}/contrato", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> gerarContrato(@PathVariable("id") Long id) {
+        byte[] pdf = contratoPdfService.gerarContrato(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"Contrato_Aluguel_" + id + ".pdf\"")
+                .body(pdf);
     }
 
 
