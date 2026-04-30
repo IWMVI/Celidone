@@ -87,7 +87,7 @@ class TrajeControllerTest {
 
         @Test
         void deve_retornar400_quando_descricaoVazia() throws Exception {
-            TrajeRequest request = TrajeDataBuilder.umTraje().comDescricao("").buildRequest();
+            TrajeRequest request = TrajeDataBuilder.umTraje().comNome("").buildRequest();
 
             mockMvc.perform(post("/trajes")
                             .with(csrf())
@@ -350,7 +350,7 @@ class TrajeControllerTest {
 
         @Test
         void deve_retornar400_quando_dadosInvalidosNaAtualizacao() throws Exception {
-            TrajeRequest request = TrajeDataBuilder.umTraje().comDescricao("").buildRequest();
+            TrajeRequest request = TrajeDataBuilder.umTraje().comNome("").buildRequest();
 
             mockMvc.perform(put("/trajes/1")
                             .with(csrf())

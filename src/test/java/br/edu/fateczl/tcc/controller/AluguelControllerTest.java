@@ -314,7 +314,7 @@ class AluguelControllerTest {
 
         @Test
         void deve_retornar200_quando_listarTodos() throws Exception {
-            when(service.listarTodos()).thenReturn(List.of(responseValido));
+            when(service.listarComFiltros(any())).thenReturn(List.of(responseValido));
 
             mockMvc.perform(get("/alugueis"))
                     .andExpect(status().isOk())
@@ -322,18 +322,18 @@ class AluguelControllerTest {
                     .andExpect(jsonPath("$[0].id").value(AlugueisDataBuilder.ALUGUEL_ID_DEFAULT))
                     .andExpect(jsonPath("$[0].clienteId").value(AlugueisDataBuilder.CLIENTE_ID_DEFAULT));
 
-            verify(service).listarTodos();
+            verify(service).listarComFiltros(any());
         }
 
         @Test
         void deve_retornar200_quando_listaVazia() throws Exception {
-            when(service.listarTodos()).thenReturn(List.of());
+            when(service.listarComFiltros(any())).thenReturn(List.of());
 
             mockMvc.perform(get("/alugueis"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(0));
 
-            verify(service).listarTodos();
+            verify(service).listarComFiltros(any());
         }
     }
 

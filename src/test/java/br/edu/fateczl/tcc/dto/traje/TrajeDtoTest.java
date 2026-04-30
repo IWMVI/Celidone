@@ -48,19 +48,6 @@ class TrajeDtoTest {
         }
 
         @Test
-        void deveFalharQuandoDescricaoForVazia() {
-            TrajeRequest request = new TrajeRequest(
-                    "", TamanhoTraje.M, CorTraje.PRETO,
-                    TipoTraje.TERNO, SexoEnum.MASCULINO, new BigDecimal("299.90"),
-                    StatusTraje.DISPONIVEL, "Terno", TecidoTraje.LA,
-                    EstampaTraje.LISA, TexturaTraje.LISO, CondicaoTraje.NOVO, null);
-
-            Set<ConstraintViolation<TrajeRequest>> violations = validator.validate(request);
-            assertFalse(violations.isEmpty());
-            assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("descrição")));
-        }
-
-        @Test
         void deveFalharQuandoNomeForVazio() {
             TrajeRequest request = new TrajeRequest(
                     "Descricao", TamanhoTraje.M, CorTraje.PRETO,
