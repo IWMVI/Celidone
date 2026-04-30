@@ -3,13 +3,15 @@ package br.edu.fateczl.tcc.repository;
 import br.edu.fateczl.tcc.domain.Aluguel;
 import br.edu.fateczl.tcc.enums.StatusAluguel;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface AluguelRepository extends JpaRepository<Aluguel, Long> {
+public interface AluguelRepository extends JpaRepository<Aluguel, Long>,
+                                           JpaSpecificationExecutor<Aluguel> {
 
     List<Aluguel> findByClienteId(Long clienteId);
 

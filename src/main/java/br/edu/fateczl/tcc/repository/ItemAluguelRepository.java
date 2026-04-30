@@ -14,6 +14,9 @@ public interface ItemAluguelRepository extends JpaRepository<ItemAluguel, Long> 
 
     List<ItemAluguel> findByTrajeId(Long trajeId);
 
+    @Query("SELECT ia FROM item_aluguel ia WHERE ia.traje.id = :trajeId AND ia.aluguel.status = 'ATIVO'")
+    java.util.Optional<ItemAluguel> findAtivoByTrajeId(@Param("trajeId") Long trajeId);
+
     @Query("SELECT ia FROM item_aluguel ia JOIN FETCH ia.traje WHERE ia.aluguel.id = :aluguelId")
     List<ItemAluguel> findByAluguelIdWithTraje(@Param("aluguelId") Long aluguelId);
 

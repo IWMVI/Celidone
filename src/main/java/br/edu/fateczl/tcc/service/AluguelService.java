@@ -4,10 +4,15 @@ import br.edu.fateczl.tcc.domain.Aluguel;
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.ItemAluguel;
 import br.edu.fateczl.tcc.domain.Traje;
+import br.edu.fateczl.tcc.dto.aluguel.AluguelFiltroRequest;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelRequest;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelResponse;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelUpdateRequest;
 import br.edu.fateczl.tcc.dto.aluguel.ItemAluguelRequest;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
+import br.edu.fateczl.tcc.specification.AluguelSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import br.edu.fateczl.tcc.enums.StatusAluguel;
 import br.edu.fateczl.tcc.enums.StatusTraje;
 import br.edu.fateczl.tcc.exception.BusinessException;
@@ -32,6 +37,7 @@ public class AluguelService {
     private final ClienteRepository clienteRepository;
     private final TrajeRepository trajeRepository;
     private final ItemAluguelRepository itemAluguelRepository;
+    private final DevolucaoService devolucaoService;
 
     private static final String RESOURCE_ALUGUEL = "Aluguel";
     private static final String RESOURCE_CLIENTE = "Cliente";
@@ -40,11 +46,13 @@ public class AluguelService {
     public AluguelService(AluguelRepository aluguelRepository,
                           ClienteRepository clienteRepository,
                           TrajeRepository trajeRepository,
-                          ItemAluguelRepository itemAluguelRepository) {
+                          ItemAluguelRepository itemAluguelRepository,
+                          DevolucaoService devolucaoService) {
         this.aluguelRepository = aluguelRepository;
         this.clienteRepository = clienteRepository;
         this.trajeRepository = trajeRepository;
         this.itemAluguelRepository = itemAluguelRepository;
+        this.devolucaoService = devolucaoService;
     }
 
 
@@ -153,11 +161,68 @@ public class AluguelService {
 
 
     // ===============================
+    // READ - com filtros
+    // ===============================
+    @Transactional(readOnly = true)
+    public List<AluguelResponse> listarComFiltros(AluguelFiltroRequest filtro) {
+        StatusAluguel statusEfetivo = filtro.status() != null ? filtro.status() : StatusAluguel.ATIVO;
+
+        Specification<Aluguel> specification = Specification
+                .where(AluguelSpecification.comStatus(statusEfetivo))
+                .and(AluguelSpecification.comClienteId(filtro.clienteId()))
+                .and(AluguelSpecification.comDataRetiradaEntre(filtro.dataRetiradaInicio(), filtro.dataRetiradaFim()))
+                .and(AluguelSpecification.comOcasiao(filtro.ocasiao()));
+
+        return aluguelRepository.findAll(specification).stream()
+                .map(AluguelMapper::toResponse)
+                .toList();
+    }
+
+
+    // ===============================
+    // READ - aluguel ativo por traje
+    // ===============================
+    @Transactional(readOnly = true)
+    public AluguelResponse buscarAtivoByTrajeId(Long trajeId) {
+        ItemAluguel item = itemAluguelRepository.findAtivoByTrajeId(trajeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aluguel ativo para o traje", trajeId));
+        return AluguelMapper.toResponse(item.getAluguel());
+    }
+
+
+    // ===============================
     // DELETE
     // ===============================
     @Transactional
     public void deletar(Long id) {
         aluguelRepository.delete(buscarAluguelOuFalhar(id));
+    }
+
+
+    // ===============================
+    // DEVOLUCAO
+    // ===============================
+    @Transactional
+    public DevolucaoResponse registrarDevolucao(Long aluguelId, DevolucaoRequest dto) {
+        Aluguel aluguel = buscarAluguelOuFalhar(aluguelId);
+
+        if (!aluguel.getStatus().equals(StatusAluguel.ATIVO)) {
+            throw new BusinessException("Só é possível registrar devolução de aluguéis ATIVOS");
+        }
+
+        DevolucaoRequest dtoComAluguelId = new DevolucaoRequest(
+                dto.dataDevolucao(),
+                dto.observacoes(),
+                dto.valorMulta(),
+                aluguelId
+        );
+
+        DevolucaoResponse devolucaoResponse = devolucaoService.criar(dtoComAluguelId);
+
+        aluguel.setStatus(StatusAluguel.CONCLUIDO);
+        aluguelRepository.save(aluguel);
+
+        return devolucaoResponse;
     }
 
 

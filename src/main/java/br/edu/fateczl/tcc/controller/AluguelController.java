@@ -1,8 +1,13 @@
 package br.edu.fateczl.tcc.controller;
 
+import br.edu.fateczl.tcc.dto.aluguel.AluguelFiltroRequest;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelRequest;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelResponse;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelUpdateRequest;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
+import br.edu.fateczl.tcc.enums.StatusAluguel;
+import br.edu.fateczl.tcc.enums.TipoOcasiao;
 import br.edu.fateczl.tcc.service.AluguelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,8 +22,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -61,13 +68,32 @@ public class AluguelController {
 
 
     // ===============================
-    // READ - todos
+    // READ - com filtros
     // ===============================
-    @Operation(summary = "Listar todos os aluguéis")
+    @Operation(summary = "Listar aluguéis com filtros opcionais")
     @ApiResponse(responseCode = "200", description = "Aluguéis recuperados com sucesso")
     @GetMapping
-    public ResponseEntity<List<AluguelResponse>> listarTodos() {
-        return ResponseEntity.ok(aluguelService.listarTodos());
+    public ResponseEntity<List<AluguelResponse>> listarComFiltros(
+            @RequestParam(name = "status", required = false) StatusAluguel status,
+            @RequestParam(name = "clienteId", required = false) Long clienteId,
+            @RequestParam(name = "dataRetiradaInicio", required = false) LocalDate dataRetiradaInicio,
+            @RequestParam(name = "dataRetiradaFim", required = false) LocalDate dataRetiradaFim,
+            @RequestParam(name = "ocasiao", required = false) TipoOcasiao ocasiao) {
+
+        return ResponseEntity.ok(aluguelService.listarComFiltros(
+                new AluguelFiltroRequest(status, clienteId, dataRetiradaInicio, dataRetiradaFim, ocasiao)));
+    }
+
+
+    // ===============================
+    // READ - aluguel ativo por traje
+    // ===============================
+    @Operation(summary = "Buscar aluguel ativo por traje")
+    @ApiResponse(responseCode = "200", description = "Aluguel ativo encontrado")
+    @ApiResponse(responseCode = "404", description = "Nenhum aluguel ativo para este traje")
+    @GetMapping("/traje/{trajeId}/ativo")
+    public ResponseEntity<AluguelResponse> buscarAtivoByTrajeId(@PathVariable Long trajeId) {
+        return ResponseEntity.ok(aluguelService.buscarAtivoByTrajeId(trajeId));
     }
 
 
@@ -97,5 +123,22 @@ public class AluguelController {
     public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
         aluguelService.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+
+    // ===============================
+    // DEVOLUCAO
+    // ===============================
+    @Operation(summary = "Registrar devolução de aluguel")
+    @ApiResponse(responseCode = "201", description = "Devolução registrada com sucesso")
+    @ApiResponse(responseCode = "400", description = "Dados da devolução inválidos")
+    @ApiResponse(responseCode = "404", description = "Aluguel não encontrado")
+    @PostMapping("/{id}/devolucao")
+    public ResponseEntity<DevolucaoResponse> registrarDevolucao(
+            @PathVariable Long id,
+            @Valid @RequestBody DevolucaoRequest dto) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(aluguelService.registrarDevolucao(id, dto));
     }
 }
