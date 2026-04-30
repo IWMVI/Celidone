@@ -92,7 +92,7 @@ public class AluguelController {
     @ApiResponse(responseCode = "200", description = "Aluguel ativo encontrado")
     @ApiResponse(responseCode = "404", description = "Nenhum aluguel ativo para este traje")
     @GetMapping("/traje/{trajeId}/ativo")
-    public ResponseEntity<AluguelResponse> buscarAtivoByTrajeId(@PathVariable Long trajeId) {
+    public ResponseEntity<AluguelResponse> buscarAtivoByTrajeId(@PathVariable("trajeId") Long trajeId) {
         return ResponseEntity.ok(aluguelService.buscarAtivoByTrajeId(trajeId));
     }
 
@@ -135,7 +135,7 @@ public class AluguelController {
     @ApiResponse(responseCode = "404", description = "Aluguel não encontrado")
     @PostMapping("/{id}/devolucao")
     public ResponseEntity<DevolucaoResponse> registrarDevolucao(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody DevolucaoRequest dto) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
