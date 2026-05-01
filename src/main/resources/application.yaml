@@ -28,6 +28,10 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
+app:
+  seeder:
+    enabled: ${SEEDER_ENABLED:false}
+
 server:
   port: 8080
 

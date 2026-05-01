@@ -37,6 +37,8 @@ public class TccApplication {
             setarSePresente("DB_NAME", dotenv.get("DB_NAME", "tcc"));
             setarSePresente("DB_USERNAME", dotenv.get("DB_USERNAME", "root"));
             setarSePresente("DB_PASSWORD", dotenv.get("DB_PASSWORD", ""));
+
+            setarSePresente("SEEDER_ENABLED", dotenv.get("SEEDER_ENABLED", "false"));
             
             log.info("✅ Variáveis de ambiente carregadas do .env");
         } catch (Exception e) {
