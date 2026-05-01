@@ -9,18 +9,17 @@ BDD usa linguagem natural para descrever comportamentos de negócio. No TCC-Back
 ```
 src/test/
 ├── java/.../bdd/
-│   ├── config/
-│   │   └── CucumberSpringConfig.java
 │   └── steps/
-│       ├── ClienteSteps.java
-│       └── TrajeSteps.java
+│       ├── CucumberSpringConfiguration.java   ← @CucumberContextConfiguration
+│       └── ClienteSteps.java
+├── java/.../CucumberTest.java                 ← Entry point (@Suite)
 └── resources/
     └── features/
-        ├── cliente/
-        │   └── cadastro_cliente.feature
-        └── traje/
-            └── gestao_traje.feature
+        └── clientes/
+            └── criar_cliente.feature
 ```
+
+> Hoje só existem features para o domínio de Cliente. Aluguel/Devolução/Traje/Medida ainda não têm cobertura BDD — ver `possiveis-melhorias.md` §6.3.
 
 ## Escrevendo Features
 
@@ -60,22 +59,22 @@ Funcionalidade: Cadastro de Cliente
 ## Configuração Cucumber + Spring
 
 ```java
-// src/test/java/.../bdd/config/CucumberSpringConfig.java
+// src/test/java/.../bdd/steps/CucumberSpringConfiguration.java
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class CucumberSpringConfig {
+public class CucumberSpringConfiguration {
 }
 ```
 
 ```java
-// src/test/java/.../bdd/CucumberTestRunner.java
+// src/test/java/br/edu/fateczl/tcc/CucumberTest.java
 @Suite
 @IncludeEngines("cucumber")
-@SelectClasspathResource("features")
-@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "br.edu.fateczl.tcc.bdd")
+@SelectClasspathResource("features/clientes")
+@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "br.edu.fateczl.tcc.bdd.steps")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty, html:build/reports/cucumber/report.html")
-public class CucumberTestRunner {
+public class CucumberTest {
 }
 ```
 

@@ -11,6 +11,7 @@
 | Testcontainers | 1.19.7 | Banco real em container Docker | Testes que precisam de MySQL real |
 | Cucumber | 7.15.0 | BDD com Gherkin | Cenários de negócio |
 | JaCoCo | 0.8.13 | Cobertura de código | Todos os testes |
+| PIT | 1.19.0 | Mutation testing | Avaliação de qualidade dos testes em `service.*` |
 | REST Assured | 5.4.0 | Teste de API REST | Testes E2E de API |
 | WireMock | 2.35.1 | Mock de serviços externos | Testes com integrações externas |
 
@@ -94,15 +95,19 @@ class ClienteControllerTest {
 
 ## H2 Database
 
-Configuração em `src/test/resources/application-test.properties`:
+Configuração em `src/test/resources/application-test.yaml`:
 
-```properties
-spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
-spring.datasource.driver-class-name=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.jpa.hibernate.ddl-auto=create-drop
+```yaml
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
 ```
 
 ## Testcontainers

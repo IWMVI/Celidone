@@ -2,6 +2,8 @@
 
 Guia passo a passo para criar testes no TCC-Backend, com exemplos reais do projeto.
 
+> **Nota sobre fixtures:** os exemplos abaixo mencionam classes como `ClienteTestFactory`/`TrajeTestFactory`. O projeto adota o padrão **DataBuilder fluente** em `src/test/java/.../util/`. Builders disponíveis: `ClienteDataBuilder`, `AlugueisDataBuilder`, `DevolucaoDataBuilder`, `MedidaMasculinaDataBuilder`, `MedidaFemininaDataBuilder`, `TrajeDataBuilder`. Uso típico: `ClienteDataBuilder.umCliente().comCpfCnpj("...").buildRequest()`. Trate as referências a `*TestFactory` nos exemplos como ilustrativas e use o builder equivalente.
+
 ---
 
 ## Antes de começar

@@ -1,19 +1,19 @@
 # Migração e Refatoração de Testes
 
+> **Sobre as referências a `ClienteTestFactory`:** o projeto usa o padrão **DataBuilder fluente** (ver `09-Gerenciamento-Dados-Teste.md`). Trate as menções a `*TestFactory` aqui como ilustrativas — substitua por `ClienteDataBuilder.umCliente().buildRequest()` na prática.
+
 ## Roadmap de Cobertura
 
-### Fase 1 — Fundação (Prioridade Alta)
+### Status atual
 
-Foco nas camadas com maior impacto de negócio:
+Cobertura cobrada apenas em `service.*` e `controller.*` (80% linhas / 60% branches via JaCoCo). PIT cobre `service.*` (threshold 60%, mutators STRONGER).
 
-| Classe | Tipo de Teste | Meta |
+| Classe | Status | Observação |
 |---|---|---|
-| `ClienteService` | Unitário | 80% linhas |
-| `TrajeService` | Unitário | 80% linhas |
-| `MedidaService` (se existir) | Unitário | 80% linhas |
-| `ClienteController` | Unitário (MockMvc) | 80% linhas |
-| `TrajeController` | Unitário (MockMvc) | 80% linhas |
-| `MedidaController` | Unitário (MockMvc) | 80% linhas |
+| `ClienteService`, `TrajeService`, `AluguelService`, `DevolucaoService`, `MedidaService`, `ImagemService` | ✅ coberta | TFS aplicado |
+| `ContratoPdfService` | ⚠️ sem testes | Lacuna conhecida — `possiveis-melhorias.md` §6.1 |
+| `*Controller` (Aluguel, Cliente, Devolucao, Medida, Traje) | ✅ unitário + integração | - |
+| `EnumController`, `ImagemController` | ⚠️ sem `*IntegrationTest` | `possiveis-melhorias.md` §6.2 |
 
 ### Fase 2 — Repositórios (Prioridade Média)
 
@@ -75,7 +75,7 @@ void testCriarCliente() { ... }
 void deve_criarCliente_quando_dadosValidos() { ... }
 ```
 
-### 4. Extrair Dados de Teste para Factories
+### 4. Extrair Dados de Teste para DataBuilders
 
 ```java
 // Antes — dados inline
@@ -89,10 +89,10 @@ void deve_criarCliente() {
     );
 }
 
-// Depois — usando factory
+// Depois — usando DataBuilder fluente
 @Test
 void deve_criarCliente_quando_dadosValidos() {
-    ClienteRequest request = ClienteTestFactory.requestValido();
+    ClienteRequest request = ClienteDataBuilder.umCliente().buildRequest();
 }
 ```
 
@@ -124,7 +124,8 @@ Para cada classe de serviço ou controller sem testes:
 - [ ] Escrever testes para o caminho feliz de cada método público
 - [ ] Escrever testes para cada caso de erro (exceções lançadas)
 - [ ] Verificar cobertura com `./gradlew test jacocoTestReport`
-- [ ] Garantir que a cobertura está acima do threshold
+- [ ] Garantir que a cobertura está acima do threshold (80% linhas, 60% branches)
+- [ ] Aplicar padrão TFS no service test (matriz PCE+AVL no docstring + casos `CTn`)
 
 ## Veja Também
 

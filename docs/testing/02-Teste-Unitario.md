@@ -7,6 +7,9 @@ Testes unitários verificam uma única unidade de código em isolamento. No TCC-
 - **JUnit 5** como framework de teste
 - **Mockito** para mockar dependências
 - **MockMvc** para testar controllers sem subir o servidor
+- **`@MockitoBean`** (Spring Boot 3.4+) substitui o `@MockBean` deprecated em testes de controller
+
+> **Sobre os exemplos abaixo:** as classes `ClienteTestFactory`/`TrajeTestFactory` referenciadas a seguir são ilustrativas. O projeto adota o padrão **DataBuilder fluente** em `src/test/java/.../util/` — ex.: `ClienteDataBuilder.umCliente().comCpfCnpj("...").buildRequest()`. Veja `09-Gerenciamento-Dados-Teste.md` para o padrão real.
 
 ## Testando Serviços
 
@@ -65,7 +68,7 @@ class ClienteControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ClienteService service;
 
     @Autowired
@@ -116,7 +119,7 @@ class TrajeControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private TrajeService trajeService;
 
     @Autowired

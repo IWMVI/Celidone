@@ -45,16 +45,19 @@ src/test/
 │   ├── repository/          ← Testes de repositório (@DataJpaTest)
 │   ├── integration/         ← Testes de integração (@SpringBootTest)
 │   ├── bdd/
-│   │   ├── steps/           ← Step definitions Cucumber
-│   │   └── config/          ← Configuração Cucumber
-│   └── util/                ← Factories de dados de teste
-│       ├── ClienteTestFactory.java
-│       └── TrajeTestFactory.java
+│   │   └── steps/           ← Step definitions + CucumberSpringConfiguration
+│   └── util/                ← DataBuilders fluentes (fixtures)
+│       ├── ClienteDataBuilder.java
+│       ├── AlugueisDataBuilder.java
+│       ├── DevolucaoDataBuilder.java
+│       ├── MedidaMasculinaDataBuilder.java
+│       ├── MedidaFemininaDataBuilder.java
+│       ├── TrajeDataBuilder.java
+│       └── SpecificationTestUtils.java
 └── resources/
-    ├── application-test.properties
+    ├── application-test.yaml
     └── features/
-        ├── cliente/
-        └── traje/
+        └── clientes/        ← Apenas Cliente tem features BDD por enquanto
 ```
 
 ## Convenção de Nomenclatura
@@ -62,9 +65,11 @@ src/test/
 | Tipo | Padrão | Exemplo |
 |---|---|---|
 | Teste unitário | `[Classe]Test` | `ClienteServiceTest` |
-| Teste de integração | `[Classe]IntegrationTest` | `ClienteIntegrationTest` |
+| Teste de integração | `[Classe]IntegrationTest` | `ClienteControllerIntegrationTest` |
 | Método de teste | `deve_[ação]_quando_[condição]` | `deve_lancarExcecao_quando_cpfDuplicado` |
-| Feature BDD | `[nome_feature].feature` | `cadastro_cliente.feature` |
+| Feature BDD | `[nome_feature].feature` | `criar_cliente.feature` |
+
+> Service tests seguem TFS (PCE + AVL) — matriz de classes/bordas no docstring + `CTn` por caso. Veja `TrajeServiceTest` e `AluguelServiceTest` como referência.
 
 ## Veja Também
 

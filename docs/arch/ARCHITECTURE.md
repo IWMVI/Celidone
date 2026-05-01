@@ -1,6 +1,6 @@
-# Arquitetura — Celidone
+# Arquitetura
 
-Documento de referência para entender as decisões arquiteturais do **Celidone**, um backend Spring Boot 3.4 / Java 21 que apoia a operação de uma locadora de trajes a rigor (TCC FATEC). O foco é explicar **o que existe** e **por que existe**, para que futuras mudanças preservem a coerência do sistema ou — quando necessário — revertam decisões de forma consciente.
+Documento de referência para entender as decisões arquiteturais, um backend Spring Boot 3.4 / Java 21 que apoia a operação de uma locadora de trajes a rigor (TCC FATEC). O foco é explicar **o que existe** e **por que existe**, para que futuras mudanças preservem a coerência do sistema ou — quando necessário — revertam decisões de forma consciente.
 
 ---
 

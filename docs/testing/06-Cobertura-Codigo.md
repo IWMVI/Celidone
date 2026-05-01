@@ -5,8 +5,9 @@
 | Camada | Cobertura de Linhas | Cobertura de Branches |
 |---|---|---|
 | Serviços (`service.*`) | 80% | 60% |
-| Repositórios (`repository.*`) | 70% | — |
-| Controllers (`controller.*`) | 80% | — |
+| Controllers (`controller.*`) | 80% | 60% |
+
+> JaCoCo **não cobra** cobertura em `repository.*` — repositórios entram nas exclusões. PIT (mutation testing) cobra 60% em `service.*` com mutators `STRONGER`.
 
 ## Configuração JaCoCo no build.gradle
 
@@ -28,11 +29,17 @@ tasks.named('jacocoTestReport') {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                'br/edu/fateczl/tcc/domain/**',      // Entidades JPA
-                'br/edu/fateczl/tcc/dto/**',          // DTOs (records)
-                'br/edu/fateczl/tcc/enums/**',        // Enums
-                'br/edu/fateczl/tcc/config/**',       // Configurações Spring
-                'br/edu/fateczl/tcc/TccApplication*' // Classe main
+                'br/edu/fateczl/tcc/domain/**',
+                'br/edu/fateczl/tcc/dto/**',
+                'br/edu/fateczl/tcc/enums/**',
+                'br/edu/fateczl/tcc/config/**',
+                'br/edu/fateczl/tcc/mapper/**',
+                'br/edu/fateczl/tcc/exception/**',
+                'br/edu/fateczl/tcc/repository/**',
+                'br/edu/fateczl/tcc/specification/**',
+                'br/edu/fateczl/tcc/strategy/**',
+                'br/edu/fateczl/tcc/util/**',
+                'br/edu/fateczl/tcc/TccApplication*'
             ])
         }))
     }
@@ -43,17 +50,12 @@ tasks.named('jacocoTestCoverageVerification') {
     violationRules {
         rule {
             element = 'CLASS'
-            includes = ['br.edu.fateczl.tcc.service.*']
-            limit {
-                counter = 'LINE'
-                value = 'COVEREDRATIO'
-                minimum = 0.8   // 80% de cobertura de linhas
-            }
-            limit {
-                counter = 'BRANCH'
-                value = 'COVEREDRATIO'
-                minimum = 0.6   // 60% de cobertura de branches
-            }
+            includes = [
+                'br.edu.fateczl.tcc.service.*',
+                'br.edu.fateczl.tcc.controller.*'
+            ]
+            limit { counter = 'LINE';   minimum = 0.80 }
+            limit { counter = 'BRANCH'; minimum = 0.60 }
         }
     }
 }
@@ -93,22 +95,25 @@ Navegue pelos pacotes para identificar classes com baixa cobertura:
 
 ```
 br.edu.fateczl.tcc
-├── service/          ← Foco principal (threshold 80%)
-├── controller/       ← Foco secundário (threshold 80%)
-└── repository/       ← Queries customizadas (threshold 70%)
+├── service/          ← Foco principal (threshold 80% linhas / 60% branches)
+└── controller/       ← Foco secundário (threshold 80% linhas / 60% branches)
 ```
 
 ## Classes Excluídas da Cobertura
 
-As seguintes classes são excluídas intencionalmente:
-
 | Pacote | Motivo |
 |---|---|
-| `domain/**` | Entidades JPA — apenas getters/setters gerados |
+| `domain/**` | Entidades JPA — getters/setters/builders |
 | `dto/**` | Records Java — sem lógica de negócio |
 | `enums/**` | Enums — sem lógica testável |
-| `config/**` | Configurações Spring — testadas por integração |
-| `TccApplication` | Classe main — testada pelo contexto Spring |
+| `config/**` | Configurações Spring — testadas via contexto |
+| `mapper/**` | Mappers — testados via service/controller integration |
+| `exception/**` | Hierarquia de exceção (handler tem teste próprio) |
+| `repository/**` | Interfaces Spring Data |
+| `specification/**` | Funções utilitárias de Specification |
+| `strategy/**` | Strategy pattern — exercitado via `MedidaService` |
+| `util/**` | Utilitários |
+| `TccApplication` | Classe main |
 
 ## Veja Também
 

@@ -124,23 +124,22 @@ class ClienteContainerIntegrationTest {
 }
 ```
 
-## Configuração application-test.properties
+## Configuração `application-test.yaml`
 
-Crie `src/test/resources/application-test.properties`:
+O projeto já traz `src/test/resources/application-test.yaml`, ativado pelos testes via `@ActiveProfiles("test")`:
 
-```properties
-# Banco H2 em memória para testes
-spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-spring.datasource.driver-class-name=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.show-sql=false
-
-# Desabilitar dotenv em testes
-spring.config.import=optional:file:.env[.properties]
+```yaml
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
 ```
 
 ## Estratégias de Limpeza entre Testes

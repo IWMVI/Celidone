@@ -1,62 +1,76 @@
 # Gerenciamento de Dados de Teste
 
-## Factories de Dados de Teste
+## DataBuilders Fluentes
 
-Factories centralizam a criação de objetos de teste. Estão em `src/test/java/.../util/`.
+O projeto centraliza a criação de objetos de teste em **builders fluentes** sob `src/test/java/br/edu/fateczl/tcc/util/`. Cada builder fornece valores default plausíveis para todos os campos obrigatórios; o teste sobrescreve apenas o que importa para o cenário.
 
-### ClienteTestFactory
+Builders disponíveis hoje:
+
+| Builder | Domínio |
+|---|---|
+| `ClienteDataBuilder` | `Cliente`, `ClienteRequest`, `ClienteResponse` |
+| `AlugueisDataBuilder` | `Aluguel`, `AluguelRequest`, `AluguelResponse`, `ItemAluguel` |
+| `DevolucaoDataBuilder` | `Devolucao`, `DevolucaoRequest` |
+| `TrajeDataBuilder` | `Traje`, `TrajeRequest`, `TrajeResponse` |
+| `MedidaMasculinaDataBuilder` / `MedidaFemininaDataBuilder` | medidas por sexo |
+| `SpecificationTestUtils` | helpers para testes de Specification |
+
+### Exemplo — ClienteDataBuilder
 
 ```java
-// Uso básico
-ClienteRequest request = ClienteTestFactory.requestValido();
-ClienteResponse response = ClienteTestFactory.responseValido();
-Cliente entidade = ClienteTestFactory.entidadeValida();
-Cliente comId = ClienteTestFactory.entidadeComId(1L);
+// Request com defaults
+ClienteRequest req = ClienteDataBuilder.umCliente().buildRequest();
 
-// Variações para casos específicos
-ClienteRequest semNome = ClienteTestFactory.requestSemNome();
-ClienteRequest comEmail = ClienteTestFactory.requestComEmail("TESTE@EMAIL.COM");
-ClienteRequest comCpf = ClienteTestFactory.requestComCpf("98765432100");
+// Sobrescrevendo campos
+ClienteRequest pj = ClienteDataBuilder.umCliente()
+        .comNome("Empresa LTDA")
+        .comCpfCnpj("12345678000190")
+        .buildRequest();
+
+// Entidade já com ID (para mocks de findById)
+Cliente cliente = ClienteDataBuilder.umCliente()
+        .comId(1L)
+        .build();
+
+// Variação por email
+ClienteRequest comEmail = ClienteDataBuilder.umCliente()
+        .comEmail("teste@email.com")
+        .buildRequest();
 ```
 
-### TrajeTestFactory
+### Exemplo — TrajeDataBuilder
 
 ```java
-// Uso básico
-TrajeRequest request = TrajeTestFactory.requestValido();
-TrajeResponse response = TrajeTestFactory.responseValido();
-Traje entidade = TrajeTestFactory.entidadeValida();
-Traje comId = TrajeTestFactory.entidadeComId(1L);
+TrajeRequest req = TrajeDataBuilder.umTraje().buildRequest();
 
-// Variações para casos específicos
-TrajeRequest semDescricao = TrajeTestFactory.requestSemDescricao();
-TrajeRequest alugado = TrajeTestFactory.requestComStatus(StatusTraje.ALUGADO);
+Traje alugado = TrajeDataBuilder.umTraje()
+        .comStatus(StatusTraje.ALUGADO)
+        .build();
 ```
 
-## Criando Novas Factories
+## Criando Novos Builders
 
-Ao adicionar um novo domínio, crie a factory correspondente seguindo o padrão:
+Ao adicionar um novo domínio, siga o padrão dos builders existentes:
 
 ```java
-public class MedidaTestFactory {
+public class MedidaMasculinaDataBuilder {
 
-    private MedidaTestFactory() { }
+    private Long id;
+    private Long clienteId = 1L;
+    private BigDecimal ombro = new BigDecimal("42");
+    // ...
 
-    public static MedidaMasculinaRequest requestMasculinoValido() {
-        return new MedidaMasculinaRequest(
-            1L,       // clienteId
-            42,       // ombro
-            100,      // peito
-            90,       // cintura
-            // ... demais campos
-        );
+    private MedidaMasculinaDataBuilder() { }
+
+    public static MedidaMasculinaDataBuilder umaMedidaMasculina() {
+        return new MedidaMasculinaDataBuilder();
     }
 
-    public static MedidaMasculina entidadeValida() {
-        MedidaMasculina medida = new MedidaMasculina();
-        // ... configurar campos
-        return medida;
-    }
+    public MedidaMasculinaDataBuilder comId(Long id) { this.id = id; return this; }
+    public MedidaMasculinaDataBuilder comOmbro(BigDecimal v) { this.ombro = v; return this; }
+
+    public MedidaMasculinaRequest buildRequest() { /* ... */ }
+    public MedidaMasculina build() { /* ... */ }
 }
 ```
 
@@ -131,8 +145,8 @@ class AluguelIntegrationTest {
         trajeRepository.deleteAll();
 
         // Criar pré-requisitos
-        clienteSalvo = clienteRepository.save(ClienteTestFactory.entidadeValida());
-        trajeSalvo = trajeRepository.save(TrajeTestFactory.entidadeValida());
+        clienteSalvo = clienteRepository.save(ClienteDataBuilder.umCliente().build());
+        trajeSalvo = trajeRepository.save(TrajeDataBuilder.umTraje().build());
     }
 
     @Test

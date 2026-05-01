@@ -1,5 +1,7 @@
 # Melhores Práticas de Teste
 
+> **Sobre as referências a fixtures:** os exemplos citam `ClienteTestFactory`/`TrajeTestFactory`. O projeto adota o padrão **DataBuilder fluente** em `src/test/java/.../util/` (`ClienteDataBuilder`, `AlugueisDataBuilder`, `DevolucaoDataBuilder`, `MedidaMasculinaDataBuilder`, `MedidaFemininaDataBuilder`, `TrajeDataBuilder`). Substitua mentalmente nas chamadas: `ClienteTestFactory.requestValido()` → `ClienteDataBuilder.umCliente().buildRequest()`.
+
 ## Convenções de Nomenclatura
 
 ### Classes
@@ -193,7 +195,7 @@ Antes de fazer commit, verifique:
 
 - [ ] O nome do método segue o padrão `deve_[ação]_quando_[condição]`
 - [ ] O teste tem as três fases AAA claramente separadas
-- [ ] Dados de teste usam as factories (`ClienteTestFactory`, `TrajeTestFactory`)
+- [ ] Dados de teste usam os DataBuilders (`ClienteDataBuilder`, `TrajeDataBuilder`, etc.)
 - [ ] O teste verifica apenas uma coisa
 - [ ] O teste não depende de outros testes
 - [ ] Mocks são configurados apenas para o que é necessário

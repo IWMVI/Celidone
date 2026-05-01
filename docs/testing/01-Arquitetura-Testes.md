@@ -24,6 +24,7 @@ A base da pirâmide deve ser a maior: testes unitários são rápidos, baratos e
 - **Velocidade**: Muito rápidos (< 100ms por teste)
 - **Cobertura esperada**: 80% nas camadas de serviço e controller
 - **Localização**: `src/test/java/.../service/`, `.../controller/`
+- **Padrão TFS**: services usam Teste Funcional Sistemático (PCE + AVL) — matriz de classes/bordas documentada no cabeçalho do `*ServiceTest` e casos numerados como `CTn`
 
 ### Testes de Integração
 - **Propósito**: Verificar interações entre componentes com dependências reais
@@ -117,25 +118,37 @@ features/
 src/test/
 ├── java/br/edu/fateczl/tcc/
 │   ├── controller/
-│   │   ├── ClienteControllerTest.java
-│   │   ├── TrajeControllerTest.java
-│   │   └── MedidaControllerTest.java
+│   │   ├── AluguelControllerTest.java + AluguelControllerIntegrationTest.java
+│   │   ├── ClienteControllerTest.java + ClienteControllerIntegrationTest.java
+│   │   ├── DevolucaoControllerTest.java + DevolucaoControllerIntegrationTest.java
+│   │   ├── MedidaControllerTest.java + MedidaControllerIntegrationTest.java
+│   │   ├── TrajeControllerTest.java + TrajeControllerIntegrationTest.java
+│   │   └── EnumControllerTest.java
 │   ├── service/
+│   │   ├── AluguelServiceTest.java
 │   │   ├── ClienteServiceTest.java
+│   │   ├── DevolucaoServiceTest.java
+│   │   ├── ImagemServiceTest.java
+│   │   ├── MedidaServiceTest.java
 │   │   └── TrajeServiceTest.java
-│   ├── repository/
-│   │   └── ClienteRepositoryIntegrationTest.java
-│   ├── integration/
-│   │   └── ClienteIntegrationTest.java
+│   ├── mapper/                       (testes de mappers)
+│   ├── exception/                    (GlobalExceptionHandlerTest)
 │   ├── bdd/
-│   │   ├── steps/
-│   │   └── config/
-│   └── util/
-│       ├── ClienteTestFactory.java
-│       └── TrajeTestFactory.java
+│   │   └── steps/                    (steps + CucumberSpringConfiguration)
+│   ├── util/                         (DataBuilders fluentes)
+│   │   ├── ClienteDataBuilder.java
+│   │   ├── AlugueisDataBuilder.java
+│   │   ├── DevolucaoDataBuilder.java
+│   │   ├── MedidaMasculinaDataBuilder.java
+│   │   ├── MedidaFemininaDataBuilder.java
+│   │   ├── TrajeDataBuilder.java
+│   │   └── SpecificationTestUtils.java
+│   ├── BaseIntegrationTest.java
+│   └── CucumberTest.java
 └── resources/
-    ├── application-test.properties
+    ├── application-test.yaml
     └── features/
+        └── clientes/criar_cliente.feature
 ```
 
 ## Veja Também
