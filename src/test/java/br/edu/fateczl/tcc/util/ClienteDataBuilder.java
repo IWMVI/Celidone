@@ -178,6 +178,21 @@ public class ClienteDataBuilder {
         );
     }
 
+    /**
+     * Endereço parcial: apenas linha 1 (logradouro+número), sem bairro,
+     * cidade, estado e cep — exercita o branch que omite a linha 2.
+     */
+    public static Endereco enderecoApenasLogradouro() {
+        return new Endereco(null, "Rua das Flores", "42", null, null, null, null);
+    }
+
+    /**
+     * Endereço parcial: apenas linha 2 (cidade), sem logradouro/número/bairro.
+     */
+    public static Endereco enderecoApenasCidade() {
+        return new Endereco(null, null, null, "Curitiba", null, null, null);
+    }
+
     public static EnderecoRequest enderecoRequestDefault() {
         return new EnderecoRequest(
                 "01001000", "Praça da Sé", "100",
