@@ -72,7 +72,7 @@ public class ContratoPdfService {
         validarAluguel(aluguel);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Document doc = new Document(PageSize.A4, 60, 60, 60, 60);
+        Document doc = novoDocumento();
 
         try {
             PdfWriter.getInstance(doc, baos);
@@ -97,6 +97,10 @@ public class ContratoPdfService {
         }
 
         return baos.toByteArray();
+    }
+
+    Document novoDocumento() {
+        return new Document(PageSize.A4, 60, 60, 60, 60);
     }
 
     private void validarAluguel(Aluguel aluguel) {
@@ -170,10 +174,9 @@ public class ContratoPdfService {
             if (!linha1.isEmpty()) {
                 doc.add(new Paragraph("Endereço: " + linha1, FONT_TEXTO));
             }
-            String linha2 = montarLinhaEnderecoCidade(end);
-            if (!linha2.isEmpty()) {
-                doc.add(new Paragraph(linha2, FONT_TEXTO));
-            }
+            // linha2 vazia gera Paragraph("") que é no-op no OpenPDF (sem operadores
+            // emitidos); por isso o doc.add é incondicional aqui.
+            doc.add(new Paragraph(montarLinhaEnderecoCidade(end), FONT_TEXTO));
         }
 
         doc.add(Chunk.NEWLINE);

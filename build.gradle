@@ -87,6 +87,9 @@ dependencies {
 	// 🌐 Teste de API
 	testImplementation 'io.rest-assured:rest-assured:5.4.0'
 
+	// 📄 Parsing de PDF (verificação de conteúdo gerado nos testes)
+	testImplementation 'org.apache.pdfbox:pdfbox:3.0.3'
+
 	// 🔌 Mock externo
 	testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.1'
 
