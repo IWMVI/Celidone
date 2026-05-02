@@ -4,6 +4,10 @@ import br.edu.fateczl.tcc.dto.aluguel.AluguelRequest;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelResponse;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelUpdateRequest;
 import br.edu.fateczl.tcc.dto.aluguel.ItemAluguelResponse;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
+import br.edu.fateczl.tcc.dto.devolucao.ItemDevolucaoRequest;
+import br.edu.fateczl.tcc.enums.CondicaoTraje;
 import br.edu.fateczl.tcc.enums.CorTraje;
 import br.edu.fateczl.tcc.enums.StatusAluguel;
 import br.edu.fateczl.tcc.enums.TamanhoTraje;
@@ -12,6 +16,7 @@ import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.service.AluguelService;
+import br.edu.fateczl.tcc.service.ContratoPdfService;
 import br.edu.fateczl.tcc.util.AlugueisDataBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -42,6 +47,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -55,6 +62,9 @@ class AluguelControllerTest {
 
     @MockitoBean
     private AluguelService service;
+
+    @MockitoBean
+    private ContratoPdfService contratoPdfService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -468,6 +478,102 @@ class AluguelControllerTest {
                             .with(csrf()))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value("Aluguel com id 99 não encontrado(a)"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Gerar Contrato em PDF")
+    class GerarContratoTest {
+
+        @Test
+        void deve_retornar200ComPdf_quando_aluguelExiste() throws Exception {
+            byte[] pdfBytes = "%PDF-1.4 fake".getBytes();
+            when(contratoPdfService.gerarContrato(AlugueisDataBuilder.ALUGUEL_ID_DEFAULT))
+                    .thenReturn(pdfBytes);
+
+            mockMvc.perform(get("/alugueis/{id}/contrato", AlugueisDataBuilder.ALUGUEL_ID_DEFAULT))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                    .andExpect(header().string("Content-Disposition",
+                            "inline; filename=\"Contrato_Aluguel_" + AlugueisDataBuilder.ALUGUEL_ID_DEFAULT + ".pdf\""))
+                    .andExpect(content().bytes(pdfBytes));
+
+            verify(contratoPdfService).gerarContrato(AlugueisDataBuilder.ALUGUEL_ID_DEFAULT);
+        }
+
+        @Test
+        void deve_retornar404_quando_aluguelNaoEncontradoParaContrato() throws Exception {
+            when(contratoPdfService.gerarContrato(99L))
+                    .thenThrow(new ResourceNotFoundException("Aluguel", 99L));
+
+            mockMvc.perform(get("/alugueis/99/contrato"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Aluguel com id 99 não encontrado(a)"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Registrar Devolução")
+    class RegistrarDevolucaoTest {
+
+        private DevolucaoRequest devolucaoRequest() {
+            return new DevolucaoRequest(
+                    LocalDate.now(),
+                    "Devolvido em bom estado",
+                    BigDecimal.ZERO,
+                    List.of(new ItemDevolucaoRequest(AlugueisDataBuilder.TRAJE_ID_DEFAULT, CondicaoTraje.BOM))
+            );
+        }
+
+        private DevolucaoResponse devolucaoResponse() {
+            return new DevolucaoResponse(
+                    1L,
+                    LocalDate.now(),
+                    "Devolvido em bom estado",
+                    BigDecimal.ZERO,
+                    AlugueisDataBuilder.ALUGUEL_ID_DEFAULT
+            );
+        }
+
+        @Test
+        void deve_retornar201_quando_registrarDevolucaoComSucesso() throws Exception {
+            when(service.registrarDevolucao(eq(AlugueisDataBuilder.ALUGUEL_ID_DEFAULT), any(DevolucaoRequest.class)))
+                    .thenReturn(devolucaoResponse());
+
+            mockMvc.perform(post("/alugueis/{id}/devolucao", AlugueisDataBuilder.ALUGUEL_ID_DEFAULT)
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(devolucaoRequest())))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.idAluguel").value(AlugueisDataBuilder.ALUGUEL_ID_DEFAULT))
+                    .andExpect(jsonPath("$.observacoes").value("Devolvido em bom estado"));
+
+            verify(service).registrarDevolucao(eq(AlugueisDataBuilder.ALUGUEL_ID_DEFAULT), any(DevolucaoRequest.class));
+        }
+
+        @Test
+        void deve_retornar404_quando_aluguelNaoEncontradoParaDevolucao() throws Exception {
+            when(service.registrarDevolucao(eq(99L), any(DevolucaoRequest.class)))
+                    .thenThrow(new ResourceNotFoundException("Aluguel", 99L));
+
+            mockMvc.perform(post("/alugueis/99/devolucao")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(devolucaoRequest())))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Aluguel com id 99 não encontrado(a)"));
+        }
+
+        @Test
+        void deve_retornar400_quando_aluguelNaoEstaAtivo() throws Exception {
+            when(service.registrarDevolucao(eq(AlugueisDataBuilder.ALUGUEL_ID_DEFAULT), any(DevolucaoRequest.class)))
+                    .thenThrow(new BusinessException("Só é possível registrar devolução de aluguéis ATIVOS"));
+
+            mockMvc.perform(post("/alugueis/{id}/devolucao", AlugueisDataBuilder.ALUGUEL_ID_DEFAULT)
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(devolucaoRequest())))
+                    .andExpect(status().isBadRequest());
         }
     }
 }

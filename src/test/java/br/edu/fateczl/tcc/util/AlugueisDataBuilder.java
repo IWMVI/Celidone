@@ -50,6 +50,7 @@ public class AlugueisDataBuilder {
     private Long clienteId = CLIENTE_ID_DEFAULT;
     private LocalDate dataRetirada = LocalDate.now().plusDays(1);
     private LocalDate dataDevolucao = LocalDate.now().plusDays(7);
+    private BigDecimal valorTotal = VALOR_TRAJE_DEFAULT;
     private BigDecimal valorDesconto = BigDecimal.ZERO;
     private String observacoes = "Observacao de teste";
     private TipoOcasiao ocasiao = TipoOcasiao.FORMATURA;
@@ -135,6 +136,36 @@ public class AlugueisDataBuilder {
         return this;
     }
 
+    public AlugueisDataBuilder comValorTotal(BigDecimal valorTotal) {
+        this.valorTotal = valorTotal;
+        return this;
+    }
+
+    public AlugueisDataBuilder semValorTotal() {
+        this.valorTotal = null;
+        return this;
+    }
+
+    public AlugueisDataBuilder semDataRetirada() {
+        this.dataRetirada = null;
+        return this;
+    }
+
+    public AlugueisDataBuilder semDataDevolucao() {
+        this.dataDevolucao = null;
+        return this;
+    }
+
+    public AlugueisDataBuilder comObservacoesNulas() {
+        this.observacoes = null;
+        return this;
+    }
+
+    public AlugueisDataBuilder comObservacoesEmBranco() {
+        this.observacoes = "   ";
+        return this;
+    }
+
     // =========================================================
     // Terminais
     // =========================================================
@@ -174,7 +205,7 @@ public class AlugueisDataBuilder {
                 .dataAluguel(LocalDate.now())
                 .dataRetirada(dataRetirada)
                 .dataDevolucao(dataDevolucao)
-                .valorTotal(VALOR_TRAJE_DEFAULT)
+                .valorTotal(valorTotal)
                 .valorDesconto(valorDesconto)
                 .observacoes(observacoes)
                 .status(status)
@@ -192,6 +223,22 @@ public class AlugueisDataBuilder {
             ItemAluguel item = ItemAluguel.builder()
                     .aluguel(aluguel)
                     .traje(traje)
+                    .build();
+            aluguel.getItens().add(item);
+        }
+        return aluguel;
+    }
+
+    /**
+     * Variante que inclui {@code qtd} itens com {@code traje = null} — usado
+     * para isolar a validação de "item sem traje associado".
+     */
+    public Aluguel buildEntityComItensSemTraje(Cliente cliente, int qtd) {
+        Aluguel aluguel = buildEntity(cliente);
+        for (int i = 0; i < qtd; i++) {
+            ItemAluguel item = ItemAluguel.builder()
+                    .aluguel(aluguel)
+                    .traje(null)
                     .build();
             aluguel.getItens().add(item);
         }

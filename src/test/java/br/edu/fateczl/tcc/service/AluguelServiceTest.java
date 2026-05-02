@@ -2,11 +2,19 @@ package br.edu.fateczl.tcc.service;
 
 import br.edu.fateczl.tcc.domain.Aluguel;
 import br.edu.fateczl.tcc.domain.Cliente;
+import br.edu.fateczl.tcc.domain.ItemAluguel;
 import br.edu.fateczl.tcc.domain.Traje;
+import br.edu.fateczl.tcc.dto.aluguel.AluguelFiltroRequest;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelRequest;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelResponse;
 import br.edu.fateczl.tcc.dto.aluguel.AluguelUpdateRequest;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
+import br.edu.fateczl.tcc.dto.devolucao.DevolucaoResponse;
+import br.edu.fateczl.tcc.dto.devolucao.ItemDevolucaoRequest;
+import br.edu.fateczl.tcc.enums.CondicaoTraje;
 import br.edu.fateczl.tcc.enums.StatusAluguel;
+import br.edu.fateczl.tcc.enums.StatusTraje;
+import br.edu.fateczl.tcc.enums.TipoOcasiao;
 import br.edu.fateczl.tcc.exception.BusinessException;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
 import br.edu.fateczl.tcc.repository.AluguelRepository;
@@ -19,9 +27,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -110,6 +120,23 @@ import static org.mockito.Mockito.when;
  * Operações de leitura/remoção (buscarPorId, listarTodos, deletar) possuem
  * uma única condição de entrada (existência do ID) e são tratadas com um
  * caso V e um caso I — CT19..CT24.
+ *
+ * =========================================================================
+ * MATRIZ (listarComFiltros) — variáveis: combinação de filtros opcionais
+ *   CT26 — V típico: todos os filtros preenchidos    → Specification composta, lista mapeada
+ *   CT27 — V parcial: somente status                  → Specification composta, lista mapeada
+ *   CT28 — V borda: filtro totalmente nulo            → Specification inerte, lista vazia
+ *
+ * MATRIZ (buscarAtivoByTrajeId) — variável: existência de item ATIVO
+ *   CT29 — V: existe item ATIVO                       → AluguelResponse do aluguel pai
+ *   CT30 — I: não existe                              → ResourceNotFoundException
+ *
+ * MATRIZ (registrarDevolucao) — variáveis: existência do aluguel, status, itens
+ *   CT31 — V típico: aluguel ATIVO + itens preenchidos → trajes atualizados (condicao+DISPONIVEL),
+ *                                                       aluguel CONCLUIDO, devolução criada
+ *   CT32 — V borda: aluguel ATIVO + itens=null         → forEach NÃO executa, aluguel CONCLUIDO
+ *   CT33 — I9: aluguel inexistente                     → ResourceNotFoundException
+ *   CT34 — I10: aluguel CONCLUÍDO (status≠ATIVO)       → BusinessException "aluguéis ATIVOS"
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TFS - AluguelService (Teste Funcional Sistemático)")
@@ -126,6 +153,9 @@ class AluguelServiceTest {
 
     @Mock
     private ItemAluguelRepository itemAluguelRepository;
+
+    @Mock
+    private DevolucaoService devolucaoService;
 
     @InjectMocks
     private AluguelService service;
@@ -550,6 +580,202 @@ class AluguelServiceTest {
 
             assertThrows(ResourceNotFoundException.class, () -> service.deletar(99L));
             verify(aluguelRepository, never()).delete(any(Aluguel.class));
+        }
+    }
+
+    // =========================================================
+    // LISTAR COM FILTROS — CT26..CT28
+    // =========================================================
+    @Nested
+    @DisplayName("Listar com filtros — matriz TFS")
+    class ListarComFiltros {
+
+        @Test
+        @DisplayName("CT26 — V típico: todos os filtros preenchidos compõem Specification e retornam lista mapeada")
+        @SuppressWarnings("unchecked")
+        void ct26_deve_listar_quando_todosFiltrosPreenchidos() {
+            AluguelFiltroRequest filtro = new AluguelFiltroRequest(
+                    StatusAluguel.ATIVO,
+                    "Maria",
+                    LocalDate.now(),
+                    LocalDate.now().plusDays(10),
+                    TipoOcasiao.CASAMENTO);
+            Aluguel a1 = AlugueisDataBuilder.umAluguel().comId(1L).buildEntity(cliente);
+            Aluguel a2 = AlugueisDataBuilder.umAluguel().comId(2L).buildEntity(cliente);
+            when(aluguelRepository.findAll(any(Specification.class))).thenReturn(List.of(a1, a2));
+
+            List<AluguelResponse> responses = service.listarComFiltros(filtro);
+
+            // mata mutante linha 174 (return Collections.emptyList): emptyList tem size==0
+            assertEquals(2, responses.size());
+            assertEquals(1L, responses.get(0).id());
+            assertEquals(2L, responses.get(1).id());
+        }
+
+        @Test
+        @DisplayName("CT27 — V parcial: somente status preenchido")
+        @SuppressWarnings("unchecked")
+        void ct27_deve_listar_quando_apenasStatus() {
+            AluguelFiltroRequest filtro = new AluguelFiltroRequest(
+                    StatusAluguel.ATIVO, null, null, null, null);
+            when(aluguelRepository.findAll(any(Specification.class)))
+                    .thenReturn(List.of(AlugueisDataBuilder.umAluguel().buildEntity(cliente)));
+
+            List<AluguelResponse> responses = service.listarComFiltros(filtro);
+
+            assertEquals(1, responses.size());
+        }
+
+        @Test
+        @DisplayName("CT28 — V borda: filtro totalmente nulo")
+        @SuppressWarnings("unchecked")
+        void ct28_deve_listar_quando_filtroTodoNulo() {
+            AluguelFiltroRequest filtro = new AluguelFiltroRequest(null, null, null, null, null);
+            when(aluguelRepository.findAll(any(Specification.class))).thenReturn(List.of());
+
+            List<AluguelResponse> responses = service.listarComFiltros(filtro);
+
+            assertTrue(responses.isEmpty());
+        }
+    }
+
+    // =========================================================
+    // BUSCAR ATIVO POR TRAJE — CT29..CT30
+    // =========================================================
+    @Nested
+    @DisplayName("Buscar aluguel ATIVO por traje — matriz TFS")
+    class BuscarAtivoByTrajeId {
+
+        @Test
+        @DisplayName("CT29 — V: existe item ATIVO para o traje")
+        void ct29_deve_retornarResponse_quando_existeItemAtivo() {
+            Aluguel aluguel = AlugueisDataBuilder.umAluguel().buildEntity(cliente);
+            ItemAluguel item = ItemAluguel.builder()
+                    .id(500L)
+                    .aluguel(aluguel)
+                    .traje(traje)
+                    .build();
+            when(itemAluguelRepository.findAtivoByTrajeId(TRAJE_ID_DEFAULT))
+                    .thenReturn(Optional.of(item));
+
+            AluguelResponse response = service.buscarAtivoByTrajeId(TRAJE_ID_DEFAULT);
+
+            // mata mutante linha 187 (return null)
+            assertNotNull(response);
+            assertEquals(ALUGUEL_ID_DEFAULT, response.id());
+        }
+
+        @Test
+        @DisplayName("CT30 — I: não existe item ATIVO → ResourceNotFoundException")
+        void ct30_deve_lancarResourceNotFound_quando_naoExisteItemAtivo() {
+            when(itemAluguelRepository.findAtivoByTrajeId(99L)).thenReturn(Optional.empty());
+
+            ResourceNotFoundException ex = assertThrows(
+                    ResourceNotFoundException.class,
+                    () -> service.buscarAtivoByTrajeId(99L));
+            // mata mutante linha 186 (lambda → null): valida que a exceção foi a do orElseThrow
+            assertTrue(ex.getMessage().contains("Aluguel ativo para o traje"));
+        }
+    }
+
+    // =========================================================
+    // REGISTRAR DEVOLUCAO — CT31..CT34
+    // =========================================================
+    @Nested
+    @DisplayName("Registrar devolução — matriz TFS")
+    class RegistrarDevolucao {
+
+        private Aluguel ativo;
+
+        @BeforeEach
+        void setUpAtivo() {
+            ativo = AlugueisDataBuilder.umAluguel()
+                    .comStatus(StatusAluguel.ATIVO)
+                    .buildEntity(cliente);
+        }
+
+        @Test
+        @DisplayName("CT31 — V típico: aluguel ATIVO + itens preenchidos → trajes atualizados, aluguel CONCLUIDO")
+        void ct31_deve_registrarDevolucao_quando_caminhoFeliz() {
+            DevolucaoRequest dto = new DevolucaoRequest(
+                    LocalDate.now(),
+                    "obs",
+                    BigDecimal.ZERO,
+                    List.of(new ItemDevolucaoRequest(TRAJE_ID_DEFAULT, CondicaoTraje.BOM)));
+            DevolucaoResponse stubResponse = new DevolucaoResponse(
+                    1L, LocalDate.now(), "obs", BigDecimal.ZERO, ALUGUEL_ID_DEFAULT);
+            // Traje começa ALUGADO de propósito: caso o setStatus(DISPONIVEL) seja
+            // removido (mutante linha 216), o status final permaneceria ALUGADO.
+            Traje trajeAlugado = AlugueisDataBuilder.umTrajeIndisponivel(TRAJE_ID_DEFAULT);
+            when(aluguelRepository.findById(ALUGUEL_ID_DEFAULT)).thenReturn(Optional.of(ativo));
+            when(trajeRepository.findById(TRAJE_ID_DEFAULT)).thenReturn(Optional.of(trajeAlugado));
+            when(devolucaoService.criar(eq(dto), eq(ativo))).thenReturn(stubResponse);
+
+            DevolucaoResponse response = service.registrarDevolucao(ALUGUEL_ID_DEFAULT, dto);
+
+            // mata mutante linha 226 (return null): a resposta é exatamente a do devolucaoService
+            assertEquals(stubResponse, response);
+
+            // mata mutantes linhas 213/215/216: forEach roda e mexe no Traje
+            ArgumentCaptor<Traje> trajeCaptor = ArgumentCaptor.forClass(Traje.class);
+            verify(trajeRepository).save(trajeCaptor.capture());
+            assertEquals(CondicaoTraje.BOM, trajeCaptor.getValue().getCondicao());
+            assertEquals(StatusTraje.DISPONIVEL, trajeCaptor.getValue().getStatus());
+
+            // mata mutante linha 223: aluguel salvo com status CONCLUIDO
+            ArgumentCaptor<Aluguel> aluguelCaptor = ArgumentCaptor.forClass(Aluguel.class);
+            verify(aluguelRepository).save(aluguelCaptor.capture());
+            assertEquals(StatusAluguel.CONCLUIDO, aluguelCaptor.getValue().getStatus());
+        }
+
+        @Test
+        @DisplayName("CT32 — V borda: aluguel ATIVO + itens=null → não atualiza trajes, mas conclui aluguel")
+        void ct32_deve_registrarDevolucao_quando_itensNulos() {
+            DevolucaoRequest dto = new DevolucaoRequest(
+                    LocalDate.now(), null, null, null);
+            DevolucaoResponse stubResponse = new DevolucaoResponse(
+                    2L, LocalDate.now(), null, null, ALUGUEL_ID_DEFAULT);
+            when(aluguelRepository.findById(ALUGUEL_ID_DEFAULT)).thenReturn(Optional.of(ativo));
+            when(devolucaoService.criar(eq(dto), eq(ativo))).thenReturn(stubResponse);
+
+            service.registrarDevolucao(ALUGUEL_ID_DEFAULT, dto);
+
+            // mata mutante linha 212 (== true): se a guarda fosse sempre true, dto.itens().forEach lançaria NPE
+            verify(trajeRepository, never()).save(any(Traje.class));
+
+            // status CONCLUIDO mesmo sem itens (mata mutante linha 223 também)
+            ArgumentCaptor<Aluguel> aluguelCaptor = ArgumentCaptor.forClass(Aluguel.class);
+            verify(aluguelRepository).save(aluguelCaptor.capture());
+            assertEquals(StatusAluguel.CONCLUIDO, aluguelCaptor.getValue().getStatus());
+        }
+
+        @Test
+        @DisplayName("CT33 — I: aluguel inexistente → ResourceNotFoundException")
+        void ct33_deve_lancarResourceNotFound_quando_aluguelInexistente() {
+            DevolucaoRequest dto = new DevolucaoRequest(LocalDate.now(), null, null, null);
+            when(aluguelRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(ResourceNotFoundException.class,
+                    () -> service.registrarDevolucao(99L, dto));
+            verify(aluguelRepository, never()).save(any(Aluguel.class));
+            verify(devolucaoService, never()).criar(any(), any());
+        }
+
+        @Test
+        @DisplayName("CT34 — I: aluguel CONCLUÍDO → BusinessException")
+        void ct34_deve_lancarBusinessException_quando_aluguelNaoAtivo() {
+            Aluguel concluido = AlugueisDataBuilder.umAluguel()
+                    .comStatus(StatusAluguel.CONCLUIDO)
+                    .buildEntity(cliente);
+            DevolucaoRequest dto = new DevolucaoRequest(LocalDate.now(), null, null, null);
+            when(aluguelRepository.findById(ALUGUEL_ID_DEFAULT)).thenReturn(Optional.of(concluido));
+
+            // mata mutante linha 207 (path I do equality check): só ATIVOS lançam BusinessException
+            BusinessException ex = assertThrows(BusinessException.class,
+                    () -> service.registrarDevolucao(ALUGUEL_ID_DEFAULT, dto));
+            assertTrue(ex.getMessage().contains("ATIVOS"));
+            verify(aluguelRepository, never()).save(any(Aluguel.class));
+            verify(devolucaoService, never()).criar(any(), any());
         }
     }
 }
