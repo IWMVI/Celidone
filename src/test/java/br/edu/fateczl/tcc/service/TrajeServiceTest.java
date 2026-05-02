@@ -1,6 +1,7 @@
 package br.edu.fateczl.tcc.service;
 
 import br.edu.fateczl.tcc.domain.Traje;
+import br.edu.fateczl.tcc.dto.traje.PeriodoAlugadoResponse;
 import br.edu.fateczl.tcc.dto.traje.TrajeRequest;
 import br.edu.fateczl.tcc.dto.traje.TrajeResponse;
 import br.edu.fateczl.tcc.enums.SexoEnum;
@@ -8,6 +9,7 @@ import br.edu.fateczl.tcc.enums.StatusTraje;
 import br.edu.fateczl.tcc.enums.TamanhoTraje;
 import br.edu.fateczl.tcc.enums.TipoTraje;
 import br.edu.fateczl.tcc.exception.ResourceNotFoundException;
+import br.edu.fateczl.tcc.repository.ItemAluguelRepository;
 import br.edu.fateczl.tcc.repository.TrajeRepository;
 import br.edu.fateczl.tcc.util.SpecificationTestUtils;
 import br.edu.fateczl.tcc.util.SpecificationTestUtils.CapturedSpec;
@@ -29,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -123,6 +126,9 @@ import static org.mockito.Mockito.when;
  *   CT24 — atualizar I5: id inexistente                             → ResourceNotFoundException, save nunca chamado
  *   CT25 — deletar V5: id existente                                 → repository.delete chamado
  *   CT26 — deletar I5: id inexistente                               → ResourceNotFoundException, delete nunca chamado
+ *   CT27 — buscarPeriodosAlugados V5+V: id existente, repositório retorna 2 períodos → Lista mapeada com 2 elementos
+ *   CT28 — buscarPeriodosAlugados V5+AVL: id existente, repositório retorna lista vazia → Lista vazia
+ *   CT29 — buscarPeriodosAlugados I5: id inexistente                → ResourceNotFoundException, repositório de itens nunca consultado
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TFS - TrajeService (Teste Funcional Sistemático)")
@@ -133,6 +139,9 @@ class TrajeServiceTest {
 
     @Mock
     private ImagemService imagemService;
+
+    @Mock
+    private ItemAluguelRepository itemAluguelRepository;
 
     @InjectMocks
     private TrajeService service;
@@ -635,6 +644,63 @@ class TrajeServiceTest {
             assertThrows(ResourceNotFoundException.class,
                     () -> service.deletar(99L));
             verify(repository, never()).delete(any(Traje.class));
+        }
+    }
+
+    // =========================================================
+    // BUSCAR PERIODOS ALUGADOS — CT27..CT29
+    // =========================================================
+    @Nested
+    @DisplayName("Buscar períodos alugados — matriz TFS")
+    class BuscarPeriodosAlugados {
+
+        @Test
+        @DisplayName("CT27 — V: id existente, repositório retorna 2 períodos")
+        void ct27_deve_retornarPeriodos_quando_idExistenteEHaPeriodos() {
+            LocalDate r1 = LocalDate.of(2026, 1, 10);
+            LocalDate d1 = LocalDate.of(2026, 1, 15);
+            LocalDate r2 = LocalDate.of(2026, 2, 1);
+            LocalDate d2 = LocalDate.of(2026, 2, 5);
+            List<Object[]> linhas = List.of(
+                    new Object[]{r1, d1},
+                    new Object[]{r2, d2});
+            when(repository.findById(TRAJE_ID_DEFAULT)).thenReturn(Optional.of(traje));
+            when(itemAluguelRepository.findPeriodosAlugadosByTrajeId(TRAJE_ID_DEFAULT))
+                    .thenReturn(linhas);
+
+            List<PeriodoAlugadoResponse> response = service.buscarPeriodosAlugados(TRAJE_ID_DEFAULT);
+
+            // mata mutante linha 163 (Collections.emptyList): verifica tamanho > 0
+            assertEquals(2, response.size());
+            // mata mutante linha 164 (lambda → null): verifica que cada PeriodoAlugadoResponse foi mapeado
+            assertNotNull(response.get(0));
+            assertEquals(r1, response.get(0).dataRetirada());
+            assertEquals(d1, response.get(0).dataDevolucao());
+            assertNotNull(response.get(1));
+            assertEquals(r2, response.get(1).dataRetirada());
+            assertEquals(d2, response.get(1).dataDevolucao());
+        }
+
+        @Test
+        @DisplayName("CT28 — AVL: id existente mas sem períodos cadastrados")
+        void ct28_deve_retornarListaVazia_quando_naoHaPeriodos() {
+            when(repository.findById(TRAJE_ID_DEFAULT)).thenReturn(Optional.of(traje));
+            when(itemAluguelRepository.findPeriodosAlugadosByTrajeId(TRAJE_ID_DEFAULT))
+                    .thenReturn(List.of());
+
+            List<PeriodoAlugadoResponse> response = service.buscarPeriodosAlugados(TRAJE_ID_DEFAULT);
+
+            assertTrue(response.isEmpty());
+        }
+
+        @Test
+        @DisplayName("CT29 — I5: id inexistente → ResourceNotFoundException, repositório de itens nunca consultado")
+        void ct29_deve_lancarResourceNotFound_quando_idInexistente() {
+            when(repository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(ResourceNotFoundException.class,
+                    () -> service.buscarPeriodosAlugados(99L));
+            verifyNoInteractions(itemAluguelRepository);
         }
     }
 }
