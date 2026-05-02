@@ -3,11 +3,16 @@ package br.edu.fateczl.tcc.controller;
 import br.edu.fateczl.tcc.domain.Aluguel;
 import br.edu.fateczl.tcc.domain.Cliente;
 import br.edu.fateczl.tcc.domain.Devolucao;
+import br.edu.fateczl.tcc.domain.ItemAluguel;
+import br.edu.fateczl.tcc.domain.Traje;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoRequest;
 import br.edu.fateczl.tcc.dto.devolucao.DevolucaoUpdateRequest;
+import br.edu.fateczl.tcc.dto.devolucao.ItemDevolucaoRequest;
+import br.edu.fateczl.tcc.enums.CondicaoTraje;
 import br.edu.fateczl.tcc.repository.AluguelRepository;
 import br.edu.fateczl.tcc.repository.ClienteRepository;
 import br.edu.fateczl.tcc.repository.DevolucaoRepository;
+import br.edu.fateczl.tcc.repository.TrajeRepository;
 import br.edu.fateczl.tcc.util.AlugueisDataBuilder;
 import br.edu.fateczl.tcc.util.ClienteDataBuilder;
 import br.edu.fateczl.tcc.util.DevolucaoDataBuilder;
@@ -24,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -55,34 +61,48 @@ class DevolucaoControllerIntegrationTest {
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private TrajeRepository trajeRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     private Aluguel aluguelPersistido;
+    private Traje trajePersistido;
 
     @BeforeEach
     void setup() {
-        // Limpa em ordem segura por causa das FKs (Devolucao → Aluguel → Cliente).
+        // Limpa em ordem segura por causa das FKs (Devolucao → Aluguel → Cliente/Traje).
         // O @Transactional já garantiria rollback ao final de cada teste, mas
         // limpamos explicitamente para espelhar o padrão dos demais integration
         // tests deste projeto e tornar a contagem do banco previsível.
         devolucaoRepository.deleteAll();
         aluguelRepository.deleteAll();
         clienteRepository.deleteAll();
+        trajeRepository.deleteAll();
 
-        // Persiste a cadeia mínima de dependências: Cliente → Aluguel.
+        // Persiste a cadeia mínima de dependências: Cliente, Traje → Aluguel
+        // (com ItemAluguel apontando para o Traje, pois registrarDevolucao
+        // valida cada trajeId enviado no DevolucaoRequest).
         Cliente cliente = clienteRepository.save(
                 ClienteDataBuilder.umCliente().comId(null).buildEntity()
+        );
+        trajePersistido = trajeRepository.save(
+                AlugueisDataBuilder.umTrajeDisponivel(null)
         );
         Aluguel aluguel = AlugueisDataBuilder.umAluguel()
                 .comClienteId(cliente.getId())
                 .buildEntity(cliente);
         aluguel.setId(null); // garante que o JPA gere o id no save
+        aluguel.getItens().add(
+                ItemAluguel.builder().aluguel(aluguel).traje(trajePersistido).build()
+        );
         aluguelPersistido = aluguelRepository.save(aluguel);
     }
 
     @Test
     void deve_criarDevolucao_quando_dadosValidosIntegracao() throws Exception {
         DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
+                .comItens(List.of(new ItemDevolucaoRequest(trajePersistido.getId(), CondicaoTraje.BOM)))
                 .buildRequest();
 
         // Execução: o Controller aciona o AluguelService REAL, que aciona o
@@ -108,6 +128,7 @@ class DevolucaoControllerIntegrationTest {
                         .buildEntity(aluguelPersistido)
         );
         DevolucaoRequest request = DevolucaoDataBuilder.umaDevolucao()
+                .comItens(List.of(new ItemDevolucaoRequest(trajePersistido.getId(), CondicaoTraje.BOM)))
                 .buildRequest();
 
         // A regra de negócio "uma devolução por aluguel" deve barrar a 2ª criação.
